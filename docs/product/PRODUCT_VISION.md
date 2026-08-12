@@ -10,6 +10,8 @@ HuGuWeb is being designed as a **hospitality-first ERP / PMS platform** for hote
 
 The first target industry is **hotels**. HuGuWeb is not currently intended to be a generic ERP for every industry. Future expansion into other industries (such as manufacturing) may be considered later, but the initial product must be designed around real hotel problems and workflows.
 
+Product discovery and pilot preparation initially center on **independent mid-size hotels with meaningful cross-department operational complexity**. This is an approved discovery direction, not a claim that this is the only future market, and not customer-validated market truth. Detailed segment reasoning: [Target Customer](TARGET_CUSTOMER.md).
+
 ---
 
 ## Vision Themes
@@ -78,6 +80,8 @@ The following are intentionally **not** defined in this document:
 - UI/UX designs
 - Pricing or commercial model
 - Technology stack
+
+The initial discovery / pilot segment **is** recorded in [Target Customer](TARGET_CUSTOMER.md). Selecting that segment does not freeze MVP scope.
 
 See [Roadmap](../roadmap/ROADMAP.md) for high-level project phases.
 

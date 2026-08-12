@@ -79,6 +79,45 @@ Major features require evidence of business and user value.
 
 Scope decisions should be supported by research, user feedback, operational analysis, or other evidence—not by assumption, competitor parity, or internal preference alone.
 
+Approved discovery direction is not the same as validated market truth. See [Target Customer](TARGET_CUSTOMER.md) and [Evidence Model](EVIDENCE_MODEL.md).
+
+---
+
+## Pilots exist to learn, not to confirm the plan
+
+> Early pilots exist to validate and improve HuGuWeb, not merely to prove that existing assumptions were correct.
+
+Pilot feedback may:
+
+- increase feature priority
+- decrease feature priority
+- reveal missing workflows
+- invalidate assumptions
+- expose usability problems
+- expose integration requirements
+- reveal operational risks
+
+Do not preserve a feature simply because it appeared in an earlier plan. Evidence should be allowed to change product direction.
+
+---
+
+## Reliability over perfection
+
+Avoid claiming HuGuWeb will become a "bug-free" or "perfect" ERP.
+
+Prefer product and engineering goals such as:
+
+- high reliability
+- predictable behavior
+- controlled change impact
+- strong regression protection
+- observable failures
+- rapid diagnosis
+- safe recovery
+- continuous improvement from pilot evidence
+
+These are goals, not an architecture or implementation plan.
+
 ---
 
 ## Challenge assumptions
@@ -97,6 +136,8 @@ Both sides are expected to challenge decisions when necessary. Decisions should 
 ## Related Documents
 
 - [Product Vision](PRODUCT_VISION.md)
+- [Target Customer](TARGET_CUSTOMER.md)
+- [Evidence Model](EVIDENCE_MODEL.md)
 - [Future Scope](FUTURE_SCOPE.md)
 - [Competitor Analysis](../research/COMPETITOR_ANALYSIS.md)
 - [Development Workflow](../engineering/DEVELOPMENT_WORKFLOW.md)

@@ -2,6 +2,8 @@
 
 This glossary records terminology used in HuGuWeb documentation. Terms marked as **open** require formal definition before implementation.
 
+Discovery-level definitions added in Sprint 0.2 support product documentation—not database or API design.
+
 ---
 
 ## HuGuWeb
@@ -12,13 +14,150 @@ The current project and product working name. The final commercial brand or doma
 
 ## PMS (Property Management System)
 
-Industry term for software that manages hotel property operations including reservations, guest management, room inventory, and front desk operations. HuGuWeb is being designed with PMS capabilities as part of a broader hospitality-first platform. No PMS functionality is implemented yet.
+Industry term for software that manages hotel property operations including reservations, guest management, room inventory, front desk operations, and often housekeeping coordination.
+
+In HuGuWeb context: PMS capabilities are part of the broader hospitality-first platform hypothesis. PMS-centric products typically excel at guest-stay operations; HuGuWeb may extend toward connected back-office workflows. No PMS functionality is implemented yet.
 
 ---
 
 ## ERP (Enterprise Resource Planning)
 
-Industry term for integrated business management software covering finance, inventory, purchasing, HR, and other operational domains. HuGuWeb is being designed as a hospitality-first ERP / PMS platform—not a generic ERP for all industries.
+Industry term for integrated business management software covering finance, accounting, inventory, purchasing, HR, and other operational domains.
+
+In HuGuWeb context: HuGuWeb is being designed as a hospitality-first ERP / PMS platform—not a generic ERP for all industries. ERP-centric products often excel at finance and enterprise controls; HuGuWeb must evaluate Build vs Integrate rather than assuming full ERP depth early.
+
+---
+
+## Property
+
+**Status:** Open — exact HuGuWeb domain definition pending.
+
+Discovery-level meaning: a single hospitality operation (e.g., one hotel building or resort operating as one logical site).
+
+**Pending decisions:** Relationship to Tenant and Hotel Group; whether one property maps 1:1 to a tenant; multi-building/resort modeling. Do not infer database relationships from this glossary entry.
+
+See also [Future Scope](FUTURE_SCOPE.md).
+
+---
+
+## Hotel Group
+
+**Status:** Open — exact HuGuWeb domain definition pending.
+
+Discovery-level meaning: an organization that owns or manages multiple hospitality properties, potentially with centralized procurement, finance, HR policy, or reporting.
+
+**Pending decisions:** Relationship to Tenant and Property; group-level vs property-level permissions; cross-property analytics scope. Do not infer database relationships from this glossary entry.
+
+---
+
+## Tenant
+
+**Status:** Open — exact HuGuWeb domain definition pending.
+
+Discovery-level meaning: in multi-tenant software, often an isolated customer organization whose data and configuration are separated from others.
+
+In HuGuWeb's hospitality context: **tenant is not automatically equivalent to hotel/property or hotel group.** A tenant might represent a group, a single property, or another isolation boundary—this remains a Product Owner + CTO decision before implementation.
+
+Do not infer database relationships or isolation strategy from this glossary entry.
+
+---
+
+## Guest
+
+Discovery-level meaning: a person (or party) who may book, stay at, or consume services at a property.
+
+**Guest identity** (name, contact on a reservation/stay/folio) is not the same as a **Guest Profiles** capability (searchable history, preferences, repeat-guest records). Identity is implied by stay workflows; profiles remain a discovery question. HuGuWeb domain model for guest vs profile vs account is **not yet defined**.
+
+---
+
+## Reservation
+
+Discovery-level meaning: a booking or hold for guest accommodation (and potentially linked services) for specific dates or conditions. Reservations connect to availability, room assignment, and front office arrival workflows.
+
+---
+
+## Stay
+
+Discovery-level meaning: the actual guest occupation period at the property from arrival to departure, typically linked to a reservation and room assignment. Stay lifecycle drives folio, housekeeping, and checkout workflows.
+
+Exact state model (reserved vs in-house vs checked-out) is **not yet defined**.
+
+---
+
+## Room
+
+Discovery-level meaning: a sellable or assignable accommodation unit (or logical room inventory item) at a property. Rooms have status (e.g., clean, dirty, out of order) relevant to front office and housekeeping.
+
+Room types, connecting rooms, and non-room inventory are **not yet defined**.
+
+---
+
+## Folio
+
+Discovery-level meaning: the running account of guest charges and payments associated with a stay (or non-room guest account).
+
+Folio is **operational guest charging**, not full accounting. These layers are not the same product scope (none decided here):
+
+| Layer | Meaning |
+|-------|---------|
+| Operational financial events | Charge posted, discount, deposit |
+| Folio / guest charges | Running guest account during stay |
+| Payment handling | Capture, refund, pre-auth (likely integrate) |
+| Finance visibility | What is outstanding / posted today |
+| Accounting integration | Export or post to an external ledger |
+| Full statutory accounting | GL, AP/AR, tax books — HuGuWeb must **not** automatically become an accounting product |
+
+Folio vs invoice vs accounting posting boundaries are **not yet defined**.
+
+---
+
+## Housekeeping
+
+Discovery-level meaning: hotel department and workflows responsible for room cleaning, inspection, readiness status, and coordination with front office on room availability.
+
+In HuGuWeb context: a cross-department workflow area in product discovery—not an approved module name. Current Strong MVP lean is **room-readiness coordination with front office**, not a full housekeeping platform.
+
+---
+
+## OTA (Online Travel Agency)
+
+Discovery-level meaning: third-party online booking channels (e.g., major travel marketplaces) through which hotels receive reservations. OTAs typically connect via channel managers or PMS integrations rather than manual entry.
+
+HuGuWeb integration strategy: **Integrate Candidate** — see [Build vs Integrate](BUILD_VS_INTEGRATE.md).
+
+---
+
+## Channel Manager
+
+Discovery-level meaning: software that distributes rates and availability to multiple OTAs and online channels and synchronizes reservations back to the property.
+
+HuGuWeb strategy: likely integrate rather than build initially — see [Build vs Integrate](BUILD_VS_INTEGRATE.md). No vendor selected.
+
+---
+
+## POS (Point of Sale)
+
+Discovery-level meaning: system for restaurant, bar, or retail transactions, often requiring integration to guest folio or accounting.
+
+HuGuWeb strategy: **Integrate Candidate** for F&B-heavy properties — see [Build vs Integrate](BUILD_VS_INTEGRATE.md).
+
+---
+
+## Multi-property
+
+Discovery-level meaning: capability to operate or administer more than one property under related ownership or management, potentially including shared configuration, reporting, or permissions.
+
+**Status:** Strategically relevant long-term; **not** MVP scope. Tenant/Property/Hotel Group relationships must be defined before implementation. See [Future Scope](FUTURE_SCOPE.md).
+
+---
+
+## Build vs Integrate
+
+A decision framework for evaluating whether HuGuWeb should implement a capability internally or integrate with an external system.
+
+Principle: build for strategic differentiation; integrate when external maturity or compliance burden favors partners.
+
+See [Product Principles](PRODUCT_PRINCIPLES.md), [Build vs Integrate](BUILD_VS_INTEGRATE.md), and [Future Scope](FUTURE_SCOPE.md).
 
 ---
 
@@ -27,36 +166,6 @@ Industry term for integrated business management software covering finance, inve
 **Status:** Product hypothesis — not a frozen decision.
 
 A conceptual direction where hotel workflows communicate across operational boundaries (e.g., checkout affecting room status, housekeeping, folio, and invoicing). Not formally defined or implemented.
-
----
-
-## Build vs Integrate
-
-A decision framework for evaluating whether HuGuWeb should implement a capability internally or integrate with an external system. See [Product Principles](PRODUCT_PRINCIPLES.md) and [Future Scope](FUTURE_SCOPE.md).
-
----
-
-## Tenant
-
-**Status:** Open — not yet formally defined.
-
-In software architecture, "tenant" often refers to an isolated customer or organization within a multi-tenant system. In HuGuWeb's hospitality context, **tenant is not automatically equivalent to hotel/property or hotel group**. Formal definition is required before implementation.
-
----
-
-## Hotel / Property
-
-**Status:** Open — not yet formally defined.
-
-Refers to a single hospitality operation (e.g., one hotel). Must be formally defined in relation to tenant and hotel group concepts before multi-property architecture is implemented.
-
----
-
-## Hotel Group
-
-**Status:** Open — not yet formally defined.
-
-Refers to an organization managing multiple hotels or properties. Must be formally defined in relation to tenant and hotel/property concepts before multi-property architecture is implemented.
 
 ---
 
@@ -78,6 +187,14 @@ A documented record of a significant architecture decision including context, al
 
 The smallest product scope that delivers validated value to target users. HuGuWeb MVP scope is **not yet defined**.
 
+[MVP Candidates](MVP_CANDIDATES.md) lists candidates only—not approved MVP.
+
+---
+
+## Evidence Level (E0–E4)
+
+Classification of how strongly a product claim is supported. See [Evidence Model](EVIDENCE_MODEL.md).
+
 ---
 
 ## Research Area
@@ -89,3 +206,12 @@ A domain under investigation (e.g., PMS, housekeeping, finance). Research areas 
 ## Sprint
 
 A time-boxed development cycle with a defined goal, requirements, implementation, review, and approval steps. See [Development Workflow](../engineering/DEVELOPMENT_WORKFLOW.md).
+
+---
+
+## Related Documents
+
+- [Target Customer](TARGET_CUSTOMER.md)
+- [Hotel Problems](HOTEL_PROBLEMS.md)
+- [Future Scope](FUTURE_SCOPE.md)
+- [Evidence Model](EVIDENCE_MODEL.md)
