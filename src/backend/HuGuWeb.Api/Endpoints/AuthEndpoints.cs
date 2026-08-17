@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using HuGuWeb.Api.Authorization;
+using HuGuWeb.Api.Identity;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +35,11 @@ public static class AuthEndpoints
             .RequireAuthorization(AuthorizationPolicies.Authenticated)
             .AddEndpointFilter<ValidateAntiforgeryFilter>();
 
+        group.MapPatch("/preferences/language", UpdatePreferredLanguage)
+            .WithName("UpdatePreferredLanguage")
+            .RequireAuthorization(AuthorizationPolicies.Authenticated)
+            .AddEndpointFilter<ValidateAntiforgeryFilter>();
+
         return endpoints;
     }
 
@@ -43,23 +49,43 @@ public static class AuthEndpoints
         return new CsrfResponse(tokens.RequestToken!);
     }
 
-    private static SessionResponse GetSession(ClaimsPrincipal principal)
+    private static async Task<SessionResponse> GetSession(
+        ClaimsPrincipal principal,
+        UserManager<ApplicationUser> userManager)
     {
         if (principal.Identity?.IsAuthenticated != true)
         {
             return new SessionResponse(false, null);
         }
 
-        return new SessionResponse(true, ToUserResponse(principal));
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return new SessionResponse(false, null);
+        }
+
+        return new SessionResponse(true, ToUserResponse(user));
     }
 
-    private static CurrentUserResponse GetCurrentUser(ClaimsPrincipal principal) =>
-        ToUserResponse(principal);
+    private static async Task<IResult> GetCurrentUser(
+        ClaimsPrincipal principal,
+        UserManager<ApplicationUser> userManager)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Results.Problem(
+                title: "Authentication required.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        return Results.Ok(ToUserResponse(user));
+    }
 
     private static async Task<IResult> Login(
         [FromBody] LoginRequest request,
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("HuGuWeb.Api.Authentication");
@@ -89,21 +115,57 @@ public static class AuthEndpoints
         }
 
         logger.LogInformation("Sign-in succeeded for {UserId}.", user.Id);
-        return Results.Ok(new CurrentUserResponse(user.Id, user.Email));
+        return Results.Ok(ToUserResponse(user));
     }
 
-    private static async Task<IResult> Logout(SignInManager<IdentityUser> signInManager)
+    private static async Task<IResult> Logout(SignInManager<ApplicationUser> signInManager)
     {
         await signInManager.SignOutAsync();
         return Results.NoContent();
     }
 
-    private static CurrentUserResponse ToUserResponse(ClaimsPrincipal principal)
+    private static async Task<IResult> UpdatePreferredLanguage(
+        [FromBody] UpdateLanguageRequest request,
+        ClaimsPrincipal principal,
+        UserManager<ApplicationUser> userManager,
+        ILoggerFactory loggerFactory)
     {
-        var id = principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-        var email = principal.FindFirstValue(ClaimTypes.Email) ?? principal.Identity?.Name;
-        return new CurrentUserResponse(id, email);
+        var logger = loggerFactory.CreateLogger("HuGuWeb.Api.Authentication");
+
+        if (!SupportedLanguages.TryNormalize(request.Language, out var language))
+        {
+            return Results.Problem(
+                title: "The request is invalid.",
+                detail: "Language must be one of: tr, en, ru.",
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null)
+        {
+            return Results.Problem(
+                title: "Authentication required.",
+                statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        if (!string.Equals(user.PreferredLanguage, language, StringComparison.Ordinal))
+        {
+            user.PreferredLanguage = language;
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                logger.LogWarning("Language preference could not be saved for {UserId}.", user.Id);
+                return Results.Problem(
+                    title: "Language preference could not be saved.",
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        return Results.Ok(ToUserResponse(user));
     }
+
+    private static CurrentUserResponse ToUserResponse(ApplicationUser user) =>
+        new(user.Id, user.Email, user.PreferredLanguage);
 
     private static IResult AuthenticationFailed() =>
         Results.Problem(

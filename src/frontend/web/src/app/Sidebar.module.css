@@ -30,17 +30,19 @@
 .current,
 .future {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3);
   width: 100%;
   min-height: 2.4rem;
-  padding: 0 var(--space-3);
+  padding: 0.45rem var(--space-3);
   border: 0;
   border-radius: var(--radius-s);
   background: transparent;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  line-height: 1.3;
   text-align: left;
+  overflow-wrap: break-word;
 }
 
 .current svg,
@@ -103,6 +105,20 @@
 .accountHint {
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+}
+
+.language {
+  width: 100%;
+  padding-inline: var(--space-3);
+}
+
+.preferenceError {
+  margin: 0;
+  padding: 0 var(--space-3);
+  color: var(--color-danger);
+  font-size: var(--font-size-xs);
+  line-height: 1.35;
+  overflow-wrap: break-word;
 }
 
 .signOut {

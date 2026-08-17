@@ -25,7 +25,7 @@ public static class DevelopmentUserSeeder
         try
         {
             using var scope = app.Services.CreateScope();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             var existing = await userManager.FindByEmailAsync(email);
             if (existing is not null)
@@ -33,7 +33,7 @@ public static class DevelopmentUserSeeder
                 return;
             }
 
-            var user = new IdentityUser
+            var user = new ApplicationUser
             {
                 UserName = email,
                 Email = email,

@@ -14,7 +14,14 @@ public sealed class LoginRequest
     public string Password { get; set; } = string.Empty;
 }
 
-public sealed record CurrentUserResponse(string Id, string? Email);
+public sealed class UpdateLanguageRequest
+{
+    [Required]
+    [MaxLength(8)]
+    public string Language { get; set; } = string.Empty;
+}
+
+public sealed record CurrentUserResponse(string Id, string? Email, string? PreferredLanguage);
 
 public sealed record SessionResponse(bool Authenticated, CurrentUserResponse? User);
 

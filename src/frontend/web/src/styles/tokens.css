@@ -78,7 +78,7 @@
   --motion-duration-short: 150ms;
   --motion-duration-medium: 220ms;
   --motion-easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --sidebar-width: 15.75rem;
+  --sidebar-width: 16.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

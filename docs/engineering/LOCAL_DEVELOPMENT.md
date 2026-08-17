@@ -68,7 +68,7 @@ Create the identity schema with EF Core migrations. Do not use `EnsureCreated()`
 dotnet ef database update --project src/backend/HuGuWeb.Api
 ```
 
-The initial migration contains ASP.NET Core Identity tables only.
+The initial migration contains ASP.NET Core Identity tables only. A later focused migration adds nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). Apply pending migrations with the same command; do not auto-apply in Production.
 
 ## Backend
 

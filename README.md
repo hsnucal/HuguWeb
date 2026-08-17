@@ -13,7 +13,8 @@ HuGuWeb is a hospitality-first ERP / PMS platform being designed to solve real h
 | Product discovery | In progress |
 | MVP scope | Not yet defined |
 | Application foundation | **Sprint 0.3B bootstrap** (API + SPA + Identity; no hotel domain features) |
-| Product experience / design | **Sprint 0.4 documentation** (uncommitted until Product Owner + CTO review) — see `docs/design/` |
+| Product experience / design | **Sprint 0.5A UI** plus **Sprint 0.6 localization** (uncommitted until review) |
+| Localization | **Turkish, English, Russian** with persisted user language preference — see `docs/product/LOCALIZATION.md` |
 | Architecture decisions | **Accepted** (Sprint 0.3A freeze) — see `docs/architecture/` |
 | Technology stack | **Accepted** baseline; remaining items open — see `docs/architecture/TECHNOLOGY_DECISIONS.md` |
 
@@ -115,6 +116,7 @@ npm run build
 | [Testing Strategy](docs/engineering/TESTING_STRATEGY.md) | Testing philosophy |
 | [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md) | Bootstrap runbook (config, secrets, database, commands) |
 | [Design](docs/design/README.md) | Product experience and design foundation (Sprint 0.4) |
+| [Localization](docs/product/LOCALIZATION.md) | Supported languages, fallback, and user language persistence |
 | [Architecture](docs/architecture/README.md) | Architecture documentation and ADR system |
 | [Technology Decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) | Accepted stack and remaining open decisions |
 | [Competitor Analysis](docs/research/COMPETITOR_ANALYSIS.md) | Competitor research context |
@@ -127,7 +129,7 @@ npm run build
 
 - **Product working name:** HuGuWeb
 - **GitHub repository:** [hsnucal/HuguWeb](https://github.com/hsnucal/HuguWeb)
-- **Current development stage:** Sprint 0.4 — Product Experience & Design Foundation (documentation uncommitted until Product Owner + CTO review)
+- **Current development stage:** Sprint 0.6 — Localization & User Preferences Foundation (uncommitted until review)
 
 ---
 

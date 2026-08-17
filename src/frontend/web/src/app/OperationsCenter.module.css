@@ -14,9 +14,10 @@
 .sectionTitle {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-text-muted);
+  overflow-wrap: break-word;
 }
 
 .today {
@@ -34,7 +35,7 @@
     'label value'
     'detail value';
   column-gap: var(--space-4);
-  align-items: center;
+  align-items: start;
   min-height: 3.85rem;
   padding: var(--space-3) var(--space-5);
   border-left: 1px solid var(--color-border-subtle);
@@ -48,6 +49,7 @@
   grid-area: label;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  overflow-wrap: break-word;
 }
 
 .todayValue {
@@ -67,6 +69,7 @@
   grid-area: detail;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
+  overflow-wrap: break-word;
 }
 
 .columns {
@@ -126,9 +129,10 @@
 
 .attentionHead {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .location {
@@ -139,12 +143,14 @@
 .summary {
   margin-top: 0.15rem;
   font-size: var(--font-size-sm);
+  overflow-wrap: break-word;
 }
 
 .reason {
   margin-top: 0.1rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  overflow-wrap: break-word;
 }
 
 .rail {
@@ -202,6 +208,7 @@
 .snapshotLabel {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  overflow-wrap: break-word;
 }
 
 .upcoming {
@@ -211,7 +218,7 @@
 
 .upcomingItem {
   display: grid;
-  grid-template-columns: 3.5rem minmax(0, 1fr);
+  grid-template-columns: minmax(3.5rem, auto) minmax(0, 1fr);
   gap: var(--space-3);
   padding: var(--space-2) 0;
   border-top: 1px solid var(--color-border-subtle);

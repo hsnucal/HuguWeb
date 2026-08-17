@@ -8,75 +8,101 @@
 
 export type PrototypeSummaryCard = {
   id: string
-  label: string
-  value: string
-  detail: string
+  labelKey: string
+  value: number
+  detailKey: string
+  detailTime?: { hours: number; minutes: number }
+  detailCount?: number
   emphasis?: 'warning'
 }
 
 export type PrototypeAttentionItem = {
   id: string
-  location: string
-  summary: string
-  reason: string
-  urgencyLabel: string
+  roomNumber: string
+  summaryKey: string
+  reasonKey: string
+  reasonTime?: { hours: number; minutes: number }
+  urgencyLabelKey: string
   urgency: 'warning' | 'info' | 'danger'
 }
 
 export type PrototypeSnapshotItem = {
   id: string
-  label: string
-  count: string
+  labelKey: string
+  count: number
   tone: 'neutral' | 'info' | 'warning' | 'success'
 }
 
 export type PrototypeUpcomingItem = {
   id: string
-  time: string
-  detail: string
+  hours: number
+  minutes: number
+  detailKey: string
+  count?: number
+  room?: string
 }
 
 export const prototypeToday: PrototypeSummaryCard[] = [
-  { id: 'arrivals', label: 'Arrivals', value: '12', detail: 'Peak around 14:00' },
-  { id: 'departures', label: 'Departures', value: '9', detail: 'Until 11:00' },
-  { id: 'not-ready', label: 'Rooms not ready', value: '4', detail: '2 due before next arrival', emphasis: 'warning' },
+  {
+    id: 'arrivals',
+    labelKey: 'operations.arrivals',
+    value: 12,
+    detailKey: 'operations.arrivalsDetail',
+    detailTime: { hours: 14, minutes: 0 },
+  },
+  {
+    id: 'departures',
+    labelKey: 'operations.departures',
+    value: 9,
+    detailKey: 'operations.departuresDetail',
+    detailTime: { hours: 11, minutes: 0 },
+  },
+  {
+    id: 'not-ready',
+    labelKey: 'operations.roomsNotReady',
+    value: 4,
+    detailKey: 'operations.roomsNotReadyDetail',
+    detailCount: 2,
+    emphasis: 'warning',
+  },
 ]
 
 export const prototypeAttention: PrototypeAttentionItem[] = [
   {
     id: '214',
-    location: 'Room 214',
-    summary: 'Arrival approaching — room not ready',
-    reason: 'Guest arrival at 15:00 · cleaning delayed',
-    urgencyLabel: 'Time-sensitive',
+    roomNumber: '214',
+    summaryKey: 'operations.arrivalNotReady',
+    reasonKey: 'operations.arrivalNotReadyReason',
+    reasonTime: { hours: 15, minutes: 0 },
+    urgencyLabelKey: 'operations.timeSensitive',
     urgency: 'warning',
   },
   {
     id: '307',
-    location: 'Room 307',
-    summary: 'Supervisor inspection waiting',
-    reason: 'Cleaning finished · waiting on supervisor',
-    urgencyLabel: 'Waiting',
+    roomNumber: '307',
+    summaryKey: 'operations.inspectionWaiting',
+    reasonKey: 'operations.inspectionWaitingReason',
+    urgencyLabelKey: 'operations.waiting',
     urgency: 'info',
   },
   {
     id: '118',
-    location: 'Room 118',
-    summary: 'Maintenance issue blocking readiness',
-    reason: 'Open fault · room cannot be prepared',
-    urgencyLabel: 'Blocking',
+    roomNumber: '118',
+    summaryKey: 'operations.maintenanceBlocking',
+    reasonKey: 'operations.maintenanceBlockingReason',
+    urgencyLabelKey: 'operations.blocking',
     urgency: 'danger',
   },
 ]
 
 export const prototypeSnapshot: PrototypeSnapshotItem[] = [
-  { id: 'dirty', label: 'Dirty', count: '8', tone: 'neutral' },
-  { id: 'cleaning', label: 'Cleaning', count: '11', tone: 'info' },
-  { id: 'inspection', label: 'Inspection', count: '3', tone: 'warning' },
-  { id: 'ready', label: 'Ready', count: '42', tone: 'success' },
+  { id: 'dirty', labelKey: 'operations.dirty', count: 8, tone: 'neutral' },
+  { id: 'cleaning', labelKey: 'operations.cleaning', count: 11, tone: 'info' },
+  { id: 'inspection', labelKey: 'operations.inspection', count: 3, tone: 'warning' },
+  { id: 'ready', labelKey: 'operations.ready', count: 42, tone: 'success' },
 ]
 
 export const prototypeUpcoming: PrototypeUpcomingItem[] = [
-  { id: 'group', time: '16:00', detail: 'Group arrival · 18 rooms' },
-  { id: 'vip', time: '18:00', detail: 'VIP arrival · 501' },
+  { id: 'group', hours: 16, minutes: 0, detailKey: 'operations.groupArrival', count: 18 },
+  { id: 'vip', hours: 18, minutes: 0, detailKey: 'operations.vipArrival', room: '501' },
 ]

@@ -21,3 +21,10 @@ export async function logout(): Promise<void> {
   await apiRequest<void>('/api/auth/logout', { method: 'POST' })
   setCsrfToken(null)
 }
+
+export async function updatePreferredLanguage(language: string): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>('/api/auth/preferences/language', {
+    method: 'PATCH',
+    body: JSON.stringify({ language }),
+  })
+}

@@ -152,7 +152,7 @@
 }
 
 .statement {
-  max-width: 17.5rem;
+  max-width: 22rem;
   color: var(--color-text-secondary);
   font-size: var(--font-size-lg);
   line-height: 1.45;
@@ -169,6 +169,20 @@
 .card {
   width: min(100%, 24.5rem);
   padding: 2.25rem var(--space-8);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.language {
+  flex: 0 0 auto;
+  width: 8.5rem;
+  margin-top: 0.2rem;
 }
 
 .welcome {

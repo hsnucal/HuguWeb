@@ -1,22 +1,26 @@
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router'
 import { useAuthSession } from './AuthContext'
+import { selectLanguageLocal } from '../i18n/preference'
 import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
+import { LanguageSelect } from '../ui/LanguageSelect'
 import { SessionNotice } from '../ui/SessionNotice'
 import { Surface } from '../ui/Surface'
 import { TextField } from '../ui/TextField'
 import styles from './LoginPage.module.css'
 
 export function LoginPage() {
+  const { t } = useTranslation()
   const { status, signIn } = useAuthSession()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [failed, setFailed] = useState(false)
 
   if (status === 'checking') {
-    return <SessionNotice>Checking session…</SessionNotice>
+    return <SessionNotice>{t('auth.checkingSession')}</SessionNotice>
   }
 
   if (status === 'authenticated') {
@@ -29,13 +33,13 @@ export function LoginPage() {
       return
     }
 
-    setError(null)
+    setFailed(false)
     setSubmitting(true)
 
     try {
       await signIn(email, password)
     } catch {
-      setError('Sign-in failed. Check your details and try again.')
+      setFailed(true)
     } finally {
       setSubmitting(false)
     }
@@ -61,24 +65,34 @@ export function LoginPage() {
               <p className={styles.wordmark}>HuGuWeb</p>
             </div>
             <div className={styles.rule} />
-            <p className={styles.statement}>Hotel operations, in one calm workspace.</p>
+            <p className={styles.statement}>{t('auth.hotelOperations')}</p>
           </div>
         </section>
 
         <section className={styles.auth}>
           <Surface className={styles.card} raised>
-            <h1 className={styles.welcome}>Welcome back</h1>
-            <p className={styles.lead}>Sign in to continue to HuGuWeb.</p>
+            <div className={styles.cardHeader}>
+              <div>
+                <h1 className={styles.welcome}>{t('auth.welcomeBack')}</h1>
+                <p className={styles.lead}>{t('auth.signInToContinue')}</p>
+              </div>
+              <LanguageSelect
+                id="login-language"
+                className={styles.language}
+                disabled={submitting}
+                onChange={selectLanguageLocal}
+              />
+            </div>
 
             <form
               className={styles.form}
               onSubmit={onSubmit}
               aria-busy={submitting}
-              aria-describedby={error ? 'login-error' : undefined}
+              aria-describedby={failed ? 'login-error' : undefined}
             >
               <TextField
                 id="email"
-                label="Email"
+                label={t('auth.email')}
                 name="email"
                 type="email"
                 autoComplete="username"
@@ -89,7 +103,7 @@ export function LoginPage() {
               />
               <TextField
                 id="password"
-                label="Password"
+                label={t('auth.password')}
                 name="password"
                 type="password"
                 autoComplete="current-password"
@@ -99,14 +113,14 @@ export function LoginPage() {
                 disabled={submitting}
               />
 
-              {error ? (
+              {failed ? (
                 <p className={styles.error} id="login-error" role="alert">
-                  {error}
+                  {t('auth.signInFailed')}
                 </p>
               ) : null}
 
               <Button type="submit" disabled={submitting}>
-                {submitting ? 'Signing in…' : 'Sign in'}
+                {submitting ? t('auth.signingIn') : t('auth.signIn')}
               </Button>
             </form>
           </Surface>

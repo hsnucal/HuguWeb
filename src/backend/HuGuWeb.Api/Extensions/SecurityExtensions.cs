@@ -17,7 +17,7 @@ public static class SecurityExtensions
             : CookieSecurePolicy.Always;
 
         builder.Services
-            .AddIdentity<IdentityUser, IdentityRole>(options =>
+            .AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.User.RequireUniqueEmail = true;
                 options.Password.RequiredLength = 12;
@@ -91,7 +91,7 @@ public static class SecurityExtensions
 
                 policy
                     .WithHeaders("Content-Type", "X-XSRF-TOKEN", "X-Correlation-ID")
-                    .WithMethods("GET", "POST", "HEAD", "OPTIONS");
+                    .WithMethods("GET", "POST", "PATCH", "HEAD", "OPTIONS");
             });
         });
 

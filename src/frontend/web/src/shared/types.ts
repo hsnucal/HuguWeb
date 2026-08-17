@@ -10,6 +10,7 @@ export type ProblemDetails = {
 export type CurrentUser = {
   id: string
   email: string | null
+  preferredLanguage: string | null
 }
 
 export type SessionResponse = {
