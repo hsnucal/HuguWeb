@@ -1,6 +1,6 @@
 # Testing Strategy
 
-This document defines HuGuWeb's testing philosophy. **Testing frameworks and tools are not yet selected.**
+This document defines HuGuWeb's testing philosophy. **Testing frameworks and tools are not yet selected.** The testing *direction* below is frozen as of the Sprint 0.3A Architecture Freeze.
 
 ---
 
@@ -11,6 +11,22 @@ Testing protects **business behavior**, not code coverage metrics.
 HuGuWeb tests should give confidence that hotel operational workflows behave correctly, that changes do not introduce regressions, and that bug fixes stay fixed.
 
 Do **not** optimize for meaningless coverage percentages.
+
+---
+
+## Bootstrap Testing Direction
+
+Frozen as of Sprint 0.3A. Frameworks remain selectable at implementation.
+
+| Category | When |
+|----------|------|
+| **Unit tests** | At project bootstrap |
+| **Architecture tests** | At project bootstrap |
+| **PostgreSQL integration tests** | When persistence is introduced |
+| **API integration tests** | When API behavior exists |
+| **End-to-end tests** | Only after real critical workflows exist |
+
+Do not optimize for coverage percentage.
 
 ---
 
@@ -78,7 +94,7 @@ The following are intentionally deferred:
 - Test data management strategy
 - Performance/load testing approach
 
-These will be selected during Phase 2 (Architecture & Technology Decisions) or when MVP development begins, subject to ADR approval.
+These will be selected when MVP development begins, subject to ADR approval. The *categories* and timing above are already frozen.
 
 ---
 

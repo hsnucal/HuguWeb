@@ -57,15 +57,58 @@ Future architecture should encourage:
 - Impact analysis
 - Predictable side effects
 
-Do **not** design the actual module architecture yet. This principle guides future decisions.
+Do **not** define final business modules yet. This principle guides how those modules will be isolated when product scope is approved.
 
 ---
 
-## Modular Monolith (Candidate)
+## Modular Monolith (Accepted)
 
-A **Modular Monolith** is currently considered a strong architectural candidate—a single deployable application with well-isolated internal modules and explicit boundaries.
+HuGuWeb uses a **Modular Monolith with Clean Architecture boundaries** — a single deployable backend with well-isolated internal modules, explicit contracts, and inward-flowing dependencies. See [ADR-001](../architecture/adr/ADR-001-Architecture-Style.md).
 
-**This is not an approved architecture decision.** It must be evaluated and recorded via ADR when the time comes.
+Frozen constraints:
+
+- one deployable backend initially
+- explicit module boundaries
+- modules depend on contracts, not internals
+- no microservices at bootstrap
+- no premature distributed architecture
+
+Final business modules are **not** defined yet.
+
+---
+
+## Architecture Guardrails
+
+### BuildingBlocks / Common
+
+A shared `BuildingBlocks` / `Common` area must **not** become a dumping ground.
+
+Only add shared primitives when:
+
+- at least two real approved modules need them
+- the concept is truly cross-cutting
+- ownership is clear
+
+Prefer duplication over premature abstraction when the abstraction is not proven. Do not create the BuildingBlocks project until implementation is authorized and the need is real.
+
+### Database ownership
+
+Module ownership is initially **logical**, not necessarily physically isolated.
+
+Do not require at bootstrap:
+
+- database-per-module
+- PostgreSQL schema-per-module
+- distributed transactions
+
+Physical isolation may be strengthened later only when justified.
+
+### Multi-property
+
+- Initial product focus remains single-property independent mid-size hotels
+- Multi-property remains strategic future scope
+- Initial architecture should avoid making future multi-property impossible
+- Do **not** implement tenant infrastructure now
 
 ---
 
@@ -74,12 +117,19 @@ A **Modular Monolith** is currently considered a strong architectural candidate�
 HuGuWeb should avoid premature adoption of the following unless future requirements and an approved ADR justify them:
 
 - Microservices
-- Distributed systems
-- Event streaming infrastructure
-- Message brokers
 - Kubernetes
+- Kafka
+- RabbitMQ
 - Event Sourcing
 - CQRS everywhere
+- Generic workflow engine
+- Redis without evidence
+- GraphQL-first
+- gRPC-first
+- Custom crypto
+- Full multi-tenancy platform
+- Premature cloud abstraction frameworks
+- Distributed systems without evidence
 - Unnecessary abstraction layers
 - Speculative generic frameworks
 - Infrastructure introduced only for hypothetical scale
@@ -88,28 +138,44 @@ Introducing any of the above without product justification increases complexity,
 
 ---
 
-## Technology Decisions Explicitly Deferred
+## Accepted Technology Decisions
 
-The following decisions are **intentionally not approved** during the foundation stage:
+Sprint 0.3A Architecture Freeze accepted the following. Do not install, scaffold, or implement until a later sprint authorizes implementation.
 
 | Category | Status |
 |----------|--------|
-| .NET version | Not selected |
-| Backend framework | Not selected |
-| Frontend framework | Not selected |
-| Database | Not selected |
-| ORM | Not selected |
-| Authentication provider | Not selected |
-| Cloud provider | Not selected |
-| Container platform | Not selected |
-| Caching technology | Not selected |
-| Message broker | Not selected |
-| Mobile framework | Not selected |
-| CI/CD platform | Not selected |
-| Observability vendor | Not selected |
-| Multi-tenancy implementation | Not selected |
+| Architecture style | **Accepted** — Modular monolith with Clean Architecture — [ADR-001](../architecture/adr/ADR-001-Architecture-Style.md) |
+| .NET version | **Accepted** (.NET 10 LTS) — [ADR-002](../architecture/adr/ADR-002-Backend-Platform.md) |
+| Backend framework | **Accepted** (ASP.NET Core) — ADR-002 |
+| Frontend | **Accepted** (React 19 SPA + Vite 8 + TypeScript; not Next.js; not Blazor) — [ADR-003](../architecture/adr/ADR-003-Frontend-Architecture.md) |
+| Database | **Accepted** (PostgreSQL 18) — [ADR-004](../architecture/adr/ADR-004-Primary-Database.md) |
+| Data access | **Accepted** (EF Core 10; raw SQL where justified; no Dapper at bootstrap) — [ADR-005](../architecture/adr/ADR-005-Data-Access.md) |
+| API style | **Accepted** (REST-first JSON HTTP + OpenAPI) — [ADR-006](../architecture/adr/ADR-006-API-Style.md) |
+| Authentication | **Accepted** (ASP.NET Core Identity in-app) — [ADR-007](../architecture/adr/ADR-007-Authentication-Strategy.md) |
+| Authorization | **Accepted** (permission-based, ASP.NET policies; roles as bundles) — [ADR-008](../architecture/adr/ADR-008-Authorization-Strategy.md) |
+| Cloud strategy | **Accepted** (provider-neutral; no vendor) — [ADR-009](../architecture/adr/ADR-009-Cloud-Strategy.md) |
 
-Do not install, scaffold, or implement any of the above until approved via ADR and sprint authorization.
+See [Technology Decisions](../architecture/TECHNOLOGY_DECISIONS.md).
+
+---
+
+## Technology Decisions Explicitly Deferred
+
+The following remain **open**. Do not treat them as accepted.
+
+| Category | Status |
+|----------|--------|
+| Final business module boundaries | Not defined |
+| Multi-tenancy implementation | Not selected — analysis and guardrails only |
+| Mobile technology | Not selected (future scope) |
+| Cloud provider | Not selected |
+| Caching technology | Not selected — none at bootstrap |
+| Message broker | Not selected — none at bootstrap |
+| Background job library | Not selected — none at bootstrap |
+| External OIDC vendor | Not selected |
+| Observability vendor | Not selected — OpenTelemetry-compatible foundation is required at bootstrap |
+| CI/CD platform | Not selected |
+| Container platform | Not selected |
 
 ---
 
@@ -118,4 +184,5 @@ Do not install, scaffold, or implement any of the above until approved via ADR a
 - [Development Workflow](DEVELOPMENT_WORKFLOW.md)
 - [Testing Strategy](TESTING_STRATEGY.md)
 - [Architecture](../architecture/README.md)
+- [Technology Decisions](../architecture/TECHNOLOGY_DECISIONS.md)
 - [ADR Template](../architecture/adr/ADR-TEMPLATE.md)

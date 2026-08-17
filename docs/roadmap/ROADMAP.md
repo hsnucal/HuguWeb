@@ -13,7 +13,7 @@
 - Product vision, principles, and glossary
 - Engineering principles and development workflow
 - Testing strategy philosophy
-- Architecture documentation and ADR system (template only—no approved ADRs)
+- Architecture documentation and ADR system (Sprint 0.3A Architecture Freeze — ADRs **Accepted**; implementation not authorized)
 - Roadmap and future scope documentation
 
 ### Sprint 0.2 additions (Product Definition & Research Consolidation)
@@ -28,11 +28,20 @@
 - Evidence model for scope decisions → [Evidence Model](../product/EVIDENCE_MODEL.md)
 - Market research ERP/PMS distinction → [Market Research](../research/MARKET_RESEARCH.md)
 
+### Sprint 0.3A additions (Architecture & Technology Decision Analysis and Freeze)
+
+- ADRs **Accepted** by Product Owner and CTO on 2026-08-17 → [ADR index](../architecture/adr/README.md)
+- Technology decision summary → [Technology Decisions](../architecture/TECHNOLOGY_DECISIONS.md)
+
+Sprint 0.3A freezes the architecture and technology baseline listed in those ADRs. It does **not** freeze MVP scope, define final business modules, select a cloud provider, or authorize application code.
+
+Remaining open decisions include: final business module boundaries, multi-tenancy implementation, mobile technology, cloud provider, caching technology, message broker, background job library, external OIDC vendor, observability vendor, and CI/CD platform.
+
 ### Phase 0 constraints (unchanged)
 
-No application code, technology selection, or MVP implementation during this phase.
+No application code, scaffolding, dependency installation, or MVP implementation during this phase.
 
-No architecture or stack decisions (Phase 2).
+Accepted ADRs are architecture approval for the listed baseline. They do not authorize scaffolding or application code in Phase 0.
 
 ---
 
@@ -61,26 +70,28 @@ Define product scope based on research and evidence:
 
 ### Phase 1 does not include
 
-- Technology selection
-- Architecture approval
 - Application implementation
+- Reopening accepted Sprint 0.3A ADRs without revisit conditions
+- Defining final business module boundaries as a substitute for MVP scope freeze
 
 ---
 
 ## Phase 2 — Architecture & Technology Decisions
 
-Make and document approved architecture and technology decisions:
+Sprint 0.3A accepted the architecture style and core stack (modular monolith, ASP.NET Core / .NET 10, React SPA, PostgreSQL, EF Core, REST + OpenAPI, Identity, permission-based authorization, provider-neutral cloud strategy).
 
-- Evaluate Modular Monolith and alternatives via ADR
-- Select backend, frontend, database, and infrastructure stack
-- Define module boundaries and integration architecture
-- Evaluate multi-property requirements for architectural impact
-- Select testing frameworks and CI/CD approach
-- Define security and observability approach
+Remaining Phase 2 work (still open):
 
-All significant decisions recorded as ADRs.
+- Define **business module boundaries** after MVP scope is approved (Phase 1)
+- Evaluate multi-property requirements for architectural impact (do not implement tenant infrastructure)
+- Select testing **frameworks** (testing *direction* is frozen; libraries are not)
+- Select CI/CD approach
+- Select a cloud **provider** when hosting evidence exists
+- Record later ADRs for caching, brokers, background job libraries, external OIDC, and observability vendors if needed
 
-**No Phase 2 work should begin before Phase 1 MVP scope freeze.**
+All significant remaining decisions recorded as ADRs.
+
+**No implementation should begin before a sprint authorizes it.** MVP scope freeze (Phase 1) remains independent: the accepted stack does not define product modules.
 
 ---
 

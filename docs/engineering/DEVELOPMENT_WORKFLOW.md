@@ -98,7 +98,7 @@ During the foundation stage, documentation changes are left in the working tree 
 
 Significant architecture decisions must be recorded as Architecture Decision Records (ADRs). See [Architecture](../architecture/README.md) and [ADR Template](../architecture/adr/ADR-TEMPLATE.md).
 
-No major architecture decision has been formally frozen yet.
+Sprint 0.3A Architecture Freeze accepted the ADRs listed in [Architecture](../architecture/README.md). Remaining open decisions (module boundaries, cloud provider, CI/CD, and similar) are recorded in [Technology Decisions](../architecture/TECHNOLOGY_DECISIONS.md). Implementation is still not authorized in this phase.
 
 ---
 

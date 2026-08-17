@@ -6,25 +6,35 @@ This directory contains HuGuWeb architecture documentation and the Architecture 
 
 ## Current Status
 
-**No major architecture decision has been formally approved yet.**
+**Sprint 0.3A Architecture Freeze is Accepted.** Product Owner and CTO approved the architecture and technology baseline on 2026-08-17.
 
-HuGuWeb is in product discovery and foundation stage. Technology stack, deployment model, and module structure are not yet defined.
+HuGuWeb remains in product discovery and foundation stage. Application code, scaffolding, and stack installation have **not** started. Accepted ADRs authorize the *direction*; they do not authorize implementation in this sprint.
+
+See [TECHNOLOGY_DECISIONS.md](TECHNOLOGY_DECISIONS.md) for the accepted matrix and remaining open decisions.
 
 ---
 
-## Architectural Direction (Not Approved)
-
-The following represent **candidates and principles**, not frozen decisions:
+## Accepted Architectural Direction
 
 | Topic | Status |
 |-------|--------|
-| Modular Monolith | Strong candidate — not approved |
-| Microservices | Avoid unless ADR justifies |
-| Multi-tenancy | Not designed — concepts require formal definition |
-| Event Sourcing / CQRS | Avoid unless ADR justifies |
+| Modular Monolith with Clean Architecture boundaries | **Accepted** — [ADR-001](adr/ADR-001-Architecture-Style.md) |
+| ASP.NET Core on .NET 10 LTS | **Accepted** — [ADR-002](adr/ADR-002-Backend-Platform.md) |
+| React 19 + TypeScript + Vite 8 SPA | **Accepted** — [ADR-003](adr/ADR-003-Frontend-Architecture.md) |
+| PostgreSQL 18 | **Accepted** — [ADR-004](adr/ADR-004-Primary-Database.md) |
+| EF Core 10 | **Accepted** — [ADR-005](adr/ADR-005-Data-Access.md) |
+| REST-first JSON HTTP + OpenAPI | **Accepted** — [ADR-006](adr/ADR-006-API-Style.md) |
+| ASP.NET Core Identity | **Accepted** — [ADR-007](adr/ADR-007-Authentication-Strategy.md) |
+| Permission-based authorization | **Accepted** — [ADR-008](adr/ADR-008-Authorization-Strategy.md) |
+| Provider-neutral cloud strategy | **Accepted** — [ADR-009](adr/ADR-009-Cloud-Strategy.md) |
+| Microservices | Avoid unless a later ADR justifies — rejected for current stage in ADR-001 |
+| Multi-tenancy implementation | Not designed — remains open |
+| Event Sourcing / CQRS everywhere | Avoid unless ADR justifies |
 | Message brokers / event streaming | Avoid unless ADR justifies |
 
-See [Engineering Principles](../engineering/ENGINEERING_PRINCIPLES.md) for full guidance on premature architecture avoidance.
+Final business module boundaries, cloud provider, mobile technology, caching technology, message broker, background job library, external OIDC vendor, observability vendor, and CI/CD platform remain **open**.
+
+See [Engineering Principles](../engineering/ENGINEERING_PRINCIPLES.md) for guardrails and premature-architecture avoidance.
 
 ---
 
@@ -34,13 +44,23 @@ A first-class engineering requirement:
 
 > A change or bug fix in one business area should have the smallest reasonable impact on unrelated business areas.
 
-Future architecture should encourage module isolation, explicit contracts, dependency boundaries, and controlled database evolution. The actual module architecture is **not designed yet**.
+Architecture should encourage module isolation, explicit contracts, dependency boundaries, and controlled database evolution. Final business module boundaries are **not designed yet**.
 
 ---
 
-## Multi-Property Consideration
+## Guardrails
 
-Hotel chains and multi-property management are strategically relevant. Future architecture decisions should evaluate multi-property requirements early enough to avoid expensive redesign.
+### BuildingBlocks / Common
+
+A shared `BuildingBlocks` / `Common` area must not become a dumping ground. Add shared primitives only when at least two real approved modules need them, the concept is truly cross-cutting, and ownership is clear. Prefer duplication over premature abstraction.
+
+### Database ownership
+
+Module ownership is initially **logical**, not necessarily physically isolated. Do not require database-per-module, PostgreSQL schema-per-module, or distributed transactions at bootstrap.
+
+### Multi-property
+
+Initial product focus remains single-property independent mid-size hotels. Multi-property remains strategic future scope. Architecture should avoid making future multi-property impossible. Do **not** implement tenant infrastructure now.
 
 The following concepts are **not** automatically equivalent and must be formally defined before implementation:
 
@@ -69,18 +89,21 @@ Significant architecture decisions must be documented as ADRs in [`adr/`](adr/).
 | [ADR README](adr/README.md) | How to use the ADR system |
 | [ADR Template](adr/ADR-TEMPLATE.md) | Template for new ADRs |
 
-Do not create ADRs for decisions that have not been formally made.
+Proposed ADRs may be recorded for review. Do not mark them Accepted without Product Owner + CTO approval. Do not create ADRs for trivial implementation choices.
 
 ---
 
-## Technology Decisions Deferred
+## Technology Decisions
 
-All technology selections are open. See [Engineering Principles — Technology Decisions Explicitly Deferred](../engineering/ENGINEERING_PRINCIPLES.md#technology-decisions-explicitly-deferred).
+The Sprint 0.3A stack and architecture style are **Accepted**. Remaining items (cloud provider, CI/CD, mobile, caching product, brokers, and similar) stay open.
+
+See [TECHNOLOGY_DECISIONS.md](TECHNOLOGY_DECISIONS.md) and [Engineering Principles](../engineering/ENGINEERING_PRINCIPLES.md).
 
 ---
 
 ## Related Documents
 
+- [Technology Decisions](TECHNOLOGY_DECISIONS.md)
 - [Engineering Principles](../engineering/ENGINEERING_PRINCIPLES.md)
 - [Testing Strategy](../engineering/TESTING_STRATEGY.md)
 - [Product Vision](../product/PRODUCT_VISION.md)

@@ -13,8 +13,8 @@ HuGuWeb is a hospitality-first ERP / PMS platform being designed to solve real h
 | Product discovery | In progress |
 | MVP scope | Not yet defined |
 | Application code | Not started |
-| Architecture decisions | Not yet approved |
-| Technology stack | Not yet selected |
+| Architecture decisions | **Accepted** (Sprint 0.3A freeze) — see `docs/architecture/` |
+| Technology stack | **Accepted** baseline; remaining items open — see `docs/architecture/TECHNOLOGY_DECISIONS.md` |
 
 No production application functionality exists yet. This repository currently holds product and engineering foundation documentation.
 
@@ -44,7 +44,7 @@ HuGuWeb engineering prioritizes:
 
 > Architecture is a tool for product delivery, not the product itself.
 
-A **Modular Monolith** is currently considered a strong architectural candidate, but it is **not yet an approved architecture decision**.
+A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [ADR-001](docs/architecture/adr/ADR-001-Architecture-Style.md). Final business modules are not defined yet.
 
 ---
 
@@ -60,6 +60,7 @@ A **Modular Monolith** is currently considered a strong architectural candidate,
 | [Development Workflow](docs/engineering/DEVELOPMENT_WORKFLOW.md) | Roles, sprint lifecycle, and collaboration model |
 | [Testing Strategy](docs/engineering/TESTING_STRATEGY.md) | Testing philosophy (frameworks not yet selected) |
 | [Architecture](docs/architecture/README.md) | Architecture documentation and ADR system |
+| [Technology Decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) | Accepted stack and remaining open decisions |
 | [Competitor Analysis](docs/research/COMPETITOR_ANALYSIS.md) | Competitor research context |
 | [Market Research](docs/research/MARKET_RESEARCH.md) | Market research notes |
 | [Roadmap](docs/roadmap/ROADMAP.md) | High-level project phases |
@@ -70,7 +71,7 @@ A **Modular Monolith** is currently considered a strong architectural candidate,
 
 - **Product working name:** HuGuWeb
 - **GitHub repository:** [hsnucal/HuguWeb](https://github.com/hsnucal/HuguWeb)
-- **Current development stage:** Sprint 0.1 — Repository & Documentation Foundation
+- **Current development stage:** Sprint 0.3A — Architecture Freeze (**Accepted** ADRs; implementation not authorized)
 
 ---
 

@@ -29,9 +29,12 @@ Create an ADR when a decision has significant and lasting impact, such as:
 
 Do **not** create ADRs for:
 
-- Decisions not yet made
 - Trivial implementation choices with no architectural impact
 - Product scope decisions (document those in product docs)
+
+Proposed ADRs may be written for Product Owner + CTO review. Do not mark them Accepted without that approval.
+
+Sprint 0.3A ADRs listed below were Accepted by Product Owner and CTO on 2026-08-17.
 
 ---
 
@@ -41,8 +44,8 @@ Use sequential numbering with a descriptive slug:
 
 ```text
 adr/
-├── ADR-001-modular-monolith-evaluation.md
-├── ADR-002-database-selection.md
+├── ADR-001-Architecture-Style.md
+├── ADR-002-Backend-Platform.md
 └── ...
 ```
 
@@ -63,7 +66,21 @@ Use the [ADR Template](ADR-TEMPLATE.md) for all new records.
 
 ## Current ADRs
 
-No ADRs have been created yet. No major architecture decision has been formally frozen.
+Sprint 0.3A Architecture Freeze: the following ADRs are **Accepted**. Open decisions (module boundaries, cloud provider, mobile, caching product, brokers, CI/CD, and similar) are recorded in [Technology Decisions](../TECHNOLOGY_DECISIONS.md).
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| [ADR-001](ADR-001-Architecture-Style.md) | Architecture Style | Accepted |
+| [ADR-002](ADR-002-Backend-Platform.md) | Backend Platform | Accepted |
+| [ADR-003](ADR-003-Frontend-Architecture.md) | Frontend Architecture | Accepted |
+| [ADR-004](ADR-004-Primary-Database.md) | Primary Database | Accepted |
+| [ADR-005](ADR-005-Data-Access.md) | Data Access | Accepted |
+| [ADR-006](ADR-006-API-Style.md) | API Style | Accepted |
+| [ADR-007](ADR-007-Authentication-Strategy.md) | Authentication Strategy | Accepted |
+| [ADR-008](ADR-008-Authorization-Strategy.md) | Authorization Strategy | Accepted |
+| [ADR-009](ADR-009-Cloud-Strategy.md) | Cloud Strategy | Accepted |
+
+Summary matrix: [Technology Decisions](../TECHNOLOGY_DECISIONS.md).
 
 ---
 
@@ -71,4 +88,5 @@ No ADRs have been created yet. No major architecture decision has been formally 
 
 - [ADR Template](ADR-TEMPLATE.md)
 - [Architecture README](../README.md)
+- [Technology Decisions](../TECHNOLOGY_DECISIONS.md)
 - [Engineering Principles](../../engineering/ENGINEERING_PRINCIPLES.md)

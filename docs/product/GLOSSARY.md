@@ -171,9 +171,9 @@ A conceptual direction where hotel workflows communicate across operational boun
 
 ## Modular Monolith
 
-**Status:** Architectural candidate — not an approved decision.
+**Status:** Accepted in [ADR-001](../architecture/adr/ADR-001-Architecture-Style.md).
 
-An architectural approach combining modular internal structure with a single deployable application. Currently considered a strong candidate for HuGuWeb but not yet approved via ADR.
+An architectural approach combining modular internal structure with a single deployable application. Final business module boundaries are **not** defined yet.
 
 ---
 
