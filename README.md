@@ -12,11 +12,11 @@ HuGuWeb is a hospitality-first ERP / PMS platform being designed to solve real h
 |--------|--------|
 | Product discovery | In progress |
 | MVP scope | Not yet defined |
-| Application code | Not started |
+| Application foundation | **Sprint 0.3B bootstrap** (API + SPA + Identity; no hotel domain features) |
 | Architecture decisions | **Accepted** (Sprint 0.3A freeze) — see `docs/architecture/` |
 | Technology stack | **Accepted** baseline; remaining items open — see `docs/architecture/TECHNOLOGY_DECISIONS.md` |
 
-No production application functionality exists yet. This repository currently holds product and engineering foundation documentation.
+Hotel operational functionality is not implemented. The repository now contains a lean application foundation that can build, run, and test.
 
 ---
 
@@ -44,7 +44,60 @@ HuGuWeb engineering prioritizes:
 
 > Architecture is a tool for product delivery, not the product itself.
 
-A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [ADR-001](docs/architecture/adr/ADR-001-Architecture-Style.md). Final business modules are not defined yet.
+A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [ADR-001](docs/architecture/adr/ADR-001-Architecture-Style.md). Final business modules are not defined yet. Empty module projects are not created until approved functionality exists.
+
+---
+
+## Repository Structure
+
+```text
+/
+├── src/
+│   ├── backend/HuGuWeb.Api/
+│   └── frontend/web/
+├── tests/
+│   ├── HuGuWeb.ArchitectureTests/
+│   └── HuGuWeb.UnitTests/
+├── docs/
+├── HuGuWeb.slnx
+└── README.md
+```
+
+---
+
+## Local Development
+
+Prerequisites:
+
+- .NET 10 SDK
+- Node.js 24 LTS and npm
+- PostgreSQL 18 for identity persistence (login and readiness checks)
+
+Do not commit secrets. Use user secrets or environment variables for the development user password and any real connection string. See [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md).
+
+Backend:
+
+```bash
+dotnet restore
+dotnet run --project src/backend/HuGuWeb.Api --launch-profile http
+```
+
+Frontend:
+
+```bash
+cd src/frontend/web
+npm install
+npm run dev
+```
+
+Tests and builds:
+
+```bash
+dotnet test
+cd src/frontend/web
+npm run lint
+npm run build
+```
 
 ---
 
@@ -58,7 +111,8 @@ A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [AD
 | [Glossary](docs/product/GLOSSARY.md) | Terminology and open definitions |
 | [Engineering Principles](docs/engineering/ENGINEERING_PRINCIPLES.md) | Engineering standards and constraints |
 | [Development Workflow](docs/engineering/DEVELOPMENT_WORKFLOW.md) | Roles, sprint lifecycle, and collaboration model |
-| [Testing Strategy](docs/engineering/TESTING_STRATEGY.md) | Testing philosophy (frameworks not yet selected) |
+| [Testing Strategy](docs/engineering/TESTING_STRATEGY.md) | Testing philosophy |
+| [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md) | Bootstrap runbook (config, secrets, database, commands) |
 | [Architecture](docs/architecture/README.md) | Architecture documentation and ADR system |
 | [Technology Decisions](docs/architecture/TECHNOLOGY_DECISIONS.md) | Accepted stack and remaining open decisions |
 | [Competitor Analysis](docs/research/COMPETITOR_ANALYSIS.md) | Competitor research context |
@@ -71,7 +125,7 @@ A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [AD
 
 - **Product working name:** HuGuWeb
 - **GitHub repository:** [hsnucal/HuguWeb](https://github.com/hsnucal/HuguWeb)
-- **Current development stage:** Sprint 0.3A — Architecture Freeze (**Accepted** ADRs; implementation not authorized)
+- **Current development stage:** Sprint 0.3B — Application Bootstrap (uncommitted until Product Owner + CTO review)
 
 ---
 

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/HuGuWeb.Api/HuGuWeb.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HuGuWeb.ArchitectureTests/HuGuWeb.ArchitectureTests.csproj" />
+    <Project Path="tests/HuGuWeb.UnitTests/HuGuWeb.UnitTests.csproj" />
+  </Folder>
+</Solution>
