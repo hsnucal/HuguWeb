@@ -1,0 +1,38 @@
+.topBar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 4.25rem;
+  padding: var(--space-5) var(--space-8) var(--space-4);
+  background: var(--color-surface-page);
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.03em;
+  line-height: var(--line-height-tight);
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 1024px) {
+  .topBar {
+    padding: var(--space-4) var(--space-5) var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .topBar {
+    min-height: auto;
+    padding: var(--space-4) var(--space-4) var(--space-2);
+  }
+
+  .title {
+    font-size: var(--font-size-lg);
+  }
+}

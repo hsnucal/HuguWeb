@@ -37,11 +37,29 @@ Sprint 0.3A freezes the architecture and technology baseline listed in those ADR
 
 Remaining open decisions include: final business module boundaries, multi-tenancy implementation, mobile technology, cloud provider, caching technology, message broker, background job library, external OIDC vendor, observability vendor, and CI/CD platform.
 
-### Phase 0 constraints (unchanged)
+### Sprint 0.3B additions (Application Bootstrap)
 
-No application code, scaffolding, dependency installation, or MVP implementation during this phase.
+- Lean API + React SPA + Identity foundation (no hotel domain features)
 
-Accepted ADRs are architecture approval for the listed baseline. They do not authorize scaffolding or application code in Phase 0.
+### Sprint 0.4 additions (Product Experience & Design Foundation)
+
+UX/UI **definition only**. Proposed for Product Owner + CTO review. Does **not** implement React UI, select UI libraries, or freeze MVP modules.
+
+- Visual and interaction principles → [Design Principles](../design/DESIGN_PRINCIPLES.md)
+- Navigation / shell / role-aware UX direction → [UX Architecture](../design/UX_ARCHITECTURE.md)
+- Home as Operations Center → [Operations Center](../design/OPERATIONS_CENTER.md)
+- Login experience → [Login Experience](../design/LOGIN_EXPERIENCE.md)
+- Token strategy → [Design Tokens](../design/DESIGN_TOKENS.md)
+- Desktop-first responsive strategy → [Responsive Strategy](../design/RESPONSIVE_STRATEGY.md)
+- Brand / logo direction → [Brand Direction](../design/BRAND_DIRECTION.md)
+- Design index and decision matrix → [Design README](../design/README.md)
+
+### Phase 0 constraints
+
+- Sprint 0.3A ADRs authorize architecture direction, not ongoing feature implementation.
+- Sprint 0.3B authorized a lean application bootstrap only (no hotel domain features).
+- Sprint 0.4 is design documentation only. It does **not** authorize React UI implementation, UI libraries, or MVP features.
+- Hotel operational functionality remains unimplemented.
 
 ---
 

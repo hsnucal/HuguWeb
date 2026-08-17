@@ -1,0 +1,119 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--space-5) var(--space-3);
+  background: var(--color-surface-elevated);
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-3) var(--space-6);
+}
+
+.wordmark {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.03em;
+}
+
+.nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.current,
+.future {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+}
+
+.current svg,
+.future svg {
+  flex-shrink: 0;
+}
+
+.current {
+  position: relative;
+  padding-left: 1.05rem;
+  background: var(--color-surface-selected);
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.current::before {
+  content: '';
+  position: absolute;
+  left: 0.35rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 0.18rem;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-primary);
+}
+
+.future {
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.future svg {
+  opacity: 0.62;
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  min-width: 0;
+}
+
+.accountName {
+  overflow: hidden;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountHint {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.signOut {
+  justify-content: flex-start;
+  width: 100%;
+  gap: var(--space-3);
+  padding-inline: var(--space-3);
+  border-color: transparent;
+  font-size: var(--font-size-sm);
+}
+
+.signOut:hover:not(:disabled) {
+  border-color: var(--color-border-subtle);
+}

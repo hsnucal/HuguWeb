@@ -1,0 +1,264 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-surface-page);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(24rem, 0.86fr);
+  min-height: 100vh;
+}
+
+.brand {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: var(--space-10) 5rem;
+  background:
+    radial-gradient(ellipse 75% 60% at 26% 46%, var(--color-brand-soft) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 55% at 92% 86%, color-mix(in srgb, var(--color-brand-primary) 12%, transparent) 0%, transparent 52%),
+    linear-gradient(
+      168deg,
+      var(--color-surface-elevated) 0%,
+      var(--color-surface-page) 52%,
+      color-mix(in srgb, var(--color-brand-soft) 55%, var(--color-surface-page)) 100%
+    );
+}
+
+.atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mullion {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 5.5rem,
+      color-mix(in srgb, var(--color-brand-primary) 7%, transparent) 5.5rem,
+      color-mix(in srgb, var(--color-brand-primary) 7%, transparent) calc(5.5rem + 1px)
+    );
+}
+
+.horizon {
+  position: absolute;
+  left: 12%;
+  right: 18%;
+  top: 42%;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-brand-primary) 18%, var(--color-border-subtle));
+}
+
+.orb {
+  position: absolute;
+  width: 26rem;
+  height: 26rem;
+  right: -6rem;
+  top: -8rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-brand-primary) 11%, transparent);
+}
+
+.panel {
+  position: absolute;
+  width: 20rem;
+  height: 13.5rem;
+  left: 10%;
+  bottom: 11%;
+  border-radius: var(--radius-l);
+  background: color-mix(in srgb, var(--color-surface-elevated) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-subtle) 85%, transparent);
+  transform: rotate(-7deg);
+  box-shadow: var(--shadow-s);
+}
+
+.panelInner {
+  position: absolute;
+  width: 11rem;
+  height: 7.5rem;
+  left: 18%;
+  bottom: 16%;
+  border-radius: var(--radius-m);
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 14%, transparent);
+  transform: rotate(6deg);
+}
+
+.arc {
+  position: absolute;
+  width: 32rem;
+  height: 32rem;
+  right: 4%;
+  bottom: -14rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 18%, transparent);
+}
+
+.arcSoft {
+  position: absolute;
+  width: 22rem;
+  height: 22rem;
+  right: 12%;
+  bottom: -8rem;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+}
+
+.linen {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 47px,
+      color-mix(in srgb, var(--color-text-primary) 3.5%, transparent) 47px,
+      color-mix(in srgb, var(--color-text-primary) 3.5%, transparent) 48px
+    );
+}
+
+.brandCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 26rem;
+}
+
+.wordmarkRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.wordmark {
+  margin: 0;
+  font-size: 2.45rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.045em;
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+}
+
+.rule {
+  width: 2.75rem;
+  height: 2px;
+  margin: var(--space-5) 0 var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-primary);
+}
+
+.statement {
+  max-width: 17.5rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.45;
+}
+
+.auth {
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-6);
+  background: var(--color-surface-page);
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.card {
+  width: min(100%, 24.5rem);
+  padding: 2.25rem var(--space-8);
+}
+
+.welcome {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.03em;
+  line-height: var(--line-height-tight);
+}
+
+.lead {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-8);
+}
+
+.error {
+  margin: 0;
+  padding: var(--space-3) 0.875rem;
+  border-radius: var(--radius-s);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.08fr) minmax(21rem, 1fr);
+  }
+
+  .brand {
+    padding: var(--space-8) var(--space-8);
+  }
+
+  .wordmark {
+    font-size: 1.85rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .brand {
+    min-height: auto;
+    padding: var(--space-8) var(--space-6) var(--space-6);
+  }
+
+  .orb,
+  .panel,
+  .panelInner,
+  .arc,
+  .arcSoft,
+  .horizon {
+    opacity: 0.45;
+  }
+
+  .wordmark {
+    font-size: 1.45rem;
+  }
+
+  .rule {
+    margin: var(--space-3) 0 var(--space-3);
+  }
+
+  .statement {
+    max-width: none;
+    font-size: var(--font-size-md);
+  }
+
+  .auth {
+    align-items: start;
+    padding: 0 var(--space-4) var(--space-8);
+    border-left: 0;
+    background: var(--color-surface-page);
+  }
+
+  .card {
+    width: 100%;
+    padding: var(--space-6);
+  }
+
+  .form {
+    margin-top: var(--space-6);
+    gap: var(--space-4);
+  }
+}

@@ -1,0 +1,20 @@
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.45rem;
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  font-size: 0.62rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.lg {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.55rem;
+  font-size: 0.74rem;
+}

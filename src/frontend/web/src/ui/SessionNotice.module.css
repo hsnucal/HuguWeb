@@ -1,0 +1,11 @@
+.notice {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+}
+
+.notice p {
+  font-size: var(--font-size-md);
+}

@@ -1,0 +1,90 @@
+/*
+  HuGuWeb semantic tokens.
+
+  Brand values are Muted Amethyst. Rebranding to dark green should require
+  changing the --color-brand-* family below, not component CSS.
+*/
+
+:root {
+  --color-brand-primary: #5f527c;
+  --color-brand-primary-hover: #4e4368;
+  --color-brand-soft: #efeaf4;
+  --color-brand-on-primary: #faf8f6;
+
+  --color-surface-page: #f1eee9;
+  --color-surface-card: #f8f6f2;
+  --color-surface-elevated: #fffcf9;
+  --color-surface-selected: var(--color-brand-soft);
+
+  --color-text-primary: #1f1c19;
+  --color-text-secondary: #4f4a44;
+  --color-text-muted: #6f6962;
+  --color-text-inverse: var(--color-brand-on-primary);
+  --color-text-link: var(--color-brand-primary);
+
+  --color-border-subtle: #ddd6cc;
+  --color-border-default: #cfc7bc;
+  --color-border-focus: var(--color-brand-primary);
+
+  --color-success: #2f5d43;
+  --color-success-soft: #e4efe8;
+  --color-warning: #7a4e16;
+  --color-warning-soft: #f4ead8;
+  --color-danger: #8b3535;
+  --color-danger-soft: #f4e6e4;
+  --color-info: #35556c;
+  --color-info-soft: #e4ecf2;
+
+  --color-interaction-hover: rgba(31, 28, 25, 0.05);
+  --color-interaction-pressed: rgba(31, 28, 25, 0.08);
+  --color-interaction-disabled: #b9b3ab;
+  --color-interaction-focus-ring: var(--color-brand-primary);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 16px;
+  --radius-full: 999px;
+
+  --shadow-s: 0 1px 2px rgba(31, 28, 25, 0.05);
+  --shadow-m: 0 10px 28px rgba(31, 28, 25, 0.07);
+
+  /*
+    Inter is the approved UI family. Font files are not committed, and no
+    third-party font CDN is loaded. If Inter is not installed locally,
+    Segoe UI / system-ui is used.
+  */
+  --font-family-ui: Inter, "Segoe UI", "Helvetica Neue", ui-sans-serif, system-ui, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --line-height-tight: 1.25;
+  --line-height-body: 1.45;
+
+  --motion-duration-instant: 80ms;
+  --motion-duration-short: 150ms;
+  --motion-duration-medium: 220ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sidebar-width: 15.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-instant: 0ms;
+    --motion-duration-short: 0ms;
+    --motion-duration-medium: 0ms;
+  }
+}
