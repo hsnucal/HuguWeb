@@ -19,6 +19,24 @@ export function todayIsoDate(): string {
   return `${year}-${month}-${day}`
 }
 
+export function addDaysIso(value: string, days: number): string {
+  const [year, month, day] = value.split('-').map(Number)
+  if (!year || !month || !day) {
+    return value
+  }
+
+  const date = new Date(year, month - 1, day)
+  date.setDate(date.getDate() + days)
+  const nextYear = date.getFullYear()
+  const nextMonth = String(date.getMonth() + 1).padStart(2, '0')
+  const nextDay = String(date.getDate()).padStart(2, '0')
+  return `${nextYear}-${nextMonth}-${nextDay}`
+}
+
+export function laterIsoDate(left: string, right: string): string {
+  return left >= right ? left : right
+}
+
 export function formatNumber(value: number, language: AppLanguage): string {
   return new Intl.NumberFormat(language).format(value)
 }

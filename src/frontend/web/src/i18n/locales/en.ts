@@ -62,16 +62,28 @@ export type Translations = {
   workforce: {
     title: string
     intro: string
+    directory: string
     active: string
     activeIntro: string
+    scheduled: string
+    scheduledIntro: string
+    former: string
+    formerIntro: string
+    tabCount: string
     departments: string
     departmentsIntro: string
     positions: string
     positionsIntro: string
+    hireNew: string
+    hireSubmit: string
     hire: string
     transfer: string
+    transferSubmit: string
+    transferIntro: string
     endEmployment: string
+    endEmploymentSubmit: string
     personnelNumber: string
+    fullName: string
     givenName: string
     familyName: string
     startDate: string
@@ -93,19 +105,34 @@ export type Translations = {
     rename: string
     save: string
     cancel: string
+    search: string
+    searchPlaceholder: string
+    allDepartments: string
+    loading: string
     emptyActive: string
+    emptyScheduled: string
+    emptyFormer: string
+    emptySearch: string
     emptyDepartments: string
     emptyPositions: string
-    scheduled: string
-    former: string
-    currentAssignment: string
-    employment: string
-    assignmentHistory: string
+    hireNeedsStructure: string
+    personalSection: string
+    startSection: string
+    placementSection: string
+    currentWork: string
+    lastWork: string
+    workHistory: string
     noHistory: string
+    present: string
+    currentDepartment: string
+    currentPosition: string
+    newDepartment: string
+    newPosition: string
     selectDepartment: string
     selectPosition: string
     confirmEnd: string
-    workingIn: string
+    backToDirectory: string
+    noAccess: string
     errors: {
       personnelNumberInUse: string
       departmentInactive: string
@@ -186,22 +213,35 @@ export const en: Translations = {
   workforce: {
     title: 'Workforce',
     intro: 'Who works here, where they work, and in which position.',
+    directory: 'Staff',
     active: 'Active staff',
-    activeIntro: 'People currently employed at this property.',
+    activeIntro: 'People currently working at this property.',
+    scheduled: 'Scheduled starts',
+    scheduledIntro: 'People with a start date in the future.',
+    former: 'Former staff',
+    formerIntro: 'People who have left. Their records and history remain.',
+    tabCount: '{{label}} ({{count}})',
     departments: 'Departments',
-    departmentsIntro: 'Hotel structure used when hiring and transferring staff.',
+    departmentsIntro: 'Hotel structure used when hiring and changing duties. Departments do not grant system permissions.',
     positions: 'Positions',
     positionsIntro:
-      'Job titles used in assignments. A position is not owned by a department and does not grant system permissions.',
+      'Job titles used when placing staff. A position belongs to the property, not to a department, and does not grant system permissions.',
+    hireNew: 'New staff member',
+    hireSubmit: 'Hire',
     hire: 'Hire employee',
-    transfer: 'Transfer',
+    transfer: 'Change of duties',
+    transferSubmit: 'Save change of duties',
+    transferIntro:
+      'The current department and position stay in history. From the effective date, the person works in the new department and position.',
     endEmployment: 'End employment',
+    endEmploymentSubmit: 'Confirm end of employment',
     personnelNumber: 'Personnel number',
+    fullName: 'Name',
     givenName: 'Given name',
     familyName: 'Family name',
-    startDate: 'Employment start date',
+    startDate: 'Start date',
     effectiveDate: 'Effective date',
-    endDate: 'Employment end date',
+    endDate: 'Last working day',
     department: 'Department',
     position: 'Position',
     name: 'Name',
@@ -209,7 +249,7 @@ export const en: Translations = {
     status: 'Status',
     activeStatus: 'Active',
     scheduledStatus: 'Scheduled',
-    endedStatus: 'Ended',
+    endedStatus: 'Left',
     inactive: 'Inactive',
     activate: 'Activate',
     deactivate: 'Deactivate',
@@ -218,26 +258,42 @@ export const en: Translations = {
     rename: 'Rename',
     save: 'Save',
     cancel: 'Cancel',
-    emptyActive: 'No one is currently working here. Hire an employee to start the workforce list.',
+    search: 'Search',
+    searchPlaceholder: 'Name or personnel number',
+    allDepartments: 'All departments',
+    loading: 'Loading staff…',
+    emptyActive: 'No staff members yet.',
+    emptyScheduled: 'No scheduled starts.',
+    emptyFormer: 'No former staff yet.',
+    emptySearch: 'No staff match this search.',
     emptyDepartments: 'No departments yet. Add the hotel structure before hiring.',
     emptyPositions: 'No positions yet. Add a job title before hiring.',
-    scheduled: 'Starting later',
-    former: 'Former staff',
-    currentAssignment: 'Current assignment',
-    employment: 'Employment',
-    assignmentHistory: 'Assignment history',
-    noHistory: 'No assignment history yet.',
+    hireNeedsStructure: 'Add at least one active department and one active position before hiring.',
+    personalSection: 'Personal details',
+    startSection: 'Start of work',
+    placementSection: 'Department and position',
+    currentWork: 'Current work',
+    lastWork: 'Last work',
+    workHistory: 'Work history',
+    noHistory: 'No previous department or position changes yet.',
+    present: 'Present',
+    currentDepartment: 'Current department',
+    currentPosition: 'Current position',
+    newDepartment: 'New department',
+    newPosition: 'New position',
     selectDepartment: 'Select a department',
     selectPosition: 'Select a position',
-    confirmEnd: 'This ends the employment relationship. The person and history remain in HuGuWeb.',
-    workingIn: '{{department}} · {{position}}',
+    confirmEnd:
+      'This ends employment. The staff record is not deleted, history is kept, and the person leaves the active staff list.',
+    backToDirectory: 'Back to staff list',
+    noAccess: 'You do not have access to staff records.',
     errors: {
       personnelNumberInUse: 'This personnel number is already in use, including for former staff.',
       departmentInactive: 'Choose an active department.',
       positionInactive: 'Choose an active position.',
       employmentEnded: 'This employment has already ended.',
       noCurrentEmployment: 'This person does not have a current employment.',
-      invalidTransferDate: 'The transfer date would overlap or invert assignment history.',
+      invalidTransferDate: 'A change of duties takes effect after the current duty has started. Choose a later date.',
       overlappingPrimaryAssignment: 'Primary assignments cannot overlap.',
       invalidEmploymentPeriod: 'The end date must be on or after the employment start date.',
       sameAssignment: 'This person already works in that department and position.',

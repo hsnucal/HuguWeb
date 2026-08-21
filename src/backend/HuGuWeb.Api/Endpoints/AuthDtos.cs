@@ -21,7 +21,11 @@ public sealed class UpdateLanguageRequest
     public string Language { get; set; } = string.Empty;
 }
 
-public sealed record CurrentUserResponse(string Id, string? Email, string? PreferredLanguage);
+public sealed record CurrentUserResponse(
+    string Id,
+    string? Email,
+    string? PreferredLanguage,
+    IReadOnlyList<string> Permissions);
 
 public sealed record SessionResponse(bool Authenticated, CurrentUserResponse? User);
 

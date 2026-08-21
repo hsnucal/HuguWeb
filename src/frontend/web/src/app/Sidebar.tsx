@@ -4,6 +4,7 @@ import { useAuthSession } from '../auth/AuthContext'
 import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
+import { canReadWorkforce } from '../workforce/workforceAccess'
 import {
   HomeIcon,
   PeopleIcon,
@@ -29,7 +30,8 @@ export function Sidebar({
   onSignOut: () => void
 }) {
   const { t } = useTranslation()
-  const { preferenceError, updatePreferredLanguage } = useAuthSession()
+  const { user, preferenceError, updatePreferredLanguage } = useAuthSession()
+  const showWorkforce = canReadWorkforce(user)
 
   return (
     <aside className={styles.sidebar} aria-label={t('navigation.application')}>
@@ -48,13 +50,15 @@ export function Sidebar({
           {t('navigation.home')}
         </NavLink>
 
-        <NavLink
-          to="/app/workforce"
-          className={({ isActive }) => (isActive ? styles.current : styles.item)}
-        >
-          <PeopleIcon />
-          {t('navigation.workforce')}
-        </NavLink>
+        {showWorkforce ? (
+          <NavLink
+            to="/app/workforce"
+            className={({ isActive }) => (isActive ? styles.current : styles.item)}
+          >
+            <PeopleIcon />
+            {t('navigation.workforce')}
+          </NavLink>
+        ) : null}
 
         {futureNav.map((item) => {
           const Icon = item.icon

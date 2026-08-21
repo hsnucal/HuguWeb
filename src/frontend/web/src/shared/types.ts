@@ -12,6 +12,7 @@ export type CurrentUser = {
   id: string
   email: string | null
   preferredLanguage: string | null
+  permissions: string[]
 }
 
 export type SessionResponse = {

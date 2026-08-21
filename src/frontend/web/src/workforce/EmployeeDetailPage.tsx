@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
-import { formatDateOnly, todayIsoDate } from '../i18n/format'
+import { useAuthSession } from '../auth/AuthContext'
+import { addDaysIso, formatDateOnly, laterIsoDate, todayIsoDate } from '../i18n/format'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
 import { DateField, SelectField } from '../ui/SelectField'
 import { StatusBadge } from '../ui/StatusBadge'
+import { Surface } from '../ui/Surface'
 import styles from './Workforce.module.css'
+import { canManageWorkforce } from './workforceAccess'
 import {
+  type AssignmentHistoryRecord,
   type DepartmentRecord,
   type EmployeeHistory,
   type PositionRecord,
@@ -18,15 +22,56 @@ import {
   transferEmployee,
   workforceErrorKey,
 } from './workforceApi'
+import { employmentStatusTone } from './workforceStatus'
+
+function statusLabel(status: string | undefined, translate: (key: string) => string) {
+  if (status === 'Active') {
+    return translate('workforce.activeStatus')
+  }
+
+  if (status === 'Scheduled') {
+    return translate('workforce.scheduledStatus')
+  }
+
+  return translate('workforce.endedStatus')
+}
+
+function lastAssignment(employee: EmployeeHistory): AssignmentHistoryRecord | null {
+  if (employee.currentPrimaryAssignment) {
+    return employee.currentPrimaryAssignment
+  }
+
+  const primaries = employee.employments[0]?.primaryAssignments ?? []
+  return primaries[primaries.length - 1] ?? null
+}
+
+function defaultTransferDate(assignment: AssignmentHistoryRecord | null): string {
+  if (!assignment) {
+    return todayIsoDate()
+  }
+
+  return laterIsoDate(todayIsoDate(), addDaysIso(assignment.startDate, 1))
+}
+
+function assignmentTimeline(employee: EmployeeHistory): AssignmentHistoryRecord[] {
+  return employee.employments
+    .flatMap((employment) => employment.primaryAssignments)
+    .slice()
+    .sort((left, right) => left.startDate.localeCompare(right.startDate) || left.id.localeCompare(right.id))
+}
 
 export function EmployeeDetailPage() {
   const { employeeId } = useParams()
   const { t, i18n } = useTranslation()
+  const { user } = useAuthSession()
+  const canManage = canManageWorkforce(user)
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
   const [employee, setEmployee] = useState<EmployeeHistory | null>(null)
   const [departments, setDepartments] = useState<DepartmentRecord[]>([])
   const [positions, setPositions] = useState<PositionRecord[]>([])
   const [mode, setMode] = useState<'none' | 'transfer' | 'end'>('none')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [transfer, setTransfer] = useState({
     departmentId: '',
@@ -56,17 +101,16 @@ export function EmployeeDetailPage() {
         setEmployee(detail)
         setDepartments(departmentRows)
         setPositions(positionRows)
-        setTransfer((current) => ({
-          ...current,
-          departmentId:
-            current.departmentId
-            || detail.currentPrimaryAssignment?.departmentId
-            || departmentRows[0]?.id
-            || '',
-        }))
+        setTransfer({
+          departmentId: detail.currentPrimaryAssignment?.departmentId ?? '',
+          positionId: detail.currentPrimaryAssignment?.positionId ?? '',
+          effectiveDate: defaultTransferDate(detail.currentPrimaryAssignment),
+        })
+        setLoading(false)
       } catch (reason) {
         if (!cancelled) {
           setError(t(workforceErrorKey(reason)))
+          setLoading(false)
         }
       }
     }
@@ -77,12 +121,30 @@ export function EmployeeDetailPage() {
     }
   }, [employeeId, t])
 
+  const availableDepartments = useMemo(
+    () => departments.filter((item) => item.isActive),
+    [departments],
+  )
   const availablePositions = useMemo(
     () => positions.filter((item) => item.isActive),
     [positions],
   )
 
-  const canMutate = employee?.currentEmployment?.status !== 'Ended'
+  async function reload(id: string) {
+    const [detail, departmentRows, positionRows] = await Promise.all([
+      getEmployee(id),
+      listDepartments(),
+      listPositions(),
+    ])
+    setEmployee(detail)
+    setDepartments(departmentRows)
+    setPositions(positionRows)
+    setTransfer({
+      departmentId: detail.currentPrimaryAssignment?.departmentId ?? '',
+      positionId: detail.currentPrimaryAssignment?.positionId ?? '',
+      effectiveDate: defaultTransferDate(detail.currentPrimaryAssignment),
+    })
+  }
 
   async function onTransfer() {
     if (!employeeId) {
@@ -90,19 +152,15 @@ export function EmployeeDetailPage() {
     }
 
     setError(null)
+    setSaving(true)
     try {
       await transferEmployee(employeeId, transfer)
       setMode('none')
-      const [detail, departmentRows, positionRows] = await Promise.all([
-        getEmployee(employeeId),
-        listDepartments(),
-        listPositions(),
-      ])
-      setEmployee(detail)
-      setDepartments(departmentRows)
-      setPositions(positionRows)
+      await reload(employeeId)
     } catch (reason) {
       setError(t(workforceErrorKey(reason)))
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -112,20 +170,24 @@ export function EmployeeDetailPage() {
     }
 
     setError(null)
+    setSaving(true)
     try {
       await endEmployment(employeeId, endDate)
       setMode('none')
-      const [detail, departmentRows, positionRows] = await Promise.all([
-        getEmployee(employeeId),
-        listDepartments(),
-        listPositions(),
-      ])
-      setEmployee(detail)
-      setDepartments(departmentRows)
-      setPositions(positionRows)
+      await reload(employeeId)
     } catch (reason) {
       setError(t(workforceErrorKey(reason)))
+    } finally {
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <p className={styles.muted} role="status">
+        {t('workforce.loading')}
+      </p>
+    )
   }
 
   if (!employee) {
@@ -137,10 +199,21 @@ export function EmployeeDetailPage() {
   }
 
   const status = employee.currentEmployment?.status ?? employee.employments[0]?.status
-  const statusTone = status === 'Active' ? 'success' : status === 'Scheduled' ? 'info' : 'neutral'
+  const ended = status === 'Ended'
+  const canMutate = canManage && !ended
+  const assignment = lastAssignment(employee)
+  const timeline = assignmentTimeline(employee)
+  const currentEmployment = employee.currentEmployment ?? employee.employments[0]
+  const earliestTransferDate = employee.currentPrimaryAssignment
+    ? addDaysIso(employee.currentPrimaryAssignment.startDate, 1)
+    : todayIsoDate()
 
   return (
     <div className={styles.page}>
+      <Link className={styles.backLink} to="/app/workforce">
+        {t('workforce.backToDirectory')}
+      </Link>
+
       <div className={styles.toolbar}>
         <div>
           <p className={styles.personName}>
@@ -150,23 +223,38 @@ export function EmployeeDetailPage() {
             {t('workforce.personnelNumber')}: {employee.personnelNumber}
           </p>
         </div>
-        <StatusBadge tone={statusTone}>
-          {status === 'Active'
-            ? t('workforce.activeStatus')
-            : status === 'Scheduled'
-              ? t('workforce.scheduledStatus')
-              : t('workforce.endedStatus')}
-        </StatusBadge>
+        <StatusBadge tone={employmentStatusTone(status)}>{statusLabel(status, t)}</StatusBadge>
       </div>
 
-      {employee.currentPrimaryAssignment ? (
-        <p>
-          {t('workforce.workingIn', {
-            department: employee.currentPrimaryAssignment.departmentName,
-            position: employee.currentPrimaryAssignment.positionName,
-          })}
-        </p>
-      ) : null}
+      <h2 className={styles.sectionTitle}>
+        {ended ? t('workforce.lastWork') : t('workforce.currentWork')}
+      </h2>
+      <Surface className={styles.summary}>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>{t('workforce.status')}</span>
+          <span>{statusLabel(status, t)}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>{t('workforce.startDate')}</span>
+          <span>
+            {currentEmployment ? formatDateOnly(currentEmployment.startDate, language) : '—'}
+          </span>
+        </div>
+        {ended && currentEmployment?.endDate ? (
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>{t('workforce.endDate')}</span>
+            <span>{formatDateOnly(currentEmployment.endDate, language)}</span>
+          </div>
+        ) : null}
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>{t('workforce.department')}</span>
+          <span>{assignment?.departmentName ?? '—'}</span>
+        </div>
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryLabel}>{t('workforce.position')}</span>
+          <span>{assignment?.positionName ?? '—'}</span>
+        </div>
+      </Surface>
 
       {canMutate ? (
         <div className={styles.actions}>
@@ -187,48 +275,70 @@ export function EmployeeDetailPage() {
             void onTransfer()
           }}
         >
-          <div className={styles.formGrid}>
-            <SelectField
-              id="transfer-department"
-              label={t('workforce.department')}
-              value={transfer.departmentId}
-              onChange={(departmentId) => setTransfer((current) => ({ ...current, departmentId }))}
-              required
-            >
-              <option value="">{t('workforce.selectDepartment')}</option>
-              {departments
-                .filter((item) => item.isActive)
-                .map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-            </SelectField>
-            <SelectField
-              id="transfer-position"
-              label={t('workforce.position')}
-              value={transfer.positionId}
-              onChange={(positionId) => setTransfer((current) => ({ ...current, positionId }))}
-              required
-            >
-              <option value="">{t('workforce.selectPosition')}</option>
-              {availablePositions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </SelectField>
-            <DateField
-              id="transfer-date"
-              label={t('workforce.effectiveDate')}
-              value={transfer.effectiveDate}
-              onChange={(effectiveDate) => setTransfer((current) => ({ ...current, effectiveDate }))}
-              required
-            />
+          <p className={styles.muted}>{t('workforce.transferIntro')}</p>
+          <div className={styles.compare}>
+            <section className={styles.compareCard} aria-label={t('workforce.currentWork')}>
+              <h2 className={styles.sectionTitle}>{t('workforce.currentWork')}</h2>
+              <p>
+                <span className={styles.summaryLabel}>{t('workforce.currentDepartment')}</span>
+                <br />
+                {employee.currentPrimaryAssignment?.departmentName ?? '—'}
+              </p>
+              <p>
+                <span className={styles.summaryLabel}>{t('workforce.currentPosition')}</span>
+                <br />
+                {employee.currentPrimaryAssignment?.positionName ?? '—'}
+              </p>
+            </section>
+            <section className={styles.compareCard} aria-label={t('workforce.placementSection')}>
+              <h2 className={styles.sectionTitle}>{t('workforce.placementSection')}</h2>
+              <div className={styles.formStack}>
+                <SelectField
+                  id="transfer-department"
+                  label={t('workforce.newDepartment')}
+                  value={transfer.departmentId}
+                  onChange={(departmentId) =>
+                    setTransfer((current) => ({ ...current, departmentId }))
+                  }
+                  required
+                >
+                  <option value="">{t('workforce.selectDepartment')}</option>
+                  {availableDepartments.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  id="transfer-position"
+                  label={t('workforce.newPosition')}
+                  value={transfer.positionId}
+                  onChange={(positionId) => setTransfer((current) => ({ ...current, positionId }))}
+                  required
+                >
+                  <option value="">{t('workforce.selectPosition')}</option>
+                  {availablePositions.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <DateField
+                  id="transfer-date"
+                  label={t('workforce.effectiveDate')}
+                  value={transfer.effectiveDate}
+                  min={earliestTransferDate}
+                  onChange={(effectiveDate) =>
+                    setTransfer((current) => ({ ...current, effectiveDate }))
+                  }
+                  required
+                />
+              </div>
+            </section>
           </div>
           <div className={styles.actions}>
-            <Button type="submit" layout="inline">
-              {t('workforce.transfer')}
+            <Button type="submit" layout="inline" disabled={saving}>
+              {t('workforce.transferSubmit')}
             </Button>
             <Button variant="ghost" onClick={() => setMode('none')}>
               {t('workforce.cancel')}
@@ -245,7 +355,7 @@ export function EmployeeDetailPage() {
             void onEnd()
           }}
         >
-          <p className={styles.muted}>{t('workforce.confirmEnd')}</p>
+          <p className={styles.endNotice}>{t('workforce.confirmEnd')}</p>
           <DateField
             id="end-date"
             label={t('workforce.endDate')}
@@ -254,8 +364,8 @@ export function EmployeeDetailPage() {
             required
           />
           <div className={styles.actions}>
-            <Button type="submit" variant="danger" layout="inline">
-              {t('workforce.endEmployment')}
+            <Button type="submit" variant="danger" layout="inline" disabled={saving}>
+              {t('workforce.endEmploymentSubmit')}
             </Button>
             <Button variant="ghost" onClick={() => setMode('none')}>
               {t('workforce.cancel')}
@@ -271,58 +381,28 @@ export function EmployeeDetailPage() {
       ) : null}
 
       <section>
-        <h2 className={styles.sectionTitle}>{t('workforce.employment')}</h2>
-        <div className={styles.list}>
-          {employee.employments.map((employment) => (
-            <div key={employment.id} className={styles.row}>
-              <span>{formatDateOnly(employment.startDate, language)}</span>
-              <span>
-                {employment.endDate ? formatDateOnly(employment.endDate, language) : '—'}
-              </span>
-              <StatusBadge
-                tone={
-                  employment.status === 'Active'
-                    ? 'success'
-                    : employment.status === 'Scheduled'
-                      ? 'info'
-                      : 'neutral'
-                }
-              >
-                {employment.status === 'Active'
-                  ? t('workforce.activeStatus')
-                  : employment.status === 'Scheduled'
-                    ? t('workforce.scheduledStatus')
-                    : t('workforce.endedStatus')}
-              </StatusBadge>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className={styles.sectionTitle}>{t('workforce.assignmentHistory')}</h2>
+        <h2 className={styles.sectionTitle}>{t('workforce.workHistory')}</h2>
         <div className={styles.history}>
-          {employee.employments.flatMap((employment) => employment.primaryAssignments).length === 0 ? (
-            <p className={styles.empty}>{t('workforce.noHistory')}</p>
+          {timeline.length === 0 ? (
+            <p className={styles.emptyPlain}>{t('workforce.noHistory')}</p>
           ) : (
-            employee.employments.flatMap((employment) =>
-              employment.primaryAssignments.map((assignment) => (
-                <div key={assignment.id} className={styles.historyItem}>
-                  <span className={styles.muted}>
-                    {formatDateOnly(assignment.startDate, language)}
-                    {assignment.endDate ? ` – ${formatDateOnly(assignment.endDate, language)}` : ''}
-                  </span>
-                  <span>
-                    {assignment.departmentName} · {assignment.positionName}
-                  </span>
-                </div>
-              )),
-            )
+            timeline.map((assignmentRow) => (
+              <div key={assignmentRow.id} className={styles.historyItem}>
+                <span className={styles.muted}>
+                  {formatDateOnly(assignmentRow.startDate, language)}
+                  {' – '}
+                  {assignmentRow.endDate
+                    ? formatDateOnly(assignmentRow.endDate, language)
+                    : t('workforce.present')}
+                </span>
+                <span>
+                  {assignmentRow.departmentName} · {assignmentRow.positionName}
+                </span>
+              </div>
+            ))
           )}
         </div>
       </section>
-
-      <Link to="/app/workforce">{t('workforce.active')}</Link>
     </div>
   )
 }

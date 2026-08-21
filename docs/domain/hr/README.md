@@ -40,6 +40,7 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | [INVARIANTS.md](INVARIANTS.md) | Consistency rules for implementation |
 | [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen Sprint 0.7B production slice |
 | [SPRINT_0_7B_IMPLEMENTATION_NOTES.md](SPRINT_0_7B_IMPLEMENTATION_NOTES.md) | Sprint 0.7B module/auth/persistence notes |
+| [SPRINT_0_8_WORKFORCE_UX_VALIDATION.md](SPRINT_0_8_WORKFORCE_UX_VALIDATION.md) | Sprint 0.8 local launcher + Workforce UX validation |
 | [HR-DOMAIN-001](HR-DOMAIN-001-Organization-Workforce-Foundation.md) | Domain decision record (**Accepted**) |
 
 Related architecture (do not contradict):

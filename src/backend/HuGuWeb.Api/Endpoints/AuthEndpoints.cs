@@ -64,7 +64,7 @@ public static class AuthEndpoints
             return new SessionResponse(false, null);
         }
 
-        return new SessionResponse(true, ToUserResponse(user));
+        return new SessionResponse(true, await ToUserResponseAsync(user, userManager, principal));
     }
 
     private static async Task<IResult> GetCurrentUser(
@@ -79,7 +79,7 @@ public static class AuthEndpoints
                 statusCode: StatusCodes.Status401Unauthorized);
         }
 
-        return Results.Ok(ToUserResponse(user));
+        return Results.Ok(await ToUserResponseAsync(user, userManager, principal));
     }
 
     private static async Task<IResult> Login(
@@ -115,7 +115,7 @@ public static class AuthEndpoints
         }
 
         logger.LogInformation("Sign-in succeeded for {UserId}.", user.Id);
-        return Results.Ok(ToUserResponse(user));
+        return Results.Ok(await ToUserResponseAsync(user, userManager, principal: null));
     }
 
     private static async Task<IResult> Logout(SignInManager<ApplicationUser> signInManager)
@@ -161,11 +161,34 @@ public static class AuthEndpoints
             }
         }
 
-        return Results.Ok(ToUserResponse(user));
+        return Results.Ok(await ToUserResponseAsync(user, userManager, principal));
     }
 
-    private static CurrentUserResponse ToUserResponse(ApplicationUser user) =>
-        new(user.Id, user.Email, user.PreferredLanguage);
+    private static async Task<CurrentUserResponse> ToUserResponseAsync(
+        ApplicationUser user,
+        UserManager<ApplicationUser> userManager,
+        ClaimsPrincipal? principal)
+    {
+        IReadOnlyList<string> sessionPermissions = [];
+        if (principal?.Identity?.IsAuthenticated == true)
+        {
+            sessionPermissions = principal.Claims
+                .Where(claim => claim.Type == WorkforcePermissions.ClaimType)
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        var permissions = sessionPermissions.Count > 0
+            ? sessionPermissions
+            : (await userManager.GetClaimsAsync(user))
+                .Where(claim => claim.Type == WorkforcePermissions.ClaimType)
+                .Select(claim => claim.Value)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+        return new CurrentUserResponse(user.Id, user.Email, user.PreferredLanguage, permissions);
+    }
 
     private static IResult AuthenticationFailed() =>
         Results.Problem(

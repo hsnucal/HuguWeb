@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useAuthSession } from '../auth/AuthContext'
 import { formatDateOnly, todayIsoDate } from '../i18n/format'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
@@ -8,31 +9,41 @@ import { DateField, SelectField } from '../ui/SelectField'
 import { StatusBadge } from '../ui/StatusBadge'
 import { TextField } from '../ui/TextField'
 import styles from './Workforce.module.css'
+import { canManageWorkforce } from './workforceAccess'
 import {
-  type ActiveWorkforceMember,
   type DepartmentRecord,
   type EmployeeDirectoryItem,
   type PositionRecord,
   hireEmployee,
-  listActiveWorkforce,
   listDepartments,
   listEmployees,
   listPositions,
   workforceErrorKey,
 } from './workforceApi'
+import {
+  employmentStatusTone,
+  inWorkforceView,
+  matchesWorkforceSearch,
+  type WorkforceView,
+} from './workforceStatus'
 
-async function fetchWorkforceHome() {
-  return Promise.all([listActiveWorkforce(), listEmployees(), listDepartments(), listPositions()])
+async function fetchDirectory() {
+  return Promise.all([listEmployees(), listDepartments(), listPositions()])
 }
 
 export function ActiveWorkforcePage() {
   const { t, i18n } = useTranslation()
+  const { user } = useAuthSession()
+  const canManage = canManageWorkforce(user)
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
-  const [active, setActive] = useState<ActiveWorkforceMember[]>([])
-  const [directory, setDirectory] = useState<EmployeeDirectoryItem[]>([])
+  const [directory, setDirectory] = useState<EmployeeDirectoryItem[] | null>(null)
   const [departments, setDepartments] = useState<DepartmentRecord[]>([])
   const [positions, setPositions] = useState<PositionRecord[]>([])
+  const [view, setView] = useState<WorkforceView>('active')
+  const [query, setQuery] = useState('')
+  const [departmentFilter, setDepartmentFilter] = useState('')
   const [hiring, setHiring] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
     givenName: '',
@@ -48,22 +59,18 @@ export function ActiveWorkforcePage() {
 
     async function loadPage() {
       try {
-        const [activePeople, people, departmentRows, positionRows] = await fetchWorkforceHome()
+        const [people, departmentRows, positionRows] = await fetchDirectory()
         if (cancelled) {
           return
         }
 
-        setActive(activePeople)
         setDirectory(people)
         setDepartments(departmentRows)
         setPositions(positionRows)
-        setForm((current) => ({
-          ...current,
-          departmentId: current.departmentId || departmentRows.find((item) => item.isActive)?.id || '',
-        }))
       } catch (reason) {
         if (!cancelled) {
           setError(t(workforceErrorKey(reason)))
+          setDirectory([])
         }
       }
     }
@@ -74,49 +81,89 @@ export function ActiveWorkforcePage() {
     }
   }, [t])
 
-  const availablePositions = useMemo(
+  const activeDepartments = useMemo(
+    () => departments.filter((item) => item.isActive),
+    [departments],
+  )
+  const activePositions = useMemo(
     () => positions.filter((item) => item.isActive),
     [positions],
   )
+  const people = directory ?? []
+  const activeCount = people.filter((item) => item.employmentStatus === 'Active').length
+  const scheduledCount = people.filter((item) => item.employmentStatus === 'Scheduled').length
+  const formerCount = people.filter((item) => item.employmentStatus === 'Ended').length
 
-  const scheduled = directory.filter((item) => item.employmentStatus === 'Scheduled')
-  const former = directory.filter((item) => item.employmentStatus === 'Ended')
+  const visible = people.filter((person) => {
+    if (!inWorkforceView(person, view)) {
+      return false
+    }
+
+    if (!matchesWorkforceSearch(person, query)) {
+      return false
+    }
+
+    if (departmentFilter !== '' && person.departmentName !== departmentFilter) {
+      return false
+    }
+
+    return true
+  })
+
+  const canHire = canManage && activeDepartments.length > 0 && activePositions.length > 0
 
   async function onHire() {
     setError(null)
+    setSaving(true)
     try {
-      await hireEmployee({
-        ...form,
-        positionId: form.positionId,
-      })
+      await hireEmployee(form)
       setHiring(false)
-      setForm((current) => ({
-        ...current,
+      setForm({
         givenName: '',
         familyName: '',
         personnelNumber: '',
         employmentStartDate: todayIsoDate(),
-      }))
-      const [activePeople, people, departmentRows, positionRows] = await fetchWorkforceHome()
-      setActive(activePeople)
-      setDirectory(people)
+        departmentId: '',
+        positionId: '',
+      })
+      const [staff, departmentRows, positionRows] = await fetchDirectory()
+      setDirectory(staff)
       setDepartments(departmentRows)
       setPositions(positionRows)
+      setView(form.employmentStartDate > todayIsoDate() ? 'scheduled' : 'active')
     } catch (reason) {
       setError(t(workforceErrorKey(reason)))
+    } finally {
+      setSaving(false)
     }
+  }
+
+  if (directory === null && error === null) {
+    return (
+      <p className={styles.muted} role="status">
+        {t('workforce.loading')}
+      </p>
+    )
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.toolbar}>
-        <p className={styles.muted}>{t('workforce.activeIntro')}</p>
-        <Button layout="inline" onClick={() => setHiring((value) => !value)}>
-          {t('workforce.hire')}
-        </Button>
+        <p className={styles.muted}>
+          {view === 'active'
+            ? t('workforce.activeIntro')
+            : view === 'scheduled'
+              ? t('workforce.scheduledIntro')
+              : t('workforce.formerIntro')}
+        </p>
+        {canManage ? (
+          <Button layout="inline" onClick={() => setHiring((value) => !value)}>
+            {t('workforce.hireNew')}
+          </Button>
+        ) : null}
       </div>
 
-      {hiring ? (
+      {hiring && canManage ? (
         <form
           className={styles.panel}
           onSubmit={(event) => {
@@ -124,76 +171,98 @@ export function ActiveWorkforcePage() {
             void onHire()
           }}
         >
-          <div className={styles.formGrid}>
-            <TextField
-              id="hire-given"
-              label={t('workforce.givenName')}
-              value={form.givenName}
-              onChange={(givenName) => setForm((current) => ({ ...current, givenName }))}
-              required
-            />
-            <TextField
-              id="hire-family"
-              label={t('workforce.familyName')}
-              value={form.familyName}
-              onChange={(familyName) => setForm((current) => ({ ...current, familyName }))}
-              required
-            />
-            <TextField
-              id="hire-number"
-              label={t('workforce.personnelNumber')}
-              value={form.personnelNumber}
-              onChange={(personnelNumber) => setForm((current) => ({ ...current, personnelNumber }))}
-              required
-            />
-            <DateField
-              id="hire-start"
-              label={t('workforce.startDate')}
-              value={form.employmentStartDate}
-              onChange={(employmentStartDate) =>
-                setForm((current) => ({ ...current, employmentStartDate }))
-              }
-              required
-            />
-            <SelectField
-              id="hire-department"
-              label={t('workforce.department')}
-              value={form.departmentId}
-              onChange={(departmentId) => setForm((current) => ({ ...current, departmentId }))}
-              required
-            >
-              <option value="">{t('workforce.selectDepartment')}</option>
-              {departments
-                .filter((item) => item.isActive)
-                .map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-            </SelectField>
-            <SelectField
-              id="hire-position"
-              label={t('workforce.position')}
-              value={form.positionId}
-              onChange={(positionId) => setForm((current) => ({ ...current, positionId }))}
-              required
-            >
-              <option value="">{t('workforce.selectPosition')}</option>
-              {availablePositions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </SelectField>
-          </div>
-          <div className={styles.actions}>
-            <Button type="submit" layout="inline">
-              {t('workforce.hire')}
-            </Button>
-            <Button variant="ghost" onClick={() => setHiring(false)}>
-              {t('workforce.cancel')}
-            </Button>
-          </div>
+          {canHire ? (
+            <>
+              <fieldset className={styles.formSection}>
+                <legend className={styles.formLegend}>{t('workforce.personalSection')}</legend>
+                <div className={styles.formGrid}>
+                  <TextField
+                    id="hire-given"
+                    label={t('workforce.givenName')}
+                    value={form.givenName}
+                    onChange={(givenName) => setForm((current) => ({ ...current, givenName }))}
+                    autoComplete="given-name"
+                    required
+                  />
+                  <TextField
+                    id="hire-family"
+                    label={t('workforce.familyName')}
+                    value={form.familyName}
+                    onChange={(familyName) => setForm((current) => ({ ...current, familyName }))}
+                    autoComplete="family-name"
+                    required
+                  />
+                  <TextField
+                    id="hire-number"
+                    label={t('workforce.personnelNumber')}
+                    value={form.personnelNumber}
+                    onChange={(personnelNumber) =>
+                      setForm((current) => ({ ...current, personnelNumber }))
+                    }
+                    autoComplete="off"
+                    required
+                  />
+                </div>
+              </fieldset>
+              <fieldset className={styles.formSection}>
+                <legend className={styles.formLegend}>{t('workforce.startSection')}</legend>
+                <div className={styles.formGrid}>
+                  <DateField
+                    id="hire-start"
+                    label={t('workforce.startDate')}
+                    value={form.employmentStartDate}
+                    onChange={(employmentStartDate) =>
+                      setForm((current) => ({ ...current, employmentStartDate }))
+                    }
+                    required
+                  />
+                </div>
+              </fieldset>
+              <fieldset className={styles.formSection}>
+                <legend className={styles.formLegend}>{t('workforce.placementSection')}</legend>
+                <div className={styles.formGrid}>
+                  <SelectField
+                    id="hire-department"
+                    label={t('workforce.department')}
+                    value={form.departmentId}
+                    onChange={(departmentId) => setForm((current) => ({ ...current, departmentId }))}
+                    required
+                  >
+                    <option value="">{t('workforce.selectDepartment')}</option>
+                    {activeDepartments.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    id="hire-position"
+                    label={t('workforce.position')}
+                    value={form.positionId}
+                    onChange={(positionId) => setForm((current) => ({ ...current, positionId }))}
+                    required
+                  >
+                    <option value="">{t('workforce.selectPosition')}</option>
+                    {activePositions.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </SelectField>
+                </div>
+              </fieldset>
+              <div className={styles.actions}>
+                <Button type="submit" layout="inline" disabled={saving}>
+                  {t('workforce.hireSubmit')}
+                </Button>
+                <Button variant="ghost" onClick={() => setHiring(false)}>
+                  {t('workforce.cancel')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className={styles.muted}>{t('workforce.hireNeedsStructure')}</p>
+          )}
         </form>
       ) : null}
 
@@ -203,84 +272,137 @@ export function ActiveWorkforcePage() {
         </p>
       ) : null}
 
-      <section className={styles.list} aria-label={t('workforce.active')}>
-        <div className={`${styles.row} ${styles.head}`}>
+      <div className={styles.segments} role="tablist" aria-label={t('workforce.directory')}>
+        <ViewTab
+          selected={view === 'active'}
+          onSelect={() => setView('active')}
+          label={t('workforce.tabCount', { label: t('workforce.active'), count: activeCount })}
+        />
+        <ViewTab
+          selected={view === 'scheduled'}
+          onSelect={() => setView('scheduled')}
+          label={t('workforce.tabCount', { label: t('workforce.scheduled'), count: scheduledCount })}
+        />
+        <ViewTab
+          selected={view === 'former'}
+          onSelect={() => setView('former')}
+          label={t('workforce.tabCount', { label: t('workforce.former'), count: formerCount })}
+        />
+      </div>
+
+      <div className={styles.filters}>
+        <TextField
+          id="workforce-search"
+          label={t('workforce.search')}
+          value={query}
+          onChange={setQuery}
+          placeholder={t('workforce.searchPlaceholder')}
+          autoComplete="off"
+        />
+        <SelectField
+          id="workforce-department-filter"
+          label={t('workforce.department')}
+          value={departmentFilter}
+          onChange={setDepartmentFilter}
+        >
+          <option value="">{t('workforce.allDepartments')}</option>
+          {departments.map((item) => (
+            <option key={item.id} value={item.name}>
+              {item.name}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+
+      <section className={styles.list} aria-label={t('workforce.directory')}>
+        <div className={`${styles.row} ${styles.head} ${styles.directoryRow}`}>
+          <span>{t('workforce.fullName')}</span>
           <span>{t('workforce.personnelNumber')}</span>
-          <span>{t('workforce.givenName')}</span>
           <span>{t('workforce.department')}</span>
           <span>{t('workforce.position')}</span>
-          <span />
+          <span>{t('workforce.startDate')}</span>
+          <span>{t('workforce.status')}</span>
         </div>
-        {active.length === 0 ? (
-          <p className={styles.empty}>{t('workforce.emptyActive')}</p>
+        {visible.length === 0 ? (
+          <div className={styles.empty}>
+            <p>
+              {query.trim() !== '' || departmentFilter !== ''
+                ? t('workforce.emptySearch')
+                : view === 'active'
+                  ? t('workforce.emptyActive')
+                  : view === 'scheduled'
+                    ? t('workforce.emptyScheduled')
+                    : t('workforce.emptyFormer')}
+            </p>
+            {view === 'active' && canManage && query.trim() === '' && departmentFilter === '' ? (
+              <Button layout="inline" onClick={() => setHiring(true)}>
+                {t('workforce.hireNew')}
+              </Button>
+            ) : null}
+          </div>
         ) : (
-          active.map((person) => (
+          visible.map((person) => (
             <Link
               key={person.employeeId}
-              className={`${styles.row} ${styles.rowLink}`}
+              className={`${styles.row} ${styles.rowLink} ${styles.directoryRow}`}
               to={`/app/workforce/employees/${person.employeeId}`}
             >
-              <span className={styles.personName}>{person.personnelNumber}</span>
-              <span>
+              <span className={styles.personName}>
+                <span className={styles.cellLabel}>{t('workforce.fullName')}</span>
                 {person.givenName} {person.familyName}
               </span>
-              <span>{person.departmentName}</span>
-              <span>{person.positionName}</span>
-              <StatusBadge tone="success">{t('workforce.activeStatus')}</StatusBadge>
+              <span>
+                <span className={styles.cellLabel}>{t('workforce.personnelNumber')}</span>
+                {person.personnelNumber}
+              </span>
+              <span>
+                <span className={styles.cellLabel}>{t('workforce.department')}</span>
+                {person.departmentName ?? '—'}
+              </span>
+              <span>
+                <span className={styles.cellLabel}>{t('workforce.position')}</span>
+                {person.positionName ?? '—'}
+              </span>
+              <span>
+                <span className={styles.cellLabel}>{t('workforce.startDate')}</span>
+                {formatDateOnly(person.employmentStartDate, language)}
+              </span>
+              <span>
+                <span className={styles.cellLabel}>{t('workforce.status')}</span>
+                <StatusBadge tone={employmentStatusTone(person.employmentStatus)}>
+                  {person.employmentStatus === 'Active'
+                    ? t('workforce.activeStatus')
+                    : person.employmentStatus === 'Scheduled'
+                      ? t('workforce.scheduledStatus')
+                      : t('workforce.endedStatus')}
+                </StatusBadge>
+              </span>
             </Link>
           ))
         )}
       </section>
-
-      {scheduled.length > 0 ? (
-        <section>
-          <h2 className={styles.sectionTitle}>{t('workforce.scheduled')}</h2>
-          <div className={styles.list}>
-            {scheduled.map((person) => (
-              <Link
-                key={person.employeeId}
-                className={`${styles.row} ${styles.rowLink}`}
-                to={`/app/workforce/employees/${person.employeeId}`}
-              >
-                <span className={styles.personName}>{person.personnelNumber}</span>
-                <span>
-                  {person.givenName} {person.familyName}
-                </span>
-                <span>{person.departmentName}</span>
-                <span>{formatDateOnly(person.employmentStartDate, language)}</span>
-                <StatusBadge tone="info">{t('workforce.scheduledStatus')}</StatusBadge>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {former.length > 0 ? (
-        <section>
-          <h2 className={styles.sectionTitle}>{t('workforce.former')}</h2>
-          <div className={styles.list}>
-            {former.map((person) => (
-              <Link
-                key={person.employeeId}
-                className={`${styles.row} ${styles.rowLink}`}
-                to={`/app/workforce/employees/${person.employeeId}`}
-              >
-                <span className={styles.personName}>{person.personnelNumber}</span>
-                <span>
-                  {person.givenName} {person.familyName}
-                </span>
-                <span>{person.departmentName}</span>
-                <span>
-                  {person.employmentEndDate
-                    ? formatDateOnly(person.employmentEndDate, language)
-                    : ''}
-                </span>
-                <StatusBadge tone="neutral">{t('workforce.endedStatus')}</StatusBadge>
-              </Link>
-            ))}
-          </div>
-        </section>
-      ) : null}
     </div>
+  )
+}
+
+function ViewTab({
+  selected,
+  onSelect,
+  label,
+}: {
+  selected: boolean
+  onSelect: () => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={selected}
+      className={selected ? styles.segmentCurrent : styles.segment}
+      onClick={onSelect}
+    >
+      {label}
+    </button>
   )
 }

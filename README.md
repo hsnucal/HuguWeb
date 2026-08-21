@@ -69,28 +69,17 @@ A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [AD
 
 ## Local Development
 
-Prerequisites:
+From the repository root on Windows:
 
-- .NET 10 SDK
-- Node.js 24 LTS and npm
-- PostgreSQL 18 for identity persistence (login and readiness checks)
-
-Do not commit secrets. Use user secrets or environment variables for the development user password and any real connection string. See [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md).
-
-Backend:
-
-```bash
-dotnet restore
-dotnet run --project src/backend/HuGuWeb.Api --launch-profile http
+```powershell
+.\dev.ps1
 ```
 
-Frontend:
+That is the primary startup path. It checks .NET 10, Node 24, npm, and PostgreSQL 18, starts the existing development cluster only if `localhost:5432` is not already ready, then starts the API and Vite frontend.
 
-```bash
-cd src/frontend/web
-npm install
-npm run dev
-```
+Prerequisites, stopping behavior, and manual fallback commands: [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md).
+
+Do not commit secrets. Use user secrets or environment variables for the development user password and any real connection string.
 
 Tests and builds:
 

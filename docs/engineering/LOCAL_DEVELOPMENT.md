@@ -1,31 +1,79 @@
 # Local Development
 
-This document covers the Sprint 0.3B application foundation. It does not repeat architecture ADRs.
+This document covers running HuGuWeb on a developer machine. It does not repeat architecture ADRs.
 
 ## Prerequisites
 
-- .NET 10 SDK
-- Node.js 24 LTS and npm
-- PostgreSQL 18 for identity persistence, workforce persistence, and authentication runtime checks
+- Windows-first workflow (PowerShell)
+- .NET SDK 10
+- Node.js 24 LTS and npm (`npm.cmd` on Windows)
+- PostgreSQL 18 tools (`pg_isready` / `pg_ctl`) and an existing HuGuWeb development cluster
 
 PostgreSQL is required for login, session cookies, and `/health/ready`. The API can start without it; `/health` still reports process liveness.
 
-Local PostgreSQL 18 (this machine):
+Do not commit secrets. Connection strings and passwords stay in .NET User Secrets or local environment variables.
+
+## One-command startup
+
+From the repository root:
+
+```powershell
+.\dev.ps1
+```
+
+The launcher is for **development only**. It:
+
+1. Checks that .NET 10, Node 24, `npm.cmd`, and PostgreSQL 18 tools are present. It does **not** install software and does **not** change PowerShell execution policy.
+2. Checks `localhost:5432` with `pg_isready` when available. If PostgreSQL is already ready, it is **not** restarted.
+3. If PostgreSQL is not ready, starts the **existing** HuGuWeb development cluster. Discovery order: `PATH`, `C:\Program Files\PostgreSQL\18\bin`, then data under `%LOCALAPPDATA%\HuGuWeb\PostgreSQL\data` or `C:\Program Files\PostgreSQL\18\data`. It does not create a cluster, reset data, change passwords, or recreate `huguweb_dev`.
+4. Starts the ASP.NET API with the existing Development `http` launch profile if `/health` is not already 200.
+5. Waits for `/health` and `/health/ready`.
+6. Starts the Vite app from `src/frontend/web` with the existing `npm run dev` script if the frontend URL is not already reachable. It uses `npm.cmd` so `npm.ps1` execution-policy issues are avoided.
+
+When startup succeeds, it prints:
+
+- Frontend URL (from Vite config, currently `http://localhost:5173`)
+- API URL (from launch settings, currently `http://localhost:5116`)
+- PostgreSQL `localhost:5432`
+
+It does not print passwords, connection strings, User Secrets, cookies, or tokens.
+
+### Stopping
+
+- PostgreSQL is left running.
+- API and frontend run in separate consoles titled `HuGuWeb API` and `HuGuWeb Frontend`. Close those windows to stop them.
+- `.\dev-stop.ps1` stops **only** processes recorded by the launcher, after checking that the command line still looks like HuGuWeb API/frontend. It never runs `taskkill /IM node.exe` or `taskkill /IM dotnet.exe`.
+- Closing the launcher window does not kill unrelated processes.
+
+### Common failures
+
+| Symptom | What to check |
+| --- | --- |
+| Missing .NET / Node / npm / PostgreSQL tools | Install the expected major version and reopen the terminal. The launcher will not install them. |
+| PostgreSQL not ready and no data directory found | The existing cluster must already exist. Follow the manual PostgreSQL notes below. The launcher will not initialize a new cluster. |
+| `/health` never becomes 200 | Read the `HuGuWeb API` console. |
+| `/health/ready` fails | Database connection or pending migrations. Configure User Secrets locally; do not put passwords in `dev.ps1`. |
+| Frontend never becomes ready | Run `npm.cmd install` in `src/frontend/web` if `node_modules` is missing. Read the `HuGuWeb Frontend` console. |
+| `npm.ps1` is blocked | Use `npm.cmd` (the launcher already does). Do not weaken machine execution policy. |
+
+## Manual PostgreSQL notes
+
+Local PostgreSQL 18 typically uses:
 
 - Binaries: `C:\Program Files\PostgreSQL\18`
-- Data directory: `C:\Program Files\PostgreSQL\18\data`
+- Data directory: `%LOCALAPPDATA%\HuGuWeb\PostgreSQL\data` or `C:\Program Files\PostgreSQL\18\data`
 - Database: `huguweb_dev`
 - Application role: `huguweb` (not a superuser)
 - Connection string and passwords: .NET User Secrets / local environment only
 
-The Windows installer cluster init failed on this host because the OS locale name `Turkish_Türkiye.1254` contains non-ASCII characters. The cluster was initialized with `locale=C` / UTF8. A Windows service was not registered (service manager elevation). Start/stop as the installing user:
+The Windows installer cluster init can fail when the OS locale name contains non-ASCII characters. A cluster may be initialized with `locale=C` / UTF8. If a Windows service is not registered, start/stop as the installing user:
 
 ```bash
 "C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe" start -D "C:\Program Files\PostgreSQL\18\data"
 "C:\Program Files\PostgreSQL\18\bin\pg_ctl.exe" stop -D "C:\Program Files\PostgreSQL\18\data"
 ```
 
-Also set the connection string locally (never commit the password):
+Set the connection string locally (never commit the password):
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:IdentityDatabase" "Host=localhost;Port=5432;Database=huguweb_dev;Username=huguweb;Password=<local-app-password>" --project src/backend/HuGuWeb.Api
@@ -73,7 +121,9 @@ dotnet ef database update --project src/backend/modules/HuGuWeb.Workforce.Infras
 
 The Identity migrations contain ASP.NET Core Identity tables and nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). The Workforce migration adds Organization & Workforce tables only. Apply pending migrations with the commands above; do not auto-apply in Production.
 
-## Backend
+## Backend (manual fallback)
+
+Prefer `.\dev.ps1`. To start the API alone:
 
 ```bash
 dotnet restore
@@ -87,13 +137,17 @@ Useful URLs:
 - OpenAPI (Development only): `http://localhost:5116/openapi/v1.json`
 - HTTPS profile is available as `https` (`https://localhost:7138`) for direct API use
 
-## Frontend
+## Frontend (manual fallback)
+
+Prefer `.\dev.ps1`. To start the SPA alone:
 
 ```bash
 cd src/frontend/web
 npm install
 npm run dev
 ```
+
+On Windows PowerShell, prefer `npm.cmd install` and `npm.cmd run dev` if `npm.ps1` is blocked by execution policy. Do not change machine execution policy for this.
 
 The Vite dev server proxies `/api`, `/health`, and `/openapi` to `http://localhost:5116`. Leave `VITE_API_BASE_URL` empty for that same-origin proxy. Copy `.env.example` only if you need a local override; do not commit `.env`.
 
