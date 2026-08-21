@@ -86,9 +86,31 @@ Exact state model (reserved vs in-house vs checked-out) is **not yet defined**.
 
 ## Room
 
-Discovery-level meaning: a sellable or assignable accommodation unit (or logical room inventory item) at a property. Rooms have status (e.g., clean, dirty, out of order) relevant to front office and housekeeping.
+Discovery-level meaning: a sellable or assignable accommodation unit (or logical room inventory item) at a property.
 
-Room types, connecting rooms, and non-room inventory are **not yet defined**.
+Sprint 0.9A **Accepted** that Room is a **property-scoped identity** (`Organization` → `Property` → `Room`), first hosted by **Room Operations**. Reservations / Stay consume `RoomId` later; they do **not** own Room identity.
+
+Cleanliness/readiness, occupancy, technical serviceability, operational block, guest service restrictions, and sellability are **separate dimensions** — not one `RoomStatus` enum mixing Dirty, Clean, Inspected, Ready, Occupied, Vacant, Blocked, OutOfOrder, OutOfService, DND, and NoService.
+
+RoomType is **not** added in Sprint 0.9B unless implementation later proves it unavoidable. Connecting rooms and non-room inventory remain **not yet defined** as aggregates. See [Room Operations](../domain/room-operations/README.md).
+
+---
+
+## Room Operations / Oda Operasyonları
+
+**Status:** Accepted — Sprint 0.9A ([ROOM-OPS-DOMAIN-001](../domain/room-operations/ROOM-OPS-DOMAIN-001.md)).
+
+The hotel-operations domain that hosts minimal Room identity and **Room Readiness**. Kat Hizmetleri is a **primary participant**, not the owner of all room operational state. Ön Büro, Minibar, and Teknik Servis participate through distinct facts. Not a Housekeeping module and not Reservations. Sprint 0.9B implementation is a separate sprint and is not started by this acceptance.
+
+---
+
+## Room Readiness / Oda hazırlık
+
+**Status:** Accepted — Sprint 0.9A.
+
+The Dirty → Clean → Inspected → Ready (`Kirli` → `Temiz` → `Denetimli` → `Hazır`) preparation machine. **Inspected is a real domain state.** This machine is **not** occupancy, **not** Out of Order / Out of Service / Blocked, **not** Minibar, **not** DND / No Service, and **not** the same as sellable.
+
+**Ready ≠ Sellable.** Ready means preparation completed. Sellable is composed later from independent conditions and is not stored as a master status in Sprint 0.9B.
 
 ---
 
@@ -111,11 +133,13 @@ Folio vs invoice vs accounting posting boundaries are **not yet defined**.
 
 ---
 
-## Housekeeping
+## Housekeeping / Kat Hizmetleri
 
-Discovery-level meaning: hotel department and workflows responsible for room cleaning, inspection, readiness status, and coordination with front office on room availability.
+Discovery-level meaning: hotel **department** and procedures for room cleaning, inspection, and related floor work.
 
-In HuGuWeb context: a cross-department workflow area in product discovery—not an approved module name. Current Strong MVP lean is **room-readiness coordination with front office**, not a full housekeeping platform.
+In HuGuWeb context: **not** an approved module name. Sprint 0.9A **Accepted** Kat Hizmetleri as a **primary participant** in **Room Operations**, which owns Oda hazırlık (Room Readiness). Current Strong MVP lean remains **room-readiness coordination with front office**, not a full housekeeping platform (linen programs, generic task engines, employee mobile).
+
+See [Room Operations](../domain/room-operations/README.md) and [MVP Candidates](MVP_CANDIDATES.md).
 
 ---
 
@@ -215,3 +239,4 @@ A time-boxed development cycle with a defined goal, requirements, implementation
 - [Hotel Problems](HOTEL_PROBLEMS.md)
 - [Future Scope](FUTURE_SCOPE.md)
 - [Evidence Model](EVIDENCE_MODEL.md)
+- [Room Operations](../domain/room-operations/README.md) (Accepted — Sprint 0.9A)
