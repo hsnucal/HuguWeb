@@ -1,16 +1,18 @@
+import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
-import { OperationsCenter } from './OperationsCenter'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import styles from './AppShell.module.css'
 
 export function AppShell() {
   const { t } = useTranslation()
+  const location = useLocation()
   const { user, preferenceError, signOut, updatePreferredLanguage } = useAuthSession()
   const userLabel = user?.email ?? user?.id ?? t('auth.signedIn')
+  const heading = headingFor(location.pathname, t)
 
   async function onLogout() {
     await signOut()
@@ -48,12 +50,32 @@ export function AppShell() {
           </p>
         ) : null}
 
-        <TopBar title={t('operations.title')} subtitle={t('operations.intro')} />
+        <TopBar title={heading.title} subtitle={heading.subtitle} />
 
         <main className={styles.main} id="main" tabIndex={-1}>
-          <OperationsCenter />
+          <Outlet />
         </main>
       </div>
     </div>
   )
+}
+
+function headingFor(pathname: string, t: (key: string) => string) {
+  if (pathname.startsWith('/app/workforce/departments')) {
+    return { title: t('workforce.departments'), subtitle: t('workforce.departmentsIntro') }
+  }
+
+  if (pathname.startsWith('/app/workforce/positions')) {
+    return { title: t('workforce.positions'), subtitle: t('workforce.positionsIntro') }
+  }
+
+  if (pathname.startsWith('/app/workforce/employees/')) {
+    return { title: t('workforce.title'), subtitle: t('workforce.intro') }
+  }
+
+  if (pathname.startsWith('/app/workforce')) {
+    return { title: t('workforce.title'), subtitle: t('workforce.intro') }
+  }
+
+  return { title: t('operations.title'), subtitle: t('operations.intro') }
 }

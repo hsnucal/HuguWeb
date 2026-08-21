@@ -17,6 +17,14 @@
     transform var(--motion-duration-instant) var(--motion-easing-standard);
 }
 
+.block {
+  width: 100%;
+}
+
+.inline {
+  width: auto;
+}
+
 .button:disabled {
   cursor: not-allowed;
   color: var(--color-interaction-disabled);
@@ -24,7 +32,6 @@
 }
 
 .primary {
-  width: 100%;
   background: var(--color-brand-primary);
   color: var(--color-text-inverse);
 }
@@ -44,7 +51,6 @@
 }
 
 .ghost {
-  width: auto;
   min-height: 2.35rem;
   background: transparent;
   color: var(--color-text-secondary);
@@ -64,4 +70,25 @@
 .ghost:disabled {
   border-color: var(--color-border-subtle);
   color: var(--color-interaction-disabled);
+}
+
+.danger {
+  min-height: 2.35rem;
+  background: transparent;
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border-subtle));
+  font-weight: var(--font-weight-medium);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--color-danger-soft);
+}
+
+.danger:active:not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger-soft) 80%, var(--color-danger));
+}
+
+.danger:disabled {
+  color: var(--color-interaction-disabled);
+  border-color: var(--color-border-subtle);
 }

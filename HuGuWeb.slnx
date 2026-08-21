@@ -3,6 +3,10 @@
   <Folder Name="/src/backend/">
     <Project Path="src/backend/HuGuWeb.Api/HuGuWeb.Api.csproj" />
   </Folder>
+  <Folder Name="/src/backend/modules/">
+    <Project Path="src/backend/modules/HuGuWeb.Workforce/HuGuWeb.Workforce.csproj" />
+    <Project Path="src/backend/modules/HuGuWeb.Workforce.Infrastructure/HuGuWeb.Workforce.Infrastructure.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HuGuWeb.ArchitectureTests/HuGuWeb.ArchitectureTests.csproj" />
     <Project Path="tests/HuGuWeb.UnitTests/HuGuWeb.UnitTests.csproj" />

@@ -42,7 +42,8 @@ Do not create placeholder implementation concepts for deferred scope.
 ## Core concepts
 
 ```text
-Organization → Property → Department → Position
+Organization → Property → Department
+Organization → Property → Position
 Employee → Employment → Assignment → (Department, Position)
 ```
 

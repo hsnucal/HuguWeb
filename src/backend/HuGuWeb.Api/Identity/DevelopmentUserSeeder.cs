@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using HuGuWeb.Api.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 namespace HuGuWeb.Api.Identity;
@@ -30,6 +32,7 @@ public static class DevelopmentUserSeeder
             var existing = await userManager.FindByEmailAsync(email);
             if (existing is not null)
             {
+                await EnsureWorkforcePermissionsAsync(userManager, existing);
                 return;
             }
 
@@ -48,11 +51,37 @@ public static class DevelopmentUserSeeder
                 return;
             }
 
+            await EnsureWorkforcePermissionsAsync(userManager, user);
             logger.LogInformation("Development user {Email} was created.", email);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Development user was not seeded because the identity database is unavailable.");
         }
+    }
+
+    private static async Task EnsureWorkforcePermissionsAsync(
+        UserManager<ApplicationUser> userManager,
+        ApplicationUser user)
+    {
+        var claims = await userManager.GetClaimsAsync(user);
+        await AddPermissionIfMissing(userManager, user, claims, WorkforcePermissions.Read);
+        await AddPermissionIfMissing(userManager, user, claims, WorkforcePermissions.Manage);
+    }
+
+    private static async Task AddPermissionIfMissing(
+        UserManager<ApplicationUser> userManager,
+        ApplicationUser user,
+        IList<Claim> claims,
+        string permission)
+    {
+        if (claims.Any(claim =>
+                claim.Type == WorkforcePermissions.ClaimType
+                && claim.Value == permission))
+        {
+            return;
+        }
+
+        await userManager.AddClaimAsync(user, new Claim(WorkforcePermissions.ClaimType, permission));
     }
 }

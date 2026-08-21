@@ -64,6 +64,17 @@ export function SettingsIcon({ className }: IconProps) {
   )
 }
 
+export function PeopleIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <circle cx="9" cy="8" r="2.4" />
+      <path d="M4.5 18v-1.2C4.5 14.4 6.4 13 9 13s4.5 1.4 4.5 3.8V18" />
+      <circle cx="16.5" cy="8.5" r="2" />
+      <path d="M19.5 18v-1c0-1.7-1.2-3.1-3.2-3.6" />
+    </svg>
+  )
+}
+
 export function SignOutIcon({ className }: IconProps) {
   return (
     <svg className={className} {...svg}>

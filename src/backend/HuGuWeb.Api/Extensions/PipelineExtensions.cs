@@ -37,6 +37,7 @@ public static class PipelineExtensions
         });
 
         app.MapAuthEndpoints();
+        app.MapWorkforceEndpoints();
 
         return app;
     }

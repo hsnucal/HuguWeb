@@ -9,8 +9,9 @@ Sprint 0.7B is the first real HuGuWeb business-domain implementation. It proves 
 ## What 0.7B must prove
 
 ```text
-Organization → Property → Department → Position
-Employee → Employment → Primary Assignment
+Organization → Property → Department
+Organization → Property → Position
+Employee → Employment → Primary Assignment → (Department, Position)
 ```
 
 Bootstrap: **one Organization**, **one Property**. No Organization admin UI. No Property admin UI.
@@ -20,7 +21,7 @@ Bootstrap: **one Organization**, **one Property**. No Organization admin UI. No 
 ## Required workflows
 
 1. **Maintain Departments** — create, rename, deactivate. Customer-defined names. Flat list. Not enums.
-2. **Maintain Positions** — create, rename, deactivate. Belongs to a department. Customer-defined names. Not enums. Not permissions.
+2. **Maintain Positions** — create, rename, deactivate. Independent of Department. Customer-defined names. Not enums. Not permissions.
 3. **Hire Employee** — one business operation, not three CRUD calls.
 4. **Transfer Employee** — proves historical Primary Assignment behavior.
 5. **End Employment** — closes the relationship; deletes nothing.
@@ -128,7 +129,7 @@ Identity tables stay in the Identity context. Do not add Employee/User FK in thi
 Likely columns (not a schema):
 
 - Departments: id, propertyId, code?, name, isActive
-- Positions: id, departmentId, code?, name, isActive
+- Positions: id, propertyId, code?, name, isActive
 - Employees: id, organizationId, personnelNumber, givenName, familyName
 - Employments: id, employeeId, startDate, endDate?, status
 - Assignments: id, employmentId, departmentId, positionId, startDate, endDate?, kind

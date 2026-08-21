@@ -278,6 +278,17 @@
           "System.Composition.Hosting": "9.0.0",
           "System.Composition.Runtime": "9.0.0"
         }
+      },
+      "huguweb.workforce": {
+        "type": "Project"
+      },
+      "huguweb.workforce.infrastructure": {
+        "type": "Project",
+        "dependencies": {
+          "HuGuWeb.Workforce": "[1.0.0, )",
+          "Microsoft.EntityFrameworkCore": "[10.0.11, )",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "[10.0.3, )"
+        }
       }
     }
   }

@@ -49,12 +49,14 @@ Internal names stay English and stable. Product conversation uses Turkish.
 ```text
 Organization 1──* Property
 Property     1──* Department
-Department   1──* Position
+Property     1──* Position
 
 Employee 1──* Employment 1──* Assignment
 Assignment *──1 Department
 Assignment *──1 Position
 ```
+
+Position is **not** owned by Department. Assignment independently references Department and Position.
 
 This diagram is a **conceptual** relationship map, not an EF navigation or eager-load graph.
 

@@ -6,7 +6,7 @@ This document covers the Sprint 0.3B application foundation. It does not repeat 
 
 - .NET 10 SDK
 - Node.js 24 LTS and npm
-- PostgreSQL 18 for identity persistence and authentication runtime checks
+- PostgreSQL 18 for identity persistence, workforce persistence, and authentication runtime checks
 
 PostgreSQL is required for login, session cookies, and `/health/ready`. The API can start without it; `/health` still reports process liveness.
 
@@ -34,6 +34,8 @@ dotnet user-secrets set "ConnectionStrings:IdentityDatabase" "Host=localhost;Por
 ## Repository layout
 
 - `src/backend/HuGuWeb.Api` — ASP.NET Core API host
+- `src/backend/modules/HuGuWeb.Workforce` — Organization & Workforce domain and use cases
+- `src/backend/modules/HuGuWeb.Workforce.Infrastructure` — Workforce EF Core mapping
 - `src/frontend/web` — React 19 + Vite 8 SPA
 - `tests/HuGuWeb.UnitTests`
 - `tests/HuGuWeb.ArchitectureTests`
@@ -65,10 +67,11 @@ If those values are missing, the API skips seeding and logs that fact. There is 
 Create the identity schema with EF Core migrations. Do not use `EnsureCreated()`. Do not apply migrations automatically in Production. Development startup also does not auto-apply migrations.
 
 ```bash
-dotnet ef database update --project src/backend/HuGuWeb.Api
+dotnet ef database update --project src/backend/HuGuWeb.Api --context AppIdentityDbContext
+dotnet ef database update --project src/backend/modules/HuGuWeb.Workforce.Infrastructure --startup-project src/backend/HuGuWeb.Api --context WorkforceDbContext
 ```
 
-The initial migration contains ASP.NET Core Identity tables only. A later focused migration adds nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). Apply pending migrations with the same command; do not auto-apply in Production.
+The Identity migrations contain ASP.NET Core Identity tables and nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). The Workforce migration adds Organization & Workforce tables only. Apply pending migrations with the commands above; do not auto-apply in Production.
 
 ## Backend
 

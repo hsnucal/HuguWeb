@@ -1,7 +1,22 @@
 import type { AppLanguage } from './languages'
 
-export function formatDate(value: Date, language: AppLanguage): string {
-  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(value)
+export function formatDateOnly(value: string, language: AppLanguage): string {
+  const [year, month, day] = value.split('-').map(Number)
+  if (!year || !month || !day) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(
+    new Date(year, month - 1, day),
+  )
+}
+
+export function todayIsoDate(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function formatNumber(value: number, language: AppLanguage): string {

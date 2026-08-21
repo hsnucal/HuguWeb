@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
 import { BrandMark } from '../ui/BrandMark'
@@ -5,6 +6,7 @@ import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import {
   HomeIcon,
+  PeopleIcon,
   ReservationsIcon,
   RoomsIcon,
   SettingsIcon,
@@ -37,10 +39,22 @@ export function Sidebar({
       </div>
 
       <nav className={styles.nav} aria-label={t('navigation.primary')}>
-        <span className={styles.current} aria-current="page">
+        <NavLink
+          to="/app"
+          end
+          className={({ isActive }) => (isActive ? styles.current : styles.item)}
+        >
           <HomeIcon />
           {t('navigation.home')}
-        </span>
+        </NavLink>
+
+        <NavLink
+          to="/app/workforce"
+          className={({ isActive }) => (isActive ? styles.current : styles.item)}
+        >
+          <PeopleIcon />
+          {t('navigation.workforce')}
+        </NavLink>
 
         {futureNav.map((item) => {
           const Icon = item.icon

@@ -27,6 +27,7 @@ export type Translations = {
     tasks: string
     settings: string
     unavailable: string
+    workforce: string
   }
   operations: {
     title: string
@@ -57,6 +58,66 @@ export type Translations = {
     ready: string
     groupArrival: string
     vipArrival: string
+  }
+  workforce: {
+    title: string
+    intro: string
+    active: string
+    activeIntro: string
+    departments: string
+    departmentsIntro: string
+    positions: string
+    positionsIntro: string
+    hire: string
+    transfer: string
+    endEmployment: string
+    personnelNumber: string
+    givenName: string
+    familyName: string
+    startDate: string
+    effectiveDate: string
+    endDate: string
+    department: string
+    position: string
+    name: string
+    code: string
+    status: string
+    activeStatus: string
+    scheduledStatus: string
+    endedStatus: string
+    inactive: string
+    activate: string
+    deactivate: string
+    createDepartment: string
+    createPosition: string
+    rename: string
+    save: string
+    cancel: string
+    emptyActive: string
+    emptyDepartments: string
+    emptyPositions: string
+    scheduled: string
+    former: string
+    currentAssignment: string
+    employment: string
+    assignmentHistory: string
+    noHistory: string
+    selectDepartment: string
+    selectPosition: string
+    confirmEnd: string
+    workingIn: string
+    errors: {
+      personnelNumberInUse: string
+      departmentInactive: string
+      positionInactive: string
+      employmentEnded: string
+      noCurrentEmployment: string
+      invalidTransferDate: string
+      overlappingPrimaryAssignment: string
+      invalidEmploymentPeriod: string
+      sameAssignment: string
+      generic: string
+    }
   }
 }
 
@@ -90,6 +151,7 @@ export const en: Translations = {
     tasks: 'Tasks',
     settings: 'Settings',
     unavailable: '{{label}}, not available yet',
+    workforce: 'Workforce',
   },
   operations: {
     title: 'Operations Center',
@@ -120,5 +182,66 @@ export const en: Translations = {
     ready: 'Ready',
     groupArrival: 'Group arrival · {{count}} rooms',
     vipArrival: 'VIP arrival · {{room}}',
+  },
+  workforce: {
+    title: 'Workforce',
+    intro: 'Who works here, where they work, and in which position.',
+    active: 'Active staff',
+    activeIntro: 'People currently employed at this property.',
+    departments: 'Departments',
+    departmentsIntro: 'Hotel structure used when hiring and transferring staff.',
+    positions: 'Positions',
+    positionsIntro:
+      'Job titles used in assignments. A position is not owned by a department and does not grant system permissions.',
+    hire: 'Hire employee',
+    transfer: 'Transfer',
+    endEmployment: 'End employment',
+    personnelNumber: 'Personnel number',
+    givenName: 'Given name',
+    familyName: 'Family name',
+    startDate: 'Employment start date',
+    effectiveDate: 'Effective date',
+    endDate: 'Employment end date',
+    department: 'Department',
+    position: 'Position',
+    name: 'Name',
+    code: 'Code',
+    status: 'Status',
+    activeStatus: 'Active',
+    scheduledStatus: 'Scheduled',
+    endedStatus: 'Ended',
+    inactive: 'Inactive',
+    activate: 'Activate',
+    deactivate: 'Deactivate',
+    createDepartment: 'Add department',
+    createPosition: 'Add position',
+    rename: 'Rename',
+    save: 'Save',
+    cancel: 'Cancel',
+    emptyActive: 'No one is currently working here. Hire an employee to start the workforce list.',
+    emptyDepartments: 'No departments yet. Add the hotel structure before hiring.',
+    emptyPositions: 'No positions yet. Add a job title before hiring.',
+    scheduled: 'Starting later',
+    former: 'Former staff',
+    currentAssignment: 'Current assignment',
+    employment: 'Employment',
+    assignmentHistory: 'Assignment history',
+    noHistory: 'No assignment history yet.',
+    selectDepartment: 'Select a department',
+    selectPosition: 'Select a position',
+    confirmEnd: 'This ends the employment relationship. The person and history remain in HuGuWeb.',
+    workingIn: '{{department}} · {{position}}',
+    errors: {
+      personnelNumberInUse: 'This personnel number is already in use, including for former staff.',
+      departmentInactive: 'Choose an active department.',
+      positionInactive: 'Choose an active position.',
+      employmentEnded: 'This employment has already ended.',
+      noCurrentEmployment: 'This person does not have a current employment.',
+      invalidTransferDate: 'The transfer date would overlap or invert assignment history.',
+      overlappingPrimaryAssignment: 'Primary assignments cannot overlap.',
+      invalidEmploymentPeriod: 'The end date must be on or after the employment start date.',
+      sameAssignment: 'This person already works in that department and position.',
+      generic: 'The workforce request could not be completed.',
+    },
   },
 }

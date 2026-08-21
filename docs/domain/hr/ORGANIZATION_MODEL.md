@@ -74,7 +74,7 @@ Position is not Department, not a permission, not a Role, not a shift, and not a
 | | Department | Position |
 |-|------------|----------|
 | Example | Kat Hizmetleri | Kat Görevlisi |
-| Question | Which organizational area? | Which job title in that area? |
+| Question | Which organizational area? | Which job title? |
 
 Do **not** hard-code titles as enums. Do **not** add `IsManagerial` — it tends to become disguised authorization.
 
@@ -85,12 +85,12 @@ Do **not** hard-code titles as enums. Do **not** add `IsManagerial` — it tends
 | Technical id | Stable identity |
 | Optional code | Hotel-chosen if useful |
 | Display name | Customer-defined working name |
-| Department id | Position belongs to one department in this model |
+| Property id | Positions are property-scoped in this model. They are **not** owned by a Department. |
 | Active / inactive | Inactive cannot receive **new** assignments |
 
 A position may *later* suggest a default permission bundle when creating a user. That mapping is authorization configuration, not a domain rule of Position.
 
-First model: a position belongs to **one** department. Covering two departments is an Assignment concern (later Temporary), not a floating position.
+The same Position may be used by Assignments in multiple Departments. That relationship is expressed on Assignment (`DepartmentId` + `PositionId`), not by structurally attaching Position to one Department.
 
 ---
 

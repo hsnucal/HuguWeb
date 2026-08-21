@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
 using HuGuWeb.Api.Extensions;
 using HuGuWeb.Api.Identity;
+using HuGuWeb.Workforce.Infrastructure.Persistence;
+using HuGuWeb.Workforce.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,10 @@ builder.AddHuGuWebPersistence();
 builder.AddHuGuWebSecurity();
 builder.AddHuGuWebHealthChecks();
 builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 var app = builder.Build();
 
@@ -16,6 +23,21 @@ app.UseHuGuWebPipeline();
 if (app.Environment.IsDevelopment())
 {
     await DevelopmentUserSeeder.TrySeedAsync(app);
+    await TrySeedWorkforceAsync(app);
 }
 
 app.Run();
+
+static async Task TrySeedWorkforceAsync(WebApplication app)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
+        await DevelopmentWorkforceSeeder.TrySeedAsync(dbContext, app.Logger);
+    }
+    catch (Exception exception)
+    {
+        app.Logger.LogWarning(exception, "Development workforce data was not seeded.");
+    }
+}

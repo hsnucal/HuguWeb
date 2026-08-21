@@ -72,6 +72,16 @@ public static class SecurityExtensions
             options.AddPolicy(
                 AuthorizationPolicies.Authenticated,
                 policy => policy.RequireAuthenticatedUser());
+
+            options.AddPolicy(
+                AuthorizationPolicies.WorkforceRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Read)
+                    || context.User.HasClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.WorkforceManage,
+                policy => policy.RequireClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage));
         });
 
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

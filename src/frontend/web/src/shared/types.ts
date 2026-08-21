@@ -5,6 +5,7 @@ export type ProblemDetails = {
   detail?: string
   instance?: string
   correlationId?: string
+  code?: string
 }
 
 export type CurrentUser = {

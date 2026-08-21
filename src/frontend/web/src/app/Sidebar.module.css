@@ -28,6 +28,7 @@
 }
 
 .current,
+.item,
 .future {
   display: flex;
   align-items: flex-start;
@@ -43,11 +44,23 @@
   line-height: 1.3;
   text-align: left;
   overflow-wrap: break-word;
+  text-decoration: none;
 }
 
 .current svg,
+.item svg,
 .future svg {
   flex-shrink: 0;
+}
+
+.item {
+  color: var(--color-text-secondary);
+  text-decoration: none;
+}
+
+.item:hover {
+  background: var(--color-interaction-hover);
+  color: var(--color-text-primary);
 }
 
 .current {
