@@ -75,7 +75,7 @@ Preferred daily workflow in Cursor / VS Code:
 2. Press **F5**.
 3. Select **HuGuWeb Development**.
 
-That sequence checks PostgreSQL on `localhost:5432` (and starts the existing development cluster only if needed), starts Vite if needed and waits until `http://localhost:5173` returns 200, builds the API, starts the API under the debugger, waits for `/health`, then opens Chrome.
+That sequence checks PostgreSQL with `pg_isready` on `127.0.0.1:5432` (and starts or gracefully restarts the existing development cluster only if it is not accepting connections), starts Vite if needed and waits until `http://localhost:5173` returns 200, builds the API, starts the API under the debugger, waits for `/health`, then opens Chrome.
 
 | Surface | Address | Notes |
 | --- | --- | --- |

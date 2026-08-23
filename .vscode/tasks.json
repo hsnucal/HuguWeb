@@ -6,6 +6,7 @@
     "tasks": [
         {
             "label": "HuGuWeb: Ensure PostgreSQL",
+            // Readiness and recovery live only in dev.ps1 -EnsurePostgres (pg_isready on 127.0.0.1:5432).
             "type": "process",
             "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
             "args": [

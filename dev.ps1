@@ -4,7 +4,7 @@
 # CLI fallback from the repository root (process-local Bypass; do not Set-ExecutionPolicy):
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\dev.ps1
 # F5 task switches (process-local Bypass; do not Set-ExecutionPolicy):
-#   -EnsurePostgres              PostgreSQL ready on localhost:5432
+#   -EnsurePostgres              PostgreSQL ready on 127.0.0.1:5432 (pg_isready)
 #   -StartVite                   Start Vite if localhost:5173 is not already HTTP 200
 #   -WaitFrontend                Wait until Vite returns HTTP 200
 #   -StartChromeHealthWatcher    Detach a helper that opens Chrome after /health is 200
@@ -35,6 +35,8 @@ $PidFile = Join-Path $StateDir 'dev-launcher.json'
 
 $script:PgIsReady = $null
 $script:PgCtl = $null
+$script:PgHost = '127.0.0.1'
+$script:PgPort = 5432
 $script:NpmCmd = $null
 $script:ApiUrl = 'http://localhost:5116'
 $script:FrontendUrl = 'http://localhost:5173'
@@ -201,7 +203,24 @@ function Find-PostgresBinary {
     return $null
 }
 
-function Find-PostgresDataDirectory {
+function Test-SameFilePath {
+    param([string]$Left, [string]$Right)
+
+    if (-not $Left -or -not $Right) {
+        return $false
+    }
+
+    try {
+        $a = [System.IO.Path]::GetFullPath($Left.Trim()).TrimEnd('\', '/')
+        $b = [System.IO.Path]::GetFullPath($Right.Trim()).TrimEnd('\', '/')
+        return ($a -ieq $b)
+    }
+    catch {
+        return ($Left.Trim().TrimEnd('\', '/') -ieq $Right.Trim().TrimEnd('\', '/'))
+    }
+}
+
+function Get-PostgresDataCandidates {
     $candidates = @()
     if ($env:PGDATA) {
         $candidates += $env:PGDATA
@@ -210,14 +229,108 @@ function Find-PostgresDataDirectory {
         (Join-Path $env:LOCALAPPDATA 'HuGuWeb\PostgreSQL\data'),
         (Join-Path $env:ProgramFiles 'PostgreSQL\18\data')
     )
+    return $candidates
+}
 
-    foreach ($candidate in $candidates) {
-        if ($candidate -and (Test-Path (Join-Path $candidate 'PG_VERSION'))) {
+function Test-PostgresDataDirectory {
+    param([string]$Path)
+
+    return ($Path -and (Test-Path (Join-Path $Path 'PG_VERSION')))
+}
+
+function Find-PostgresDataDirectory {
+    # Deterministic existing-cluster discovery. Never prefer a missing path
+    # and never initialize a new cluster.
+    # 1. %PGDATA% when it already contains a cluster
+    # 2. %LOCALAPPDATA%\HuGuWeb\PostgreSQL\data when that HuGuWeb cluster exists
+    # 3. %ProgramFiles%\PostgreSQL\18\data when that installer cluster exists
+    foreach ($candidate in (Get-PostgresDataCandidates)) {
+        if (Test-PostgresDataDirectory -Path $candidate) {
             return $candidate
         }
     }
 
     return $null
+}
+
+function Get-PostgresDataSearchNotes {
+    return @"
+Looked in (a path is used only when it already contains PG_VERSION):
+  %PGDATA%
+  %LOCALAPPDATA%\HuGuWeb\PostgreSQL\data
+  %ProgramFiles%\PostgreSQL\18\data
+This launcher does not create a cluster, reset data, change passwords, or recreate databases.
+"@
+}
+
+function Invoke-PostgresTool {
+    param(
+        [string]$Exe,
+        [string[]]$Arguments,
+        [switch]$NoCapture
+    )
+
+    # pg_ctl start/stop must not have stdout/stderr captured. The postmaster
+    # inherits those handles and pg_ctl -w then hangs after the server is up.
+    if ($NoCapture) {
+        & $Exe @Arguments
+        return [pscustomobject]@{
+            ExitCode = $LASTEXITCODE
+            Output   = ''
+        }
+    }
+
+    $output = & $Exe @Arguments 2>&1
+    $code = $LASTEXITCODE
+    $text = ($output | ForEach-Object { "$_" }) -join [Environment]::NewLine
+    return [pscustomobject]@{
+        ExitCode = $code
+        Output   = $text.Trim()
+    }
+}
+
+function Get-PostgresLogHint {
+    param([string]$DataDirectory)
+
+    if (-not $DataDirectory) {
+        return $null
+    }
+
+    foreach ($relative in @('log', 'pg_log')) {
+        $dir = Join-Path $DataDirectory $relative
+        if (-not (Test-Path $dir)) {
+            continue
+        }
+
+        $latest = Get-ChildItem -Path $dir -Filter '*.log' -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($latest) {
+            return $latest.FullName
+        }
+
+        return $dir
+    }
+
+    return $DataDirectory
+}
+
+function Get-PostgresFailureMessage {
+    param(
+        [string]$Message,
+        [string]$DataDirectory
+    )
+
+    $log = Get-PostgresLogHint -DataDirectory $DataDirectory
+    $block = $Message.TrimEnd()
+    if ($DataDirectory) {
+        $block += [Environment]::NewLine + "Cluster: $DataDirectory"
+    }
+    if ($log) {
+        $block += [Environment]::NewLine + "PostgreSQL log: $log"
+    }
+    $block += [Environment]::NewLine + 'No postmaster.pid was deleted. No postgres.exe process was force-killed. No cluster or database was created or reset.'
+    return $block
 }
 
 function Get-PostgresMajorVersion {
@@ -237,11 +350,12 @@ function Assert-PostgresTools {
     $script:PgIsReady = Find-PostgresBinary -FileName 'pg_isready.exe'
     $script:PgCtl = Find-PostgresBinary -FileName 'pg_ctl.exe'
 
-    if (-not $script:PgIsReady -and -not $script:PgCtl) {
+    if (-not $script:PgIsReady) {
         Stop-WithError @"
-Missing prerequisite: PostgreSQL 18 tools (pg_isready / pg_ctl).
-Looked in PATH and C:\Program Files\PostgreSQL\18\bin.
+Missing prerequisite: PostgreSQL 18 pg_isready.exe.
+Looked in PATH and %ProgramFiles%\PostgreSQL\18\bin.
 Install PostgreSQL 18, then reopen the terminal.
+A listening TCP port or a running postgres.exe process is not treated as ready.
 "@
     }
 
@@ -251,13 +365,259 @@ Install PostgreSQL 18, then reopen the terminal.
     }
 }
 
-function Test-PostgresReady {
-    if ($script:PgIsReady) {
-        & $script:PgIsReady -h localhost -p 5432 | Out-Null
-        return ($LASTEXITCODE -eq 0)
+function Get-PostgresReadyResult {
+    if (-not $script:PgIsReady) {
+        return [pscustomobject]@{
+            Ready    = $false
+            ExitCode = $null
+            Output   = 'pg_isready.exe was not found.'
+        }
     }
 
-    return (Test-TcpPortOpen -HostName 'localhost' -Port 5432)
+    $result = Invoke-PostgresTool -Exe $script:PgIsReady -Arguments @('-h', $script:PgHost, '-p', "$($script:PgPort)", '-t', '3')
+    # Exit 0 is the documented "accepting connections" state. Do not require
+    # English stdout; pg_isready messages follow the OS locale.
+    return [pscustomobject]@{
+        Ready    = ($result.ExitCode -eq 0)
+        ExitCode = $result.ExitCode
+        Output   = $result.Output
+    }
+}
+
+function Test-PostgresReady {
+    # pg_isready exit 0 is the only readiness signal. Process, pid file, and
+    # TCP listeners are not treated as healthy.
+    return [bool]((Get-PostgresReadyResult).Ready)
+}
+
+function Get-PostgresClusterStatus {
+    param([string]$DataDirectory)
+
+    $result = Invoke-PostgresTool -Exe $script:PgCtl -Arguments @('status', '-D', $DataDirectory)
+    $pidMatch = [regex]::Match($result.Output, '\(PID:\s*(\d+)\)')
+    $dataMatch = [regex]::Match($result.Output, '"-D"\s+"([^"]+)"')
+    if (-not $dataMatch.Success) {
+        $dataMatch = [regex]::Match($result.Output, '(?i)(?:^|[\s"])-D"?\s+"?([^"\r\n]+?)"?(?:\s|$)')
+    }
+
+    # pg_ctl status exit codes are locale-stable: 0 running, 3 not running.
+    $state = 'unknown'
+    if ($result.ExitCode -eq 3) {
+        $state = 'not-running'
+    }
+    elseif ($result.ExitCode -eq 0) {
+        $state = 'running'
+    }
+
+    $reportedData = $null
+    if ($dataMatch.Success) {
+        $reportedData = $dataMatch.Groups[1].Value.Trim().TrimEnd('\', '/')
+    }
+
+    $statusPid = $null
+    if ($pidMatch.Success) {
+        $statusPid = [int]$pidMatch.Groups[1].Value
+    }
+    elseif ($state -eq 'running') {
+        $pidFile = Join-Path $DataDirectory 'postmaster.pid'
+        if (Test-Path $pidFile) {
+            $first = ([string](@(Get-Content -Path $pidFile -ErrorAction SilentlyContinue)[0])).Trim()
+            $parsedPid = 0
+            if ([int]::TryParse($first, [ref]$parsedPid) -and $parsedPid -gt 0) {
+                $statusPid = $parsedPid
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        State        = $state
+        ExitCode     = $result.ExitCode
+        Output       = $result.Output
+        ProcessId    = $statusPid
+        ReportedData = $reportedData
+    }
+}
+
+function Test-ResolvedClusterOwnership {
+    param(
+        [string]$DataDirectory,
+        [object]$Status
+    )
+
+    if ($Status.State -ne 'running' -or -not $Status.ProcessId) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = 'pg_ctl status did not report a PID for the resolved data directory. Ownership is ambiguous. No cluster was stopped.'
+        }
+    }
+
+    if ($Status.ReportedData -and -not (Test-SameFilePath -Left $Status.ReportedData -Right $DataDirectory)) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = "pg_ctl status reported data directory '$($Status.ReportedData)', which is not the resolved cluster. Ownership is ambiguous. No cluster was stopped."
+        }
+    }
+
+    $pidFile = Join-Path $DataDirectory 'postmaster.pid'
+    if (-not (Test-Path $pidFile)) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = 'postmaster.pid was not found in the resolved data directory while pg_ctl reported the server running. Ownership is ambiguous. The pid file was not deleted.'
+        }
+    }
+
+    $lines = @(Get-Content -Path $pidFile -ErrorAction SilentlyContinue)
+    if ($lines.Count -lt 1) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = 'postmaster.pid in the resolved data directory could not be read. Ownership is ambiguous. The pid file was not deleted.'
+        }
+    }
+
+    $filePidText = ([string]$lines[0]).Trim()
+    $filePid = 0
+    if (-not [int]::TryParse($filePidText, [ref]$filePid) -or $filePid -le 0) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = 'postmaster.pid did not contain a usable PID. Ownership is ambiguous. The pid file was not deleted.'
+        }
+    }
+
+    if ($filePid -ne $Status.ProcessId) {
+        return [pscustomobject]@{
+            Confirmed = $false
+            Reason    = "pg_ctl status PID $($Status.ProcessId) does not match postmaster.pid PID $filePid. Ownership is ambiguous. No cluster was stopped."
+        }
+    }
+
+    if ($lines.Count -ge 2 -and ([string]$lines[1]).Trim()) {
+        $fileData = ([string]$lines[1]).Trim()
+        if (-not (Test-SameFilePath -Left $fileData -Right $DataDirectory)) {
+            return [pscustomobject]@{
+                Confirmed = $false
+                Reason    = "postmaster.pid reports data directory '$fileData', which is not the resolved cluster. Ownership is ambiguous. No cluster was stopped."
+            }
+        }
+    }
+
+    return [pscustomobject]@{
+        Confirmed = $true
+        Reason    = $null
+    }
+}
+
+function Wait-PostgresReady {
+    param(
+        [string]$DataDirectory,
+        [int]$TimeoutSeconds = 40
+    )
+
+    Wait-Until -TimeoutSeconds $TimeoutSeconds -Condition { Test-PostgresReady } -FailureMessage (
+        Get-PostgresFailureMessage -DataDirectory $DataDirectory -Message @"
+PostgreSQL did not become ready on $($script:PgHost):$($script:PgPort).
+pg_isready must report accepting connections. A running process or a listening port is not enough.
+"@
+    )
+}
+
+function Invoke-PgCtlStart {
+    param([string]$DataDirectory)
+
+    # Detach start from captured consoles (F5 tasks pipe stdout). Do not use
+    # Start-Process -Wait: Windows waits for the postgres child tree.
+    # Do not use pg_ctl -w under a redirected console: the postmaster can
+    # inherit those handles and -w hangs after the server is already up.
+    # -l appends to the existing cluster log; postgresql.conf is not modified.
+    $logArg = ''
+    $logDir = Join-Path $DataDirectory 'log'
+    if (Test-Path $logDir) {
+        $logFile = Join-Path $logDir 'postgresql.log'
+        $logArg = " -l `"$logFile`""
+    }
+
+    $argumentList = "start -D `"$DataDirectory`"$logArg"
+    $proc = Start-Process -FilePath $script:PgCtl -ArgumentList $argumentList -PassThru -WindowStyle Hidden
+    if (-not $proc) {
+        return [pscustomobject]@{
+            ExitCode = 1
+            Output   = 'pg_ctl start did not start.'
+        }
+    }
+
+    $deadline = (Get-Date).AddSeconds(20)
+    do {
+        if ($proc.HasExited) {
+            break
+        }
+        Start-Sleep -Milliseconds 200
+    } while ((Get-Date) -lt $deadline)
+
+    if (-not $proc.HasExited) {
+        return [pscustomobject]@{
+            ExitCode = 1
+            Output   = 'pg_ctl start did not exit within 20 seconds. The existing cluster was not force-killed.'
+        }
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $proc.ExitCode
+        Output   = ''
+    }
+}
+
+function Start-ExistingPostgresCluster {
+    param([string]$DataDirectory)
+
+    $result = Invoke-PgCtlStart -DataDirectory $DataDirectory
+    if ($result.ExitCode -ne 0) {
+        $detail = $result.Output
+        if (-not $detail) {
+            $detail = "pg_ctl start exited with code $($result.ExitCode)."
+        }
+        Stop-WithError (Get-PostgresFailureMessage -DataDirectory $DataDirectory -Message @"
+Failed to start the existing PostgreSQL cluster.
+$detail
+"@)
+    }
+
+    Wait-PostgresReady -DataDirectory $DataDirectory
+}
+
+function Restart-ExistingPostgresCluster {
+    param([string]$DataDirectory)
+
+    $stop = Invoke-PostgresTool -Exe $script:PgCtl -Arguments @('stop', '-D', $DataDirectory, '-m', 'fast', '-w', '-t', '30') -NoCapture
+    if ($stop.ExitCode -ne 0) {
+        $detail = $stop.Output
+        if (-not $detail) {
+            $detail = "pg_ctl stop -m fast exited with code $($stop.ExitCode)."
+        }
+        Stop-WithError (Get-PostgresFailureMessage -DataDirectory $DataDirectory -Message @"
+Graceful PostgreSQL stop failed for the resolved cluster.
+$detail
+No force kill was attempted. Fix the existing cluster, then press F5 again.
+"@)
+    }
+
+    $deadline = (Get-Date).AddSeconds(15)
+    $stopped = $false
+    do {
+        $afterStop = Get-PostgresClusterStatus -DataDirectory $DataDirectory
+        if ($afterStop.State -eq 'not-running') {
+            $stopped = $true
+            break
+        }
+        Start-Sleep -Seconds 1
+    } while ((Get-Date) -lt $deadline)
+
+    if (-not $stopped) {
+        Stop-WithError (Get-PostgresFailureMessage -DataDirectory $DataDirectory -Message @"
+Graceful PostgreSQL stop did not leave the resolved cluster in a not-running state.
+No force kill was attempted. Fix the existing cluster, then press F5 again.
+"@)
+    }
+
+    Start-ExistingPostgresCluster -DataDirectory $DataDirectory
 }
 
 function Start-HuGuWebPostgres {
@@ -266,30 +626,55 @@ function Start-HuGuWebPostgres {
         return
     }
 
+    Write-Step 'PostgreSQL' 'Not ready'
+
     if (-not $script:PgCtl) {
-        Stop-WithError 'PostgreSQL is not ready on localhost:5432, and pg_ctl.exe was not found to start the existing development cluster.'
+        Stop-WithError @"
+PostgreSQL is not ready on $($script:PgHost):$($script:PgPort), and pg_ctl.exe was not found to start the existing development cluster.
+Looked in PATH and %ProgramFiles%\PostgreSQL\18\bin.
+"@
     }
 
     $data = Find-PostgresDataDirectory
     if (-not $data) {
         Stop-WithError @"
-PostgreSQL is not ready on localhost:5432, and no existing HuGuWeb development data directory was found.
-Looked in:
-  %LOCALAPPDATA%\HuGuWeb\PostgreSQL\data
-  C:\Program Files\PostgreSQL\18\data
-This launcher does not create a cluster, reset data, or change passwords.
+PostgreSQL is not ready on $($script:PgHost):$($script:PgPort), and no existing development data directory was found.
+$(Get-PostgresDataSearchNotes)
 "@
     }
 
-    Write-Host "Starting existing PostgreSQL cluster: $data"
-    & $script:PgCtl start -D $data -w -t 30 | Out-Host
-    Wait-Until -TimeoutSeconds 40 -Condition { Test-PostgresReady } -FailureMessage @"
-PostgreSQL did not become ready on localhost:5432.
-Tried to start the existing cluster at:
-  $data
-The cluster was not created or reset. Check that PostgreSQL 18 is installed and that this data directory belongs to the HuGuWeb development cluster.
-"@
-    Write-Step 'PostgreSQL' 'Ready'
+    Write-Step 'Cluster' $data
+
+    $status = Get-PostgresClusterStatus -DataDirectory $data
+    if ($status.State -eq 'not-running') {
+        Write-Step 'Status' 'Not running'
+        Write-Step 'Action' 'Starting existing cluster'
+        Start-ExistingPostgresCluster -DataDirectory $data
+        Write-Step 'PostgreSQL' 'Ready'
+        return
+    }
+
+    if ($status.State -eq 'running') {
+        $owner = Test-ResolvedClusterOwnership -DataDirectory $data -Status $status
+        if (-not $owner.Confirmed) {
+            Stop-WithError (Get-PostgresFailureMessage -DataDirectory $data -Message @"
+PostgreSQL is running but not accepting connections, and cluster ownership could not be confirmed.
+$($owner.Reason)
+"@)
+        }
+
+        Write-Step 'Status' 'Running but unhealthy'
+        Write-Step 'Action' 'Restarting existing cluster'
+        Restart-ExistingPostgresCluster -DataDirectory $data
+        Write-Step 'PostgreSQL' 'Ready'
+        return
+    }
+
+    Stop-WithError (Get-PostgresFailureMessage -DataDirectory $data -Message @"
+PostgreSQL is not accepting connections, and pg_ctl status for the resolved cluster was ambiguous.
+$($status.Output)
+No cluster was started or stopped.
+"@)
 }
 
 function Test-ApiLive {
@@ -425,7 +810,7 @@ if ($EnsurePostgres) {
     Assert-PostgresTools
     Start-HuGuWebPostgres
     Write-Host ''
-    Write-Host 'PostgreSQL is ready on localhost:5432.'
+    Write-Host 'PostgreSQL is ready on 127.0.0.1:5432 (pg_isready accepting connections).'
     Write-Host 'Port 5432 is PostgreSQL, not an HTTP URL. Do not open it in Chrome.'
     exit 0
 }
@@ -531,7 +916,7 @@ Write-Host 'API:'
 Write-Host $script:ApiUrl
 Write-Host ''
 Write-Host 'PostgreSQL:'
-Write-Host 'localhost:5432'
+Write-Host '127.0.0.1:5432'
 Write-Host ''
 Write-Host 'PostgreSQL port 5432 is not an HTTP URL and is not opened in Chrome.'
 Write-Host 'PostgreSQL is left running if it was already running, and is also left running if this launcher started it.'
