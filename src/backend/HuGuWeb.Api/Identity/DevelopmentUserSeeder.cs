@@ -32,6 +32,7 @@ public static class DevelopmentUserSeeder
             var existing = await userManager.FindByEmailAsync(email);
             if (existing is not null)
             {
+                logger.LogInformation("Development user already exists. Credentials were not changed.");
                 await EnsureWorkforcePermissionsAsync(userManager, existing);
                 return;
             }

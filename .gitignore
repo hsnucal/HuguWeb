@@ -1,6 +1,14 @@
 # Visual Studio IDE local state
 .vs/
 
+# Cursor / VS Code: track approved F5 configuration only.
+# Personal editor state (settings.json, history, etc.) stays untracked.
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+
 # OS artifacts
 Thumbs.db
 Desktop.ini

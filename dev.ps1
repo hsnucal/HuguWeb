@@ -1,8 +1,26 @@
-# Requires PowerShell 5.1 or later. Start HuGuWeb local development from the repository root:
-#   .\dev.ps1
+# Requires PowerShell 5.1 or later.
+#
+# Preferred daily workflow: Cursor / VS Code F5 -> "HuGuWeb Development".
+# CLI fallback from the repository root (process-local Bypass; do not Set-ExecutionPolicy):
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\dev.ps1
+# F5 task switches (process-local Bypass; do not Set-ExecutionPolicy):
+#   -EnsurePostgres              PostgreSQL ready on localhost:5432
+#   -StartVite                   Start Vite if localhost:5173 is not already HTTP 200
+#   -WaitFrontend                Wait until Vite returns HTTP 200
+#   -StartChromeHealthWatcher    Detach a helper that opens Chrome after /health is 200
+#   -OpenChromeWhenHealthy       Wait for API /health 200, then open http://localhost:5173
 #
 # This script starts DEVELOPMENT processes only. It does not install software,
 # create a PostgreSQL cluster, change passwords, or store credentials.
+
+[CmdletBinding()]
+param(
+    [switch]$EnsurePostgres,
+    [switch]$StartVite,
+    [switch]$WaitFrontend,
+    [switch]$StartChromeHealthWatcher,
+    [switch]$OpenChromeWhenHealthy
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -289,6 +307,25 @@ function Test-FrontendReady {
     return $status -eq 200
 }
 
+function Open-DevelopmentBrowser {
+    param([string]$Url)
+
+    $candidates = @(
+        (Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'),
+        (Join-Path ${env:ProgramFiles(x86)} 'Google\Chrome\Application\chrome.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Google\Chrome\Application\chrome.exe')
+    )
+
+    foreach ($path in $candidates) {
+        if ($path -and (Test-Path $path)) {
+            Start-Process -FilePath $path -ArgumentList $Url
+            return
+        }
+    }
+
+    Start-Process $Url
+}
+
 function Start-OwnedWindow {
     param(
         [string]$Title,
@@ -296,7 +333,15 @@ function Start-OwnedWindow {
         [string]$WorkingDirectory
     )
 
-    return Start-Process -FilePath 'cmd.exe' -ArgumentList @('/k', "title $Title && $CommandLine") -WorkingDirectory $WorkingDirectory -PassThru
+    # cmd.exe /k must receive one command string. Start-Process quotes any
+    # ArgumentList item that contains spaces. If that item already contains
+    # quotes (for example a Program Files npm.cmd path), cmd.exe receives
+    # broken quoting: a console can open without actually running Vite, while
+    # a leftover process on 5173 still makes the readiness check succeed.
+    # Keep $CommandLine free of nested quotes; call npm.cmd / dotnet by PATH
+    # name so cmd.exe never invokes npm.ps1.
+    $command = "title $Title && $CommandLine"
+    return Start-Process -FilePath 'cmd.exe' -ArgumentList "/k `"$command`"" -WorkingDirectory $WorkingDirectory -PassThru
 }
 
 function Save-LauncherState {
@@ -325,7 +370,7 @@ function Start-HuGuWebApi {
     }
 
     $relativeProject = 'src\backend\HuGuWeb.Api\HuGuWeb.Api.csproj'
-    $proc = Start-OwnedWindow -Title 'HuGuWeb API' -WorkingDirectory $RepoRoot -CommandLine "dotnet run --project `"$relativeProject`" --launch-profile http"
+    $proc = Start-OwnedWindow -Title 'HuGuWeb API' -WorkingDirectory $RepoRoot -CommandLine "dotnet run --project $relativeProject --launch-profile http"
     $script:StartedApiPid = $proc.Id
     Save-LauncherState
 
@@ -362,8 +407,7 @@ Then start again with .\dev.ps1.
 "@
     }
 
-    $npm = $script:NpmCmd
-    $proc = Start-OwnedWindow -Title 'HuGuWeb Frontend' -WorkingDirectory $FrontendDir -CommandLine "`"$npm`" run dev"
+    $proc = Start-OwnedWindow -Title 'HuGuWeb Frontend' -WorkingDirectory $FrontendDir -CommandLine 'npm.cmd run dev'
     $script:StartedFrontendPid = $proc.Id
     Save-LauncherState
 
@@ -373,6 +417,92 @@ A console window titled "HuGuWeb Frontend" should contain the failure details.
 On Windows, this launcher uses npm.cmd to avoid PowerShell execution-policy issues with npm.ps1.
 "@
     Write-Step 'Frontend' 'Ready'
+}
+
+if ($EnsurePostgres) {
+    Write-Host 'HuGuWeb PostgreSQL check'
+    Write-Host ''
+    Assert-PostgresTools
+    Start-HuGuWebPostgres
+    Write-Host ''
+    Write-Host 'PostgreSQL is ready on localhost:5432.'
+    Write-Host 'Port 5432 is PostgreSQL, not an HTTP URL. Do not open it in Chrome.'
+    exit 0
+}
+
+if ($StartVite) {
+    $script:FrontendUrl = Resolve-FrontendUrl
+    Write-Host 'HuGuWeb Vite'
+    Write-Host ''
+
+    if (Test-FrontendReady) {
+        Write-Host "Vite already ready at $script:FrontendUrl"
+        Write-Host 'localhost:5173'
+        exit 0
+    }
+
+    if (Test-TcpPortOpen -HostName 'localhost' -Port 5173) {
+        Stop-WithError @"
+Port 5173 is in use but did not return HTTP 200.
+Close the leftover process on that port, then press F5 again.
+No processes were killed.
+"@
+    }
+
+    Assert-Node
+    Assert-Npm
+
+    $nodeModules = Join-Path $FrontendDir 'node_modules'
+    if (-not (Test-Path $nodeModules)) {
+        Stop-WithError @"
+Frontend dependencies are missing.
+Run:
+  cd src\frontend\web
+  npm.cmd install
+Then press F5 again.
+"@
+    }
+
+    Set-Location $FrontendDir
+    & $script:NpmCmd run dev
+    exit $LASTEXITCODE
+}
+
+if ($WaitFrontend) {
+    $script:FrontendUrl = Resolve-FrontendUrl
+    Write-Host 'HuGuWeb Vite wait'
+    Write-Host ''
+    Wait-Until -TimeoutSeconds 60 -Condition { Test-FrontendReady } -FailureMessage @"
+The Vite frontend did not become ready at $script:FrontendUrl.
+F5 stopped before the API debugger. Inspect the Vite terminal.
+On Windows, F5 starts Vite with npm.cmd to avoid PowerShell execution-policy issues with npm.ps1.
+"@
+    Write-Step 'Frontend' "Ready ($script:FrontendUrl)"
+    exit 0
+}
+
+if ($StartChromeHealthWatcher) {
+    $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    Start-Process -FilePath $powershell -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', (Join-Path $RepoRoot 'dev.ps1'),
+        '-OpenChromeWhenHealthy'
+    ) -WorkingDirectory $RepoRoot -WindowStyle Hidden
+    Write-Host 'Chrome will open after http://localhost:5116/health returns 200.'
+    exit 0
+}
+
+if ($OpenChromeWhenHealthy) {
+    $script:ApiUrl = Resolve-ApiUrl
+    $script:FrontendUrl = Resolve-FrontendUrl
+    Wait-Until -TimeoutSeconds 90 -Condition { Test-ApiLive } -FailureMessage @"
+The HuGuWeb API did not become ready at $($script:ApiUrl)/health.
+Chrome was not opened.
+"@
+    Open-DevelopmentBrowser -Url $script:FrontendUrl
+    Write-Step 'Chrome' $script:FrontendUrl
+    exit 0
 }
 
 Write-Host 'HuGuWeb local development'
@@ -403,7 +533,9 @@ Write-Host ''
 Write-Host 'PostgreSQL:'
 Write-Host 'localhost:5432'
 Write-Host ''
+Write-Host 'PostgreSQL port 5432 is not an HTTP URL and is not opened in Chrome.'
 Write-Host 'PostgreSQL is left running if it was already running, and is also left running if this launcher started it.'
 Write-Host 'API and frontend run in separate consoles titled "HuGuWeb API" and "HuGuWeb Frontend".'
 Write-Host 'Close those windows to stop them, or run .\dev-stop.ps1 to stop only processes started by this launcher.'
 Write-Host 'This window can be closed. Ctrl+C here does not kill unrelated dotnet, Node, or PostgreSQL processes.'
+Write-Host 'Preferred daily workflow: Cursor / VS Code F5 -> HuGuWeb Development.'

@@ -6,6 +6,13 @@ using HuGuWeb.Workforce.Infrastructure.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    // CreateBuilder loads secrets via ApplicationName; coreclr can set that
+    // to the DLL name and skip them. Bind to this assembly instead.
+    builder.Configuration.AddUserSecrets(typeof(Program).Assembly, optional: true);
+}
+
 builder.AddHuGuWebObservability();
 builder.AddHuGuWebPersistence();
 builder.AddHuGuWebSecurity();

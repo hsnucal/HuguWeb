@@ -69,13 +69,27 @@ A **Modular Monolith with Clean Architecture boundaries** is **Accepted** in [AD
 
 ## Local Development
 
-From the repository root on Windows:
+Preferred daily workflow in Cursor / VS Code:
+
+1. Open the repository root.
+2. Press **F5**.
+3. Select **HuGuWeb Development**.
+
+That sequence checks PostgreSQL on `localhost:5432` (and starts the existing development cluster only if needed), starts Vite if needed and waits until `http://localhost:5173` returns 200, builds the API, starts the API under the debugger, waits for `/health`, then opens Chrome.
+
+| Surface | Address | Notes |
+| --- | --- | --- |
+| Frontend (Chrome) | http://localhost:5173 | Login page. This is the F5 browser target. |
+| API | http://localhost:5116 | Debugger; `/health` and `/health/ready`. Not opened in Chrome. |
+| PostgreSQL | localhost:5432 | Database port. **Not an HTTP URL** — do not open it in Chrome. |
+
+CLI fallback from the repository root on Windows:
 
 ```powershell
-.\dev.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\dev.ps1
 ```
 
-That is the primary startup path. It checks .NET 10, Node 24, npm, and PostgreSQL 18, starts the existing development cluster only if `localhost:5432` is not already ready, then starts the API and Vite frontend.
+`Bypass` applies only to that process. Do not run `Set-ExecutionPolicy`. Do not open `http://localhost:5432` in Chrome.
 
 Prerequisites, stopping behavior, and manual fallback commands: [Local Development](docs/engineering/LOCAL_DEVELOPMENT.md).
 

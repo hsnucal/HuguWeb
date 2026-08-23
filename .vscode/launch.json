@@ -1,0 +1,49 @@
+{
+    // F5 -> HuGuWeb Development.
+    // Prerequisites (PostgreSQL, Vite, API Debug build) run first.
+    // This configuration starts only the API under the coreclr debugger.
+    // Chrome opens after /health is 200; it is not a debug session.
+    // Do not put passwords or connection strings in this file.
+    //
+    // Debugger type is coreclr (Cursor C# / anysphere.csharp / netcoredbg).
+    // type:dotnet + projectPath requires the C# Dev Kit service broker,
+    // which is not installed here. Launch the managed Debug DLL so
+    // netcoredbg runs `dotnet <HuGuWeb.Api.dll>` with the matching PDB.
+    // Do not point program at HuGuWeb.Api.exe; that starts `dotnet <apphost>`
+    // and does not load HuGuWeb.Api symbols, bind breakpoints, or start
+    // Kestrel on 5116.
+    //
+    // ASPNETCORE_URLS is set here on purpose. netcoredbg does not apply
+    // launchSettings.json applicationUrl. Without this env var, F5 starts
+    // the current Debug DLL and Kestrel listens on localhost:5000, so Vite
+    // proxying to 5116 fails with ECONNREFUSED.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "HuGuWeb Development",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "HuGuWeb: Development Prerequisites",
+            "program": "${workspaceFolder}/src/backend/HuGuWeb.Api/bin/Debug/net10.0/HuGuWeb.Api.dll",
+            "cwd": "${workspaceFolder}/src/backend/HuGuWeb.Api",
+            "args": [],
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "justMyCode": true,
+            "requireExactSource": true,
+            "launchSettingsFilePath": "${workspaceFolder}/src/backend/HuGuWeb.Api/Properties/launchSettings.json",
+            "launchSettingsProfile": "http",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOTNET_ENVIRONMENT": "Development",
+                "DOTNET_APPLICATIONNAME": "HuGuWeb.Api",
+                "ASPNETCORE_URLS": "http://localhost:5116"
+            },
+            "presentation": {
+                "hidden": false,
+                "group": "HuGuWeb",
+                "order": 1
+            }
+        }
+    ]
+}

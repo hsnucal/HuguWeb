@@ -1,5 +1,11 @@
 # Stop API and frontend processes started by .\dev.ps1.
 # PostgreSQL is left running. Unrelated dotnet/node processes are not killed.
+# F5 / "HuGuWeb Development" sessions are stopped from the IDE; this script
+# is not required for that workflow and must not be broadened to kill them.
+#
+# If execution policy blocks this file, use a process-local override only:
+#   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\dev-stop.ps1
+# Do not run Set-ExecutionPolicy.
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
