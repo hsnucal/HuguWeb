@@ -78,7 +78,9 @@ Technical Service remains **out of Sprint 0.9B**.
 
 Flow today: guest → Ön Büro creates issue → Teknik Servis. If unrepairable → inform Ön Büro → possible room change.
 
-Room Operations **does not** own the work-order lifecycle. Out of Order / Out of Service are future serviceability concerns, **not** RoomReadiness states.
+Room Operations **does not** own the technical-issue lifecycle. Out of Order / Out of Service are future serviceability concerns, **not** RoomReadiness states.
+
+Sprint 0.11A **Accepted** the Teknik Servis domain ([docs/domain/maintenance/](../maintenance/README.md)). First slice uses one `MaintenanceIssue` aggregate. Room Operations consumes **derived** `RoomServiceability` (blocking Arıza → OOO/OOS vs available). Do not encode OOO/OOS as readiness. Sprint 0.11B is **not** started.
 
 Technical repair does **not** universally require Supervisor inspection.
 

@@ -54,6 +54,7 @@ Related (do not contradict):
 - [ADR-001](../../architecture/adr/ADR-001-Architecture-Style.md) — modular monolith; modules only when approved
 - [ADR-008](../../architecture/adr/ADR-008-Authorization-Strategy.md) — permissions, never Position/Department names
 - [HR-DOMAIN-001](../hr/HR-DOMAIN-001-Organization-Workforce-Foundation.md) — Workforce **Accepted**; reuse Employee
+- [Teknik Servis / Maintenance](../maintenance/README.md) — Sprint 0.11A **Accepted** domain (0.11B not started)
 - [MVP Candidates](../../product/MVP_CANDIDATES.md) — Housekeeping Strong lean is **readiness coordination**, not a full HK platform
 - [Operations Center](../../design/OPERATIONS_CENTER.md) — Home shows work; statuses there are layout examples, not frozen domain enums
 - [LOCALIZATION.md](../../product/LOCALIZATION.md) — UI language is a user preference; this sprint does not design i18n implementation

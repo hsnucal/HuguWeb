@@ -42,7 +42,7 @@ Connecting rooms, suites, non-room inventory, and public-area “rooms” are ou
 | **Room Operations** (now) | Physical/operational Room reference; readiness; HK work | Stay checkout fact; later serviceability and block |
 | **Reservations / Stay** (later) | Booking, assignment of a guest to a Room for dates, checkout | Room identity; readiness/sellability for check-in |
 | **Inventory / Rooms catalog** (later, if split) | Commercial RoomType, sellable inventory rules | Room identity |
-| **Teknik Servis** (later) | Maintenance issue / work order | Room identity |
+| **Teknik Servis** (later) | `MaintenanceIssue` / Arıza | Room identity |
 | **Minibar** (later) | Expected/actual minibar contents, confirmation | Room identity; checkout fact |
 
 Reservations must **not** own the physical Room. Room Operations must **not** own Stay.
@@ -123,6 +123,8 @@ After technical repair, the room may still need Kat Hizmetleri / Supervisor befo
 
 “Same day” is operator judgment in the supplied workflow, not a clock rule. Exact codes/labels may vary by hotel; the **independence** of the dimension is the model.
 
+Sprint 0.11A **Accepted** how Teknik Servis stores these facts: OOO/OOS as outage classifications on a **blocking** `MaintenanceIssue`; current room serviceability **derived**, not a master column on `Room`. See [ROOM_SERVICEABILITY.md](../maintenance/ROOM_SERVICEABILITY.md). That refinement does **not** change the Accepted facts that OOO/OOS are independent of RoomReadiness and of Blocked, or that Room Operations does not own them.
+
 ---
 
 ## 6. Occupancy
@@ -141,7 +143,7 @@ The readiness model is **capable** of coexisting with occupancy later (stayover:
 - Rates, availability calendar, overbooking
 - Employee, Department, Position (Workforce)
 - Minibar stock
-- Maintenance work orders
+- `MaintenanceIssue` / technical serviceability (Teknik Servis later)
 - Kayıp Eşya
 - Passcard / door access
 - Public-area cleaning as a Room

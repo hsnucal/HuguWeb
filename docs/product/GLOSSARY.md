@@ -114,6 +114,38 @@ The Dirty → Clean → Inspected → Ready (`Kirli` → `Temiz` → `Denetimli`
 
 ---
 
+## Technical Service / Teknik Servis
+
+**Status:** Accepted — Sprint 0.11A ([MAINT-DOMAIN-001](../domain/maintenance/MAINT-DOMAIN-001.md)). Sprint 0.11B is not started.
+
+Hotel domain that owns **Arıza** (`MaintenanceIssue`) and the facts that make an oda technically unusable. It does **not** own RoomReadiness, Bloke, Stay, or oda değişikliği. Not a CMMS and not a generic task engine. First-slice aggregate is `MaintenanceIssue`; a separate `MaintenanceWorkOrder` is deferred. Product language: Teknik Servis, Arıza, İş Emri (UI label for the same first-slice record is allowed). Technical identifiers stay English.
+
+---
+
+## Room Serviceability / Teknik elverişlilik
+
+**Status:** Accepted — Sprint 0.11A. Consumed conceptually by Accepted Room Operations; not implemented in 0.9B.
+
+Whether the oda is technically usable. **Derived** from open **blocking** technical issues — not RoomReadiness and not a stored master status on `Room`. A room may remain serviceable with a minor open Arıza.
+
+---
+
+## Out of Order / Out of Service (OOO / OOS)
+
+**Status:** Accepted detailed model — Sprint 0.11A. Independence from RoomReadiness is **Accepted** (Sprint 0.9A).
+
+Expert-supplied meaning: **Out of Order** = same-day repair expected; **Out of Service** = not expected the same day. Operator judgment, not a clock. Storage: outage classification on a **blocking** Arıza. House view is a derived label (OOS > OOO > Serviceable). Not Bloke, not Dirty/Ready.
+
+---
+
+## Blocked / Bloke
+
+**Status:** Accepted as Front Office-owned and **not** RoomReadiness (Sprint 0.9A). Not persisted in 0.9B. Not part of Teknik Servis.
+
+Operational lock (for example payment/contact). Can make a Ready room not sellable. Must not be modeled as a technical defect.
+
+---
+
 ## Folio
 
 Discovery-level meaning: the running account of guest charges and payments associated with a stay (or non-room guest account).
@@ -240,3 +272,4 @@ A time-boxed development cycle with a defined goal, requirements, implementation
 - [Future Scope](FUTURE_SCOPE.md)
 - [Evidence Model](EVIDENCE_MODEL.md)
 - [Room Operations](../domain/room-operations/README.md) (Accepted — Sprint 0.9A)
+- [Teknik Servis / Maintenance](../domain/maintenance/README.md) (Accepted — Sprint 0.11A; 0.11B not started)

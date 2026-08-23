@@ -34,7 +34,7 @@ Constraints this model must not contradict:
 
 **In (conceptual domain):** minimal Room identity (first host), Room Readiness (Dirty/Clean/Inspected/Ready), HousekeepingWorkItem, RoomInspection, priority of that work, derived Sellability rules (documented), contracts for Stay checkout, FO block, TS serviceability, Minibar check.
 
-**Out:** Reservations, Stay implementation, Folio, Minibar inventory/charging, Technical Service work orders, Lost & Found, DND/No Service implementation, passcards, attendance/shift, generic task engine, notifications infrastructure, mobile app, SGK/KBS/e-Invoice, chat.
+**Out:** Reservations, Stay implementation, Folio, Minibar inventory/charging, Technical Service issues, Lost & Found, DND/No Service implementation, passcards, attendance/shift, generic task engine, notifications infrastructure, mobile app, SGK/KBS/e-Invoice, chat.
 
 The slice is named **Oda Operasyonları / Room Operations**, not “Kat Hizmetleri Modülü.” Do **not** name the module Housekeeping.
 
@@ -44,7 +44,7 @@ Future modules/domains may own:
 
 - Stay / Reservations
 - Front Office-specific block/sellability decisions
-- Technical Service work orders
+- Technical Service `MaintenanceIssue`
 - Minibar
 - generic operational tasks
 - Lost & Found

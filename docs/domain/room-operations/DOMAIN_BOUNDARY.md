@@ -59,7 +59,7 @@ Kat Hizmetleri is the **primary participant**, not the owner of all room operati
 | Ownership clarity | Clear: readiness vs work vs consumed FO/TS facts. |
 | Coupling to Reservations | Checkout is an incoming fact/contract, not Stay ownership. |
 | Coupling to Front Office | FO consumes readiness; FO owns Block later; FO may set business priority. |
-| Coupling to Maintenance | TS owns work orders later; Room Operations consumes **serviceability**. |
+| Coupling to Maintenance | TS owns `MaintenanceIssue` later; Room Operations consumes **serviceability**. |
 | Minibar | Independent operational dependency, not a readiness enum value. |
 | Future mobile | Each role sees assigned work + room facts; same domain. |
 | Auditability | Transitions and inspections are first-class. |
@@ -101,7 +101,7 @@ Kat Hizmetleri is the **primary participant**, not the owner of all room operati
 | Owns now | Does not own |
 |----------|----------------|
 | Room identity (minimal, first host) | Reservation, Stay, Folio |
-| Room readiness lifecycle | Technical work-order lifecycle |
+| Room readiness lifecycle | Technical issue lifecycle (`MaintenanceIssue`) |
 | Housekeeping work items for room cleaning/inspection | Generic hotel task engine |
 | Inspection history | Minibar inventory and charging |
 | Priority of **this** cleaning work | Attendance, shift, passcards, floor roster |
@@ -115,7 +115,7 @@ Future modules/domains may own:
 
 - Stay / Reservations
 - Front Office-specific block/sellability decisions
-- Technical Service work orders
+- Technical Service `MaintenanceIssue`
 - Minibar
 - generic operational tasks
 - Lost & Found

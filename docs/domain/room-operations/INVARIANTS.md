@@ -69,5 +69,5 @@ These are closed as **out of Sprint 0.9B** or as hotel-specific later policy, no
 - Minibar always blocks checkout — hotel policy; still not a readiness state.
 - Supervisor org-chart is required to inspect — authorization, not Position.
 - Public-area work is a Room.
-- Exact OOO vs OOS “same day” clock vs operator judgment — independence of the dimension is accepted; timing labels may vary by hotel.
+- Exact OOO vs OOS labels may vary by hotel; independence from RoomReadiness is accepted. Sprint 0.11A accepted operator judgment (not a clock) on a blocking `MaintenanceIssue`.
 - Exact DND vs No Service entry/skip semantics — separate restriction dimension later; not readiness.
