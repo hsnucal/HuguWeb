@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\backend\HuGuWeb.Api\HuGuWeb.Api.csproj" />
     <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.Workforce\HuGuWeb.Workforce.csproj" />
+    <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.RoomOperations\HuGuWeb.RoomOperations.csproj" />
   </ItemGroup>
 
   <ItemGroup>

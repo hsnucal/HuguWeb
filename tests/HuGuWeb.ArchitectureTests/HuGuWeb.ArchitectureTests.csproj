@@ -21,6 +21,8 @@
     <ProjectReference Include="..\..\src\backend\HuGuWeb.Api\HuGuWeb.Api.csproj" />
     <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.Workforce\HuGuWeb.Workforce.csproj" />
     <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.Workforce.Infrastructure\HuGuWeb.Workforce.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.RoomOperations\HuGuWeb.RoomOperations.csproj" />
+    <ProjectReference Include="..\..\src\backend\modules\HuGuWeb.RoomOperations.Infrastructure\HuGuWeb.RoomOperations.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

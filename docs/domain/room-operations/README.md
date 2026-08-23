@@ -2,7 +2,7 @@
 
 > **Status:** Accepted — Product Owner + CTO approved baseline (Sprint 0.9A).
 >
-> Approved product/domain direction. **Not** a validated universal hotel truth. Documentation only. Does **not** start Sprint 0.9B implementation, modules, EF, APIs, or frontend.
+> Approved product/domain direction. **Not** a validated universal hotel truth. Sprint 0.9A remains the accepted documentation baseline. Sprint 0.9B implementation is recorded in [SPRINT_0_9B_IMPLEMENTATION_NOTES.md](SPRINT_0_9B_IMPLEMENTATION_NOTES.md).
 
 This folder defines the first **hotel-operations** domain slice: **Oda Operasyonları (Room Operations)**.
 
@@ -45,7 +45,8 @@ Do **not** name the module Housekeeping.
 | [HOUSEKEEPING_OPERATIONS.md](HOUSEKEEPING_OPERATIONS.md) | Cleaning work, priority, rework, Workforce |
 | [CROSS_DEPARTMENT_COORDINATION.md](CROSS_DEPARTMENT_COORDINATION.md) | Ön Büro, Minibar, Teknik Servis, Rezervasyon, Kayıp Eşya, DND |
 | [INVARIANTS.md](INVARIANTS.md) | Confirmed / accepted and reference-model rules |
-| [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen intended Sprint 0.9B scope — not started |
+| [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen Sprint 0.9B scope |
+| [SPRINT_0_9B_IMPLEMENTATION_NOTES.md](SPRINT_0_9B_IMPLEMENTATION_NOTES.md) | 0.9B implementation note |
 | [ROOM-OPS-DOMAIN-001.md](ROOM-OPS-DOMAIN-001.md) | Domain decision record (**Accepted**) |
 
 Related (do not contradict):
@@ -61,4 +62,4 @@ Related (do not contradict):
 
 ## What Sprint 0.9A is
 
-Documentation only. No production code, EF entities, migrations, database changes, APIs, frontend, modules/projects, dependencies, notification infrastructure, brokers, or mobile technology selection. Sprint 0.9B is **not** started.
+Documentation only. Implementation belongs to Sprint 0.9B and is described in [SPRINT_0_9B_IMPLEMENTATION_NOTES.md](SPRINT_0_9B_IMPLEMENTATION_NOTES.md).

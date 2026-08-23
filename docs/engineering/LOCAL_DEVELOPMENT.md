@@ -150,16 +150,19 @@ Connection string:
 
 `appsettings.Development.json` contains a clearly fake local placeholder password. Override it for your machine.
 
-Development user (Development environment only):
+Development users (Development environment only):
 
 ```bash
 dotnet user-secrets set "DevelopmentUser:Email" "dev@localhost" --project src/backend/HuGuWeb.Api
 dotnet user-secrets set "DevelopmentUser:Password" "<choose-a-local-password-meeting-Identity-rules>" --project src/backend/HuGuWeb.Api
+dotnet user-secrets set "DevelopmentUsers:DefaultPassword" "<same-or-other-local-password-meeting-Identity-rules>" --project src/backend/HuGuWeb.Api
 ```
+
+`DevelopmentUsers:DefaultPassword` is the shared secret for additional development personas. If it is unset, those personas reuse `DevelopmentUser:Password`. Key names only — do not commit password values. Persona emails, permissions, and menus: [Development personas](DEVELOPMENT_PERSONAS.md).
 
 Identity password rules at bootstrap: at least 12 characters, with upper, lower, digit, and non-alphanumeric characters.
 
-If those values are missing, the API skips seeding and logs that fact. There is no public registration endpoint.
+If those values are missing, the API skips the affected accounts and logs the key names. There is no public registration endpoint. After permission claims change, sign out and sign in again; claims are stored in the authentication cookie.
 
 ## Database
 

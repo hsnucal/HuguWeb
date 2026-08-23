@@ -82,6 +82,21 @@ public static class SecurityExtensions
             options.AddPolicy(
                 AuthorizationPolicies.WorkforceManage,
                 policy => policy.RequireClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.RoomOperationsRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(RoomOperationsPermissions.ClaimType, RoomOperationsPermissions.Read)
+                    || context.User.HasClaim(RoomOperationsPermissions.ClaimType, RoomOperationsPermissions.Manage)
+                    || context.User.HasClaim(RoomOperationsPermissions.ClaimType, RoomOperationsPermissions.Inspect)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.RoomOperationsManage,
+                policy => policy.RequireClaim(RoomOperationsPermissions.ClaimType, RoomOperationsPermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.RoomOperationsInspect,
+                policy => policy.RequireClaim(RoomOperationsPermissions.ClaimType, RoomOperationsPermissions.Inspect));
         });
 
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];

@@ -1,4 +1,5 @@
 using HuGuWeb.Api.Identity;
+using HuGuWeb.RoomOperations.Infrastructure;
 using HuGuWeb.Workforce.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,6 +15,7 @@ public static class PersistenceExtensions
         builder.Services.AddDbContext<AppIdentityDbContext>(options =>
             options.UseNpgsql(connectionString));
         builder.Services.AddWorkforceModule(builder.Configuration);
+        builder.Services.AddRoomOperationsModule(builder.Configuration);
 
         return builder;
     }

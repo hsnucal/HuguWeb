@@ -5,6 +5,7 @@ import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { canReadWorkforce } from '../workforce/workforceAccess'
+import { canReadRoomOperations } from '../room-operations/roomOperationsAccess'
 import {
   HomeIcon,
   PeopleIcon,
@@ -17,7 +18,6 @@ import {
 import styles from './Sidebar.module.css'
 
 const futureNav = [
-  { id: 'rooms', labelKey: 'navigation.rooms', icon: RoomsIcon },
   { id: 'reservations', labelKey: 'navigation.reservations', icon: ReservationsIcon },
   { id: 'tasks', labelKey: 'navigation.tasks', icon: TasksIcon },
 ] as const
@@ -32,6 +32,7 @@ export function Sidebar({
   const { t } = useTranslation()
   const { user, preferenceError, updatePreferredLanguage } = useAuthSession()
   const showWorkforce = canReadWorkforce(user)
+  const showRoomOperations = canReadRoomOperations(user)
 
   return (
     <aside className={styles.sidebar} aria-label={t('navigation.application')}>
@@ -49,6 +50,16 @@ export function Sidebar({
           <HomeIcon />
           {t('navigation.home')}
         </NavLink>
+
+        {showRoomOperations ? (
+          <NavLink
+            to="/app/room-operations"
+            className={({ isActive }) => (isActive ? styles.current : styles.item)}
+          >
+            <RoomsIcon />
+            {t('navigation.roomOperations')}
+          </NavLink>
+        ) : null}
 
         {showWorkforce ? (
           <NavLink

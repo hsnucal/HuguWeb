@@ -1,6 +1,6 @@
 # First implementation slice — frozen Sprint 0.9B scope
 
-> **Status:** Frozen intended direction for Sprint **0.9B**. Sprint 0.9A does **not** implement this. Sprint 0.9B is **not** started by this documentation.
+> **Status:** Frozen intended direction for Sprint **0.9B**. Implementation notes: [SPRINT_0_9B_IMPLEMENTATION_NOTES.md](SPRINT_0_9B_IMPLEMENTATION_NOTES.md). This document is the accepted scope; it is not rewritten by the implementation.
 >
 > 0.9B must stay **small**. It proves Room Operations, not a Kat Hizmetleri platform.
 

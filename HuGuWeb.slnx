@@ -6,6 +6,8 @@
   <Folder Name="/src/backend/modules/">
     <Project Path="src/backend/modules/HuGuWeb.Workforce/HuGuWeb.Workforce.csproj" />
     <Project Path="src/backend/modules/HuGuWeb.Workforce.Infrastructure/HuGuWeb.Workforce.Infrastructure.csproj" />
+    <Project Path="src/backend/modules/HuGuWeb.RoomOperations/HuGuWeb.RoomOperations.csproj" />
+    <Project Path="src/backend/modules/HuGuWeb.RoomOperations.Infrastructure/HuGuWeb.RoomOperations.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HuGuWeb.ArchitectureTests/HuGuWeb.ArchitectureTests.csproj" />

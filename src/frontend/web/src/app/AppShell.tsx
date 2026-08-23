@@ -77,5 +77,9 @@ function headingFor(pathname: string, t: (key: string) => string) {
     return { title: t('workforce.title'), subtitle: t('workforce.intro') }
   }
 
+  if (pathname.startsWith('/app/room-operations')) {
+    return { title: t('roomOperations.title'), subtitle: t('roomOperations.intro') }
+  }
+
   return { title: t('operations.title'), subtitle: t('operations.intro') }
 }

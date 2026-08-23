@@ -14,14 +14,13 @@ public static class DevelopmentUserSeeder
         }
 
         var logger = app.Logger;
-        var email = app.Configuration["DevelopmentUser:Email"];
-        var password = app.Configuration["DevelopmentUser:Password"];
-
-        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        var configuration = app.Configuration;
+        var broadEmail = configuration[DevelopmentPersonaCatalog.BroadEmailKey];
+        var broadPassword = configuration[DevelopmentPersonaCatalog.BroadPasswordKey];
+        var sharedPassword = configuration[DevelopmentPersonaCatalog.DefaultPasswordKey];
+        if (string.IsNullOrWhiteSpace(sharedPassword))
         {
-            logger.LogInformation(
-                "Development user was not seeded. Set DevelopmentUser:Email and DevelopmentUser:Password via user secrets or environment variables.");
-            return;
+            sharedPassword = broadPassword;
         }
 
         try
@@ -29,60 +28,99 @@ public static class DevelopmentUserSeeder
             using var scope = app.Services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            var existing = await userManager.FindByEmailAsync(email);
-            if (existing is not null)
+            if (string.IsNullOrWhiteSpace(broadEmail) || string.IsNullOrWhiteSpace(broadPassword))
             {
-                logger.LogInformation("Development user already exists. Credentials were not changed.");
-                await EnsureWorkforcePermissionsAsync(userManager, existing);
+                logger.LogInformation(
+                    "Broad development user was not seeded. Set {EmailKey} and {PasswordKey} via user secrets or environment variables.",
+                    DevelopmentPersonaCatalog.BroadEmailKey,
+                    DevelopmentPersonaCatalog.BroadPasswordKey);
+            }
+            else
+            {
+                await EnsurePersonaAsync(
+                    userManager,
+                    logger,
+                    DevelopmentPersonaCatalog.Broad(broadEmail),
+                    broadPassword);
+            }
+
+            if (string.IsNullOrWhiteSpace(sharedPassword))
+            {
+                logger.LogInformation(
+                    "Additional development personas were not seeded. Set {DefaultPasswordKey} or {PasswordKey} via user secrets or environment variables.",
+                    DevelopmentPersonaCatalog.DefaultPasswordKey,
+                    DevelopmentPersonaCatalog.BroadPasswordKey);
                 return;
             }
 
-            var user = new ApplicationUser
+            foreach (var persona in DevelopmentPersonaCatalog.AdditionalPersonas)
             {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true
-            };
-
-            var result = await userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-            {
-                logger.LogWarning(
-                    "Development user could not be created. Identity rejected the request without storing a password in logs.");
-                return;
+                await EnsurePersonaAsync(userManager, logger, persona, sharedPassword);
             }
-
-            await EnsureWorkforcePermissionsAsync(userManager, user);
-            logger.LogInformation("Development user {Email} was created.", email);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Development user was not seeded because the identity database is unavailable.");
+            logger.LogWarning(ex, "Development users were not seeded because the identity database is unavailable.");
         }
     }
 
-    private static async Task EnsureWorkforcePermissionsAsync(
+    private static async Task EnsurePersonaAsync(
         UserManager<ApplicationUser> userManager,
-        ApplicationUser user)
+        ILogger logger,
+        DevelopmentPersonaDefinition persona,
+        string password)
     {
-        var claims = await userManager.GetClaimsAsync(user);
-        await AddPermissionIfMissing(userManager, user, claims, WorkforcePermissions.Read);
-        await AddPermissionIfMissing(userManager, user, claims, WorkforcePermissions.Manage);
+        var existing = await userManager.FindByEmailAsync(persona.Email);
+        if (existing is null)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = persona.Email,
+                Email = persona.Email,
+                EmailConfirmed = true
+            };
+
+            var created = await userManager.CreateAsync(user, password);
+            if (!created.Succeeded)
+            {
+                logger.LogWarning(
+                    "Development persona {Email} could not be created. Identity rejected the request without storing a password in logs.",
+                    persona.Email);
+                return;
+            }
+
+            existing = user;
+            logger.LogInformation("Development persona {Email} was created.", persona.Email);
+        }
+        else
+        {
+            logger.LogInformation("Development persona {Email} already exists. Credentials were not changed.", persona.Email);
+        }
+
+        await ConvergePermissionsAsync(userManager, existing, persona.Permissions);
     }
 
-    private static async Task AddPermissionIfMissing(
+    private static async Task ConvergePermissionsAsync(
         UserManager<ApplicationUser> userManager,
         ApplicationUser user,
-        IList<Claim> claims,
-        string permission)
+        IReadOnlyCollection<string> expectedPermissions)
     {
-        if (claims.Any(claim =>
-                claim.Type == WorkforcePermissions.ClaimType
-                && claim.Value == permission))
+        var claims = await userManager.GetClaimsAsync(user);
+        var current = claims
+            .Where(claim => claim.Type == WorkforcePermissions.ClaimType)
+            .Select(claim => claim.Value);
+        var (add, remove) = DevelopmentPermissionConvergence.Diff(current, expectedPermissions);
+
+        foreach (var permission in add)
         {
-            return;
+            await userManager.AddClaimAsync(user, new Claim(WorkforcePermissions.ClaimType, permission));
         }
 
-        await userManager.AddClaimAsync(user, new Claim(WorkforcePermissions.ClaimType, permission));
+        foreach (var permission in remove)
+        {
+            var claim = claims.First(item =>
+                item.Type == WorkforcePermissions.ClaimType && item.Value == permission);
+            await userManager.RemoveClaimAsync(user, claim);
+        }
     }
 }

@@ -1,5 +1,17 @@
 import type { AppLanguage } from './languages'
 
+export function formatDateTime(value: string, language: AppLanguage): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat(language, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
 export function formatDateOnly(value: string, language: AppLanguage): string {
   const [year, month, day] = value.split('-').map(Number)
   if (!year || !month || !day) {

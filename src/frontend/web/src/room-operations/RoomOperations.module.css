@@ -1,0 +1,389 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.backLink {
+  width: fit-content;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.list {
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  column-gap: var(--space-3);
+  row-gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  padding: 0.7rem var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+
+.opsRow {
+  grid-template-columns: 4.25rem minmax(0, 0.95fr) minmax(0, 1.2fr) minmax(0, 0.72fr) minmax(0, 0.9fr) minmax(0, 1.3fr);
+  grid-template-areas: 'room readiness person priority work action';
+  min-height: 3.15rem;
+  border-left: 3px solid transparent;
+}
+
+.opsRow > * {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.roomCell {
+  grid-area: room;
+}
+
+.readinessCell {
+  grid-area: readiness;
+}
+
+.personCell {
+  grid-area: person;
+}
+
+.priorityCell {
+  grid-area: priority;
+}
+
+.workCell {
+  grid-area: work;
+}
+
+.actionCell {
+  grid-area: action;
+}
+
+.row:first-child,
+.head {
+  border-top: 0;
+}
+
+.head {
+  min-height: 2.55rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.rowLink {
+  cursor: pointer;
+}
+
+.rowLink:hover,
+.rowLink:focus-visible {
+  background: var(--color-interaction-hover);
+}
+
+.rowNeedsAction {
+  border-left-color: color-mix(in srgb, var(--color-brand-primary) 48%, var(--color-border-default));
+}
+
+.cellLabel {
+  display: none;
+}
+
+.roomNumber {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.03em;
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.personName,
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip {
+  justify-content: flex-start;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionText {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.actionQuiet {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-regular);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  padding: var(--space-6) var(--space-4);
+  color: var(--color-text-secondary);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+}
+
+.panelHistory {
+  background: var(--color-surface-card);
+}
+
+.identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.identityNumber {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.04em;
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.identityState {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.currentAction {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  min-width: 0;
+  text-align: right;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.summaryLabel {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.inspectActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.rejectBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 16%, var(--color-border-subtle));
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--color-danger-soft) 28%, var(--color-surface-elevated));
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+}
+
+.historyItem {
+  display: grid;
+  grid-template-columns: minmax(9rem, auto) minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-subtle);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.historyItem:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.historyBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+@media (max-width: 1279px) {
+  .opsRow {
+    grid-template-columns: 4.5rem minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1.25fr);
+    grid-template-areas:
+      'room readiness person action'
+      'room priority work action';
+    align-items: start;
+    min-height: 0;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .roomCell,
+  .actionCell {
+    align-self: center;
+  }
+
+  .head {
+    display: none;
+  }
+
+  .cellLabel {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: var(--color-text-muted);
+    font-size: 0.6875rem;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .chip,
+  .personName,
+  .truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .identityState,
+  .currentAction {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .opsRow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'room'
+      'readiness'
+      'person'
+      'priority'
+      'work'
+      'action';
+  }
+
+  .roomCell,
+  .actionCell {
+    align-self: start;
+  }
+
+  .roomNumber {
+    font-size: 1.2rem;
+  }
+
+  .historyItem {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

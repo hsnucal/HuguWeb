@@ -1,4 +1,5 @@
 using HuGuWeb.Api.Identity;
+using HuGuWeb.RoomOperations.Infrastructure.Persistence;
 using HuGuWeb.Workforce.Infrastructure.Persistence;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -11,7 +12,8 @@ public static class HealthCheckExtensions
         builder.Services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
             .AddDbContextCheck<AppIdentityDbContext>("identity-database", tags: ["ready"])
-            .AddDbContextCheck<WorkforceDbContext>("workforce-database", tags: ["ready"]);
+            .AddDbContextCheck<WorkforceDbContext>("workforce-database", tags: ["ready"])
+            .AddDbContextCheck<RoomOperationsDbContext>("room-operations-database", tags: ["ready"]);
 
         return builder;
     }

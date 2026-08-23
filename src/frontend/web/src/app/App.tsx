@@ -8,6 +8,8 @@ import { DepartmentsPage } from '../workforce/DepartmentsPage'
 import { EmployeeDetailPage } from '../workforce/EmployeeDetailPage'
 import { PositionsPage } from '../workforce/PositionsPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
+import { RoomOperationsPage } from '../room-operations/RoomOperationsPage'
+import { RoomDetailPage } from '../room-operations/RoomDetailPage'
 
 export function App() {
   return (
@@ -22,6 +24,8 @@ export function App() {
         }
       >
         <Route index element={<OperationsCenter />} />
+        <Route path="room-operations" element={<RoomOperationsPage />} />
+        <Route path="room-operations/:roomId" element={<RoomDetailPage />} />
         <Route path="workforce" element={<WorkforceLayout />}>
           <Route index element={<ActiveWorkforcePage />} />
           <Route path="departments" element={<DepartmentsPage />} />

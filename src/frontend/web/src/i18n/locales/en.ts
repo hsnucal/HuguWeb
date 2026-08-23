@@ -28,6 +28,7 @@ export type Translations = {
     settings: string
     unavailable: string
     workforce: string
+    roomOperations: string
   }
   operations: {
     title: string
@@ -146,6 +147,65 @@ export type Translations = {
       generic: string
     }
   }
+  roomOperations: {
+    title: string
+    intro: string
+    room: string
+    readinessLabel: string
+    assignedEmployee: string
+    priorityLabel: string
+    workState: string
+    actionNeeded: string
+    unassigned: string
+    noPriority: string
+    noWork: string
+    rowSummary: string
+    rejectionHint: string
+    loading: string
+    empty: string
+    noAccess: string
+    back: string
+    noEmployees: string
+    needsCleaningTitle: string
+    needsCleaningIntro: string
+    needsCleaningSubmit: string
+    completeTitle: string
+    completeIntro: string
+    completeSubmit: string
+    inspectTitle: string
+    inspectIntro: string
+    accept: string
+    reject: string
+    rejectionReason: string
+    readinessHistory: string
+    inspectionHistory: string
+    noHistory: string
+    noInspections: string
+    readiness: { Dirty: string; Clean: string; Inspected: string; Ready: string }
+    priority: { Normal: string; High: string; Urgent: string }
+    work: { Open: string; Completed: string }
+    needed: { 'needs-cleaning': string; 'complete-cleaning': string; inspect: string; none: string }
+    cause: {
+      Seeded: string
+      NeedsCleaning: string
+      CleaningCompleted: string
+      InspectionAccepted: string
+      InspectionRejected: string
+    }
+    inspectionResult: { Accepted: string; Rejected: string }
+    errors: {
+      roomNotFound: string
+      employeeNotFound: string
+      invalidTransition: string
+      activeWork: string
+      staleWork: string
+      workNotCurrent: string
+      rejectionRequired: string
+      inspectionNotAllowed: string
+      assignmentRequired: string
+      generic: string
+    }
+  }
 }
 
 export const en: Translations = {
@@ -179,6 +239,7 @@ export const en: Translations = {
     settings: 'Settings',
     unavailable: '{{label}}, not available yet',
     workforce: 'Workforce',
+    roomOperations: 'Room Operations',
   },
   operations: {
     title: 'Operations Center',
@@ -298,6 +359,71 @@ export const en: Translations = {
       invalidEmploymentPeriod: 'The end date must be on or after the employment start date.',
       sameAssignment: 'This person already works in that department and position.',
       generic: 'The workforce request could not be completed.',
+    },
+  },
+  roomOperations: {
+    title: 'Room Operations',
+    intro: 'Which rooms need readiness attention now.',
+    room: 'Room',
+    readinessLabel: 'Readiness',
+    assignedEmployee: 'Assigned',
+    priorityLabel: 'Priority',
+    workState: 'Work status',
+    actionNeeded: 'Next action',
+    unassigned: 'Unassigned',
+    noPriority: '—',
+    noWork: 'No current work',
+    rowSummary:
+      'Room {{number}}. Readiness {{readiness}}. {{person}}. Priority {{priority}}. {{work}}. {{action}}.',
+    rejectionHint: 'Required when rejecting the room.',
+    loading: 'Loading rooms…',
+    empty: 'No rooms are available yet.',
+    noAccess: 'You do not have access to room operations.',
+    back: 'Back to room operations',
+    noEmployees: 'No currently employed people are available to assign. Hire staff in Workforce first.',
+    needsCleaningTitle: 'Needs cleaning',
+    needsCleaningIntro: 'The room is being sent to cleaning. This is not checkout.',
+    needsCleaningSubmit: 'Needs cleaning',
+    completeTitle: 'Cleaning complete',
+    completeIntro: 'Mark the current housekeeping work complete. The room becomes Clean, not Ready.',
+    completeSubmit: 'Cleaning complete',
+    inspectTitle: 'Inspection',
+    inspectIntro: 'Accept only after a physical inspection. A rejection reason is required.',
+    accept: 'Approve room',
+    reject: 'Find incomplete / reject',
+    rejectionReason: 'Rejection reason',
+    readinessHistory: 'Readiness history',
+    inspectionHistory: 'Inspection history',
+    noHistory: 'No readiness history yet.',
+    noInspections: 'No inspections yet.',
+    readiness: { Dirty: 'Dirty', Clean: 'Clean', Inspected: 'Inspected', Ready: 'Ready' },
+    priority: { Normal: 'Normal', High: 'High', Urgent: 'Urgent' },
+    work: { Open: 'Open', Completed: 'Completed' },
+    needed: {
+      'needs-cleaning': 'Needs cleaning',
+      'complete-cleaning': 'Complete cleaning',
+      inspect: 'Inspection required',
+      none: 'No action',
+    },
+    cause: {
+      Seeded: 'Initial room',
+      NeedsCleaning: 'Needs cleaning',
+      CleaningCompleted: 'Cleaning completed',
+      InspectionAccepted: 'Inspection accepted',
+      InspectionRejected: 'Inspection rejected',
+    },
+    inspectionResult: { Accepted: 'Accepted', Rejected: 'Rejected' },
+    errors: {
+      roomNotFound: 'The room was not found.',
+      employeeNotFound: 'The employee was not found or is not currently employed.',
+      invalidTransition: 'That preparation step is not allowed for this room now.',
+      activeWork: 'This room already has current housekeeping work.',
+      staleWork: 'This work is no longer current and cannot change the room.',
+      workNotCurrent: 'This housekeeping work is not the current work for the room.',
+      rejectionRequired: 'A rejection reason is required.',
+      inspectionNotAllowed: 'Inspection is only allowed when the room is Clean.',
+      assignmentRequired: 'Choose an assigned employee.',
+      generic: 'The room operations request could not be completed.',
     },
   },
 }

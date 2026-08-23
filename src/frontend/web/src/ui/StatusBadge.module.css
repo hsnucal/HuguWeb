@@ -3,15 +3,16 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
+  box-sizing: border-box;
+  min-height: 1.5rem;
   max-width: 100%;
-  padding: 0.2rem 0.55rem;
+  padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
-  line-height: 1.3;
+  line-height: 1.2;
   text-align: center;
-  overflow-wrap: break-word;
-  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .success {
@@ -37,4 +38,9 @@
 .neutral {
   color: var(--color-text-secondary);
   background: var(--color-surface-page);
+}
+
+.badge.outline {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 32%, var(--color-border-subtle));
 }
