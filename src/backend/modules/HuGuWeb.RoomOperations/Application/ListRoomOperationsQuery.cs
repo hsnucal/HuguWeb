@@ -5,6 +5,7 @@ namespace HuGuWeb.RoomOperations.Application;
 public sealed class ListRoomOperationsQuery(
     IRoomOperationsStore store,
     IAssignableEmployeeDirectory employees,
+    IRoomServiceabilityLookup serviceability,
     IRoomOperationsWorkplace workplace)
 {
     public async Task<RoomOperationsResult<IReadOnlyList<RoomOperationsListItem>>> ExecuteAsync(
@@ -21,6 +22,10 @@ public sealed class ListRoomOperationsQuery(
         var names = await employees.GetEmployeesAsync(
             workItems.Select(item => item.AssignedEmployeeId).Distinct().ToArray(),
             cancellationToken);
+        var conditions = await serviceability.GetForRoomsAsync(
+            workplace.PropertyId,
+            rooms.Select(item => item.Id).ToArray(),
+            cancellationToken);
         var workByRoom = workItems.ToLookup(item => item.RoomId);
 
         var items = rooms
@@ -34,6 +39,9 @@ public sealed class ListRoomOperationsQuery(
                         .OrderByDescending(item => item.CompletedAt ?? item.CreatedAt)
                         .FirstOrDefault();
                 var display = current is null ? null : RoomOperationsComposer.ToWorkSummary(current, names);
+                var snapshot = conditions.TryGetValue(room.Id, out var condition)
+                    ? condition
+                    : RoomServiceabilitySnapshot.Available(room.Id);
                 return new RoomOperationsListItem(
                     room.Id,
                     room.Number,
@@ -46,7 +54,9 @@ public sealed class ListRoomOperationsQuery(
                     display?.Priority,
                     display?.AssignedEmployeeId,
                     display?.AssignedEmployeeName,
-                    RoomOperationsComposer.NeededAction(room, currentOpen));
+                    RoomOperationsComposer.NeededAction(room, currentOpen),
+                    snapshot.Serviceability,
+                    snapshot.HasActiveTechnicalIssue);
             })
             .ToArray();
 

@@ -91,6 +91,32 @@ internal sealed class InMemoryRoomOperationsStore : IRoomOperationsStore
     public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
 
+internal sealed class InMemoryRoomServiceabilityLookup : IRoomServiceabilityLookup
+{
+    public IRoomServiceabilityLookup? Inner { get; set; }
+    public Dictionary<Guid, RoomServiceabilitySnapshot> Snapshots { get; } = [];
+
+    public Task<IReadOnlyDictionary<Guid, RoomServiceabilitySnapshot>> GetForRoomsAsync(
+        Guid propertyId,
+        IReadOnlyCollection<Guid> roomIds,
+        CancellationToken cancellationToken)
+    {
+        if (Inner is not null)
+        {
+            return Inner.GetForRoomsAsync(propertyId, roomIds, cancellationToken);
+        }
+
+        var result = roomIds
+            .Distinct()
+            .ToDictionary(
+                id => id,
+                id => Snapshots.TryGetValue(id, out var snapshot)
+                    ? snapshot
+                    : RoomServiceabilitySnapshot.Available(id));
+        return Task.FromResult<IReadOnlyDictionary<Guid, RoomServiceabilitySnapshot>>(result);
+    }
+}
+
 internal sealed class RoomOperationsHarness
 {
     public Guid PropertyId { get; } = Guid.CreateVersion7();
@@ -106,7 +132,9 @@ internal sealed class RoomOperationsHarness
     public InMemoryAssignableEmployees Employees { get; } = new();
     public FixedRoomWorkplace Workplace { get; }
 
+    public InMemoryRoomServiceabilityLookup Serviceability { get; } = new();
     public RequestNeedsCleaningUseCase NeedsCleaning { get; }
+    public EnsurePreparationRequiredUseCase EnsurePreparation { get; }
     public CompleteCleaningUseCase CompleteCleaning { get; }
     public InspectRoomUseCase Inspect { get; }
     public ListRoomOperationsQuery List { get; }
@@ -119,13 +147,39 @@ internal sealed class RoomOperationsHarness
         Employees.Assignable.Add(new AssignableEmployee(OtherEmployeeId, "Mehmet", "Kaya", "P-1002"));
         Employees.Known.AddRange(Employees.Assignable);
 
-        NeedsCleaning = new RequestNeedsCleaningUseCase(Store, Employees, Workplace, Clock);
-        CompleteCleaning = new CompleteCleaningUseCase(Store, Employees, Workplace, Clock);
-        Inspect = new InspectRoomUseCase(Store, Employees, Workplace, Clock);
-        List = new ListRoomOperationsQuery(Store, Employees, Workplace);
-        Detail = new GetRoomOperationsDetailQuery(Store, Employees, Workplace);
+        NeedsCleaning = new RequestNeedsCleaningUseCase(Store, Employees, Serviceability, Workplace, Clock);
+        EnsurePreparation = new EnsurePreparationRequiredUseCase(Store, Workplace, Clock);
+        CompleteCleaning = new CompleteCleaningUseCase(Store, Employees, Serviceability, Workplace, Clock);
+        Inspect = new InspectRoomUseCase(Store, Employees, Serviceability, Workplace, Clock);
+        List = new ListRoomOperationsQuery(Store, Employees, Serviceability, Workplace);
+        Detail = new GetRoomOperationsDetailQuery(Store, Employees, Serviceability, Workplace);
 
         SeedRoom(RoomId, "101");
+    }
+
+    public Room SeedReadyRoom(Guid id, string number, Guid? propertyId = null)
+    {
+        var room = SeedRoom(id, number, propertyId);
+        MakeReady(room);
+        return room;
+    }
+
+    public static void MakeReady(Room room)
+    {
+        if (room.CurrentReadiness == RoomReadiness.Dirty)
+        {
+            Assert.True(room.TryMarkClean(room.ReadinessCycleId, out _));
+        }
+
+        if (room.CurrentReadiness == RoomReadiness.Clean)
+        {
+            Assert.True(room.TryMarkInspected(out _));
+        }
+
+        if (room.CurrentReadiness == RoomReadiness.Inspected)
+        {
+            Assert.True(room.TryMarkReady(out _));
+        }
     }
 
     public Room SeedRoom(Guid id, string number, Guid? propertyId = null)

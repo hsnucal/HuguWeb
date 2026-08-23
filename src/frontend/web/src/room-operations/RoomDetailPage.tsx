@@ -13,9 +13,11 @@ import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
 import { TextArea } from '../ui/TextField'
 import { Timeline, TimelineItem } from '../ui/Timeline'
+import { canReadMaintenance } from '../technical-service/maintenanceAccess'
 import { displayEmployeeName } from './employeeName'
 import styles from './RoomOperations.module.css'
 import {
+  isTechnicallyUnusable,
   neededActionFromState,
   neededActionLabelKey,
   priorityLabelKey,
@@ -24,6 +26,8 @@ import {
   readinessLabelKey,
   readinessMarker,
   readinessTone,
+  serviceabilityLabelKey,
+  serviceabilityTone,
   workStateTone,
 } from './readiness'
 import { canInspectRoomOperations, canManageRoomOperations, canReadRoomOperations } from './roomOperationsAccess'
@@ -47,6 +51,7 @@ export function RoomDetailPage() {
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
   const canManage = canManageRoomOperations(user)
   const canInspect = canInspectRoomOperations(user)
+  const canOpenTechnicalIssue = canReadMaintenance(user)
   const [detail, setDetail] = useState<RoomOperationsDetail | null>(null)
   const [employees, setEmployees] = useState<AssignableEmployeeItem[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -157,6 +162,13 @@ export function RoomDetailPage() {
                 <StatusBadge tone={readinessTone(detail.readiness)} title={t(readinessLabelKey(detail.readiness))}>
                   {t(readinessLabelKey(detail.readiness))}
                 </StatusBadge>
+                <StatusBadge
+                  tone={serviceabilityTone(detail.technicalServiceability)}
+                  variant={isTechnicallyUnusable(detail.technicalServiceability) ? 'fill' : 'outline'}
+                  title={t(serviceabilityLabelKey(detail.technicalServiceability))}
+                >
+                  {t(serviceabilityLabelKey(detail.technicalServiceability))}
+                </StatusBadge>
                 <span className={`${styles.actionText} ${neededAction === 'none' ? styles.actionQuiet : ''}`}>
                   {actionLabel}
                 </span>
@@ -164,6 +176,26 @@ export function RoomDetailPage() {
             </div>
 
             <dl className={styles.heroMeta}>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>{t('roomOperations.readinessLabel')}</dt>
+                <dd>
+                  <StatusBadge tone={readinessTone(detail.readiness)} title={t(readinessLabelKey(detail.readiness))}>
+                    {t(readinessLabelKey(detail.readiness))}
+                  </StatusBadge>
+                </dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>{t('roomOperations.technicalCondition')}</dt>
+                <dd>
+                  <StatusBadge
+                    tone={serviceabilityTone(detail.technicalServiceability)}
+                    variant={isTechnicallyUnusable(detail.technicalServiceability) ? 'fill' : 'outline'}
+                    title={t(serviceabilityLabelKey(detail.technicalServiceability))}
+                  >
+                    {t(serviceabilityLabelKey(detail.technicalServiceability))}
+                  </StatusBadge>
+                </dd>
+              </div>
               <div className={styles.summaryItem}>
                 <dt className={styles.summaryLabel}>{t('roomOperations.assignedEmployee')}</dt>
                 <dd>
@@ -202,6 +234,39 @@ export function RoomDetailPage() {
               </div>
             </dl>
           </section>
+
+          {detail.hasActiveTechnicalIssue ? (
+            <section
+              className={`${styles.workSurface} ${styles.technicalSurface}`}
+              aria-label={t('roomOperations.technicalCondition')}
+            >
+              <h2 className={styles.sectionTitle}>{t('roomOperations.technicalCondition')}</h2>
+              <dl className={styles.technicalMeta}>
+                <div className={styles.summaryItem}>
+                  <dt className={styles.summaryLabel}>{t('roomOperations.technicalCondition')}</dt>
+                  <dd>
+                    <StatusBadge
+                      tone={serviceabilityTone(detail.technicalServiceability)}
+                      title={t(serviceabilityLabelKey(detail.technicalServiceability))}
+                    >
+                      {t(serviceabilityLabelKey(detail.technicalServiceability))}
+                    </StatusBadge>
+                  </dd>
+                </div>
+                {detail.activeTechnicalIssueDescription ? (
+                  <div className={styles.summaryItem}>
+                    <dt className={styles.summaryLabel}>{t('roomOperations.activeTechnicalIssue')}</dt>
+                    <dd>{detail.activeTechnicalIssueDescription}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              {canOpenTechnicalIssue && detail.governingIssueId ? (
+                <Link to={`/app/technical-service/${detail.governingIssueId}`} className={styles.technicalLink}>
+                  {t('roomOperations.viewTechnicalIssue')}
+                </Link>
+              ) : null}
+            </section>
+          ) : null}
 
           {showNeedsCleaning ? (
             <section className={styles.workSurface}>

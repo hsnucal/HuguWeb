@@ -10,12 +10,15 @@ import { StatusBadge } from '../ui/StatusBadge'
 import { displayEmployeeName } from './employeeName'
 import styles from './RoomOperations.module.css'
 import {
+  isTechnicallyUnusable,
   neededActionLabelKey,
   priorityLabelKey,
   priorityTone,
   priorityVariant,
   readinessLabelKey,
   readinessTone,
+  serviceabilityLabelKey,
+  serviceabilityTone,
   workStateTone,
 } from './readiness'
 import { canReadRoomOperations } from './roomOperationsAccess'
@@ -74,6 +77,9 @@ export function RoomOperationsPage() {
               <span className={styles.readinessCell} role="columnheader">
                 {t('roomOperations.readinessLabel')}
               </span>
+              <span className={styles.technicalCell} role="columnheader">
+                {t('roomOperations.technicalCondition')}
+              </span>
               <span className={styles.personCell} role="columnheader">
                 {t('roomOperations.assignedEmployee')}
               </span>
@@ -99,6 +105,10 @@ export function RoomOperationsPage() {
 }
 
 function rowKind(room: RoomOperationsListItem): string {
+  if (isTechnicallyUnusable(room.technicalServiceability)) {
+    return styles.rowUnusable
+  }
+
   if (room.readiness === 'Dirty' && room.currentWorkOrigin === 'Rework') {
     return styles.rowRework
   }
@@ -131,6 +141,7 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
   const personName = displayEmployeeName(room.assignedEmployeeName)
   const personLabel = personName ?? t('roomOperations.unassigned')
   const readinessLabel = t(readinessLabelKey(room.readiness))
+  const technicalLabel = t(serviceabilityLabelKey(room.technicalServiceability))
   const priorityLabel = room.priority ? t(priorityLabelKey(room.priority)) : t('roomOperations.noPriority')
   const workLabel = room.currentWorkState
     ? t(`roomOperations.work.${room.currentWorkState}`)
@@ -146,6 +157,7 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
       aria-label={t('roomOperations.rowSummary', {
         number: room.number,
         readiness: readinessLabel,
+        technical: technicalLabel,
         person: personLabel,
         priority: priorityLabel,
         work: workLabel,
@@ -164,6 +176,17 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
           </StatusBadge>
           <span className={`${styles.readinessMeter} ${styles[`meter${room.readiness}`]}`} aria-hidden="true" />
         </span>
+      </span>
+      <span className={styles.technicalCell} role="cell">
+        <span className={styles.cellLabel}>{t('roomOperations.technicalCondition')}</span>
+        <StatusBadge
+          tone={serviceabilityTone(room.technicalServiceability)}
+          variant={isTechnicallyUnusable(room.technicalServiceability) ? 'fill' : 'outline'}
+          className={styles.chip}
+          title={technicalLabel}
+        >
+          {technicalLabel}
+        </StatusBadge>
       </span>
       <span className={styles.personCell} role="cell">
         <span className={styles.cellLabel}>{t('roomOperations.assignedEmployee')}</span>

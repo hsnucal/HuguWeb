@@ -14,7 +14,9 @@ public sealed record RoomOperationsListItem(
     TaskPriority? Priority,
     Guid? AssignedEmployeeId,
     string? AssignedEmployeeName,
-    string NeededAction);
+    string NeededAction,
+    string TechnicalServiceability,
+    bool HasActiveTechnicalIssue);
 
 public sealed record RoomOperationsDetail(
     Guid Id,
@@ -24,7 +26,11 @@ public sealed record RoomOperationsDetail(
     Guid ReadinessCycleId,
     HousekeepingWorkSummary? CurrentWork,
     IReadOnlyList<ReadinessHistoryItem> ReadinessHistory,
-    IReadOnlyList<InspectionHistoryItem> InspectionHistory);
+    IReadOnlyList<InspectionHistoryItem> InspectionHistory,
+    string TechnicalServiceability,
+    bool HasActiveTechnicalIssue,
+    Guid? GoverningIssueId,
+    string? ActiveTechnicalIssueDescription);
 
 public sealed record HousekeepingWorkSummary(
     Guid Id,

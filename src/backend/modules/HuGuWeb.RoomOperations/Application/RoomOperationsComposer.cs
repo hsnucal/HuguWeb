@@ -7,6 +7,7 @@ internal static class RoomOperationsComposer
     public static async Task<RoomOperationsDetail> DetailAsync(
         IRoomOperationsStore store,
         IAssignableEmployeeDirectory employees,
+        IRoomServiceabilityLookup serviceability,
         Room room,
         CancellationToken cancellationToken)
     {
@@ -14,6 +15,7 @@ internal static class RoomOperationsComposer
         var history = await store.ListHistoryAsync(room.Id, cancellationToken);
         var inspections = await store.ListInspectionsAsync(room.Id, cancellationToken);
         var names = await employees.GetEmployeesAsync(CollectEmployeeIds(workItems, history), cancellationToken);
+        var snapshot = await SnapshotAsync(serviceability, room.PropertyId, room.Id, cancellationToken);
 
         var currentWork = workItems
             .OrderByDescending(item => item.CreatedAt)
@@ -55,7 +57,23 @@ internal static class RoomOperationsComposer
                     item.Reason,
                     item.ReadinessCycleId,
                     item.WorkItemId))
-                .ToArray());
+                .ToArray(),
+            snapshot.Serviceability,
+            snapshot.HasActiveTechnicalIssue,
+            snapshot.GoverningIssueId,
+            snapshot.GoverningIssueDescription);
+    }
+
+    public static async Task<RoomServiceabilitySnapshot> SnapshotAsync(
+        IRoomServiceabilityLookup serviceability,
+        Guid propertyId,
+        Guid roomId,
+        CancellationToken cancellationToken)
+    {
+        var snapshots = await serviceability.GetForRoomsAsync(propertyId, [roomId], cancellationToken);
+        return snapshots.TryGetValue(roomId, out var snapshot)
+            ? snapshot
+            : RoomServiceabilitySnapshot.Available(roomId);
     }
 
     public static string NeededAction(Room room, HousekeepingWorkItem? currentOpenWork)

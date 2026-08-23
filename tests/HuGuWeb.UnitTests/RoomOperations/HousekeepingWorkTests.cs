@@ -155,6 +155,55 @@ public class HousekeepingWorkTests
     }
 
     [Fact]
+    public async Task EnsurePreparation_ReusesOpenWork_WithoutCreatingDuplicate()
+    {
+        var harness = new RoomOperationsHarness();
+        Assert.True((await harness.NeedsCleaning.ExecuteAsync(harness.NeedsCleaningCommand(), CancellationToken.None)).IsSuccess);
+
+        var result = await harness.EnsurePreparation.ExecuteAsync(
+            new EnsurePreparationRequiredCommand(harness.RoomId, harness.ActorUserId),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value!.ReusedExistingWork);
+        Assert.False(result.Value.ReadinessChanged);
+        Assert.Single(harness.Store.WorkItems);
+    }
+
+    [Fact]
+    public async Task EnsurePreparation_MarksReadyRoomDirty_WithoutInventingAssignee()
+    {
+        var harness = new RoomOperationsHarness();
+        Assert.True(harness.Store.Rooms[0].TryMarkClean(harness.Store.Rooms[0].ReadinessCycleId, out _));
+        Assert.True(harness.Store.Rooms[0].TryMarkInspected(out _));
+        Assert.True(harness.Store.Rooms[0].TryMarkReady(out _));
+
+        var result = await harness.EnsurePreparation.ExecuteAsync(
+            new EnsurePreparationRequiredCommand(harness.RoomId, harness.ActorUserId, "Repair required room preparation."),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value!.ReadinessChanged);
+        Assert.Equal(RoomReadiness.Dirty, result.Value.Readiness);
+        Assert.Empty(harness.Store.WorkItems);
+        Assert.Equal(RoomReadiness.Dirty, harness.Store.Rooms[0].CurrentReadiness);
+    }
+
+    [Fact]
+    public async Task List_ReportsServiceableTechnicalCondition_WithoutOwningTechnicalState()
+    {
+        var harness = new RoomOperationsHarness();
+
+        var result = await harness.List.ExecuteAsync(CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+        var room = Assert.Single(result.Value!);
+        Assert.Equal(RoomReadiness.Dirty, room.Readiness);
+        Assert.Equal("Serviceable", room.TechnicalServiceability);
+        Assert.False(room.HasActiveTechnicalIssue);
+    }
+
+    [Fact]
     public void WorkAuthorization_DoesNotUsePositionNames()
     {
         var source = string.Concat(

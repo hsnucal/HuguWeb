@@ -22,6 +22,7 @@ public static class RoomOperationsServiceCollectionExtensions
         services.AddScoped<IRoomOperationsStore, EfRoomOperationsStore>();
         services.AddScoped<IAssignableEmployeeDirectory, WorkforceAssignableEmployeeDirectory>();
         services.AddScoped<RequestNeedsCleaningUseCase>();
+        services.AddScoped<EnsurePreparationRequiredUseCase>();
         services.AddScoped<CompleteCleaningUseCase>();
         services.AddScoped<InspectRoomUseCase>();
         services.AddScoped<ListRoomOperationsQuery>();

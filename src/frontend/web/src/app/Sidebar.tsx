@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import { canReadRoomOperations } from '../room-operations/roomOperationsAccess'
+import { canReadMaintenance } from '../technical-service/maintenanceAccess'
 import {
   HomeIcon,
   PeopleIcon,
@@ -15,6 +16,7 @@ import {
   SettingsIcon,
   SignOutIcon,
   TasksIcon,
+  WrenchIcon,
 } from '../ui/icons'
 import styles from './Sidebar.module.css'
 
@@ -34,6 +36,7 @@ export function Sidebar({
   const { user, preferenceError, updatePreferredLanguage } = useAuthSession()
   const showWorkforce = canReadWorkforce(user)
   const showRoomOperations = canReadRoomOperations(user)
+  const showTechnicalService = canReadMaintenance(user)
 
   return (
     <aside className={styles.sidebar} aria-label={t('navigation.application')}>
@@ -63,6 +66,18 @@ export function Sidebar({
               <RoomsIcon />
             </span>
             {t('navigation.roomOperations')}
+          </NavLink>
+        ) : null}
+
+        {showTechnicalService ? (
+          <NavLink
+            to="/app/technical-service"
+            className={({ isActive }) => (isActive ? styles.current : styles.item)}
+          >
+            <span className={styles.icon}>
+              <WrenchIcon />
+            </span>
+            {t('navigation.technicalService')}
           </NavLink>
         ) : null}
 

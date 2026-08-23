@@ -1,7 +1,11 @@
 using HuGuWeb.Api.Authorization;
 using HuGuWeb.Api.Identity;
+using HuGuWeb.RoomOperations.Application;
 using HuGuWeb.RoomOperations.Domain;
 using HuGuWeb.RoomOperations.Infrastructure.Persistence;
+using HuGuWeb.TechnicalService.Domain;
+using HuGuWeb.TechnicalService.Infrastructure;
+using HuGuWeb.TechnicalService.Infrastructure.Persistence;
 using HuGuWeb.Workforce.Domain;
 using HuGuWeb.Workforce.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +54,9 @@ public class ProductionAssemblyGuardTests
             "Positions",
             "Employments",
             "Assignments",
-            "Organizations"
+            "Organizations",
+            "MaintenanceIssues",
+            "MaintenanceIssueCategories"
         ];
 
         foreach (var name in forbidden)
@@ -86,6 +92,8 @@ public class ProductionAssemblyGuardTests
         var referencedNames = GetReferencedAssemblyNames(typeof(Room).Assembly);
 
         Assert.DoesNotContain("HuGuWeb.Api", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService.Infrastructure", referencedNames);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore", referencedNames);
         Assert.DoesNotContain("Npgsql.EntityFrameworkCore.PostgreSQL", referencedNames);
         Assert.DoesNotContain("Microsoft.AspNetCore.Identity.EntityFrameworkCore", referencedNames);
@@ -99,8 +107,19 @@ public class ProductionAssemblyGuardTests
         var referencedNames = GetReferencedAssemblyNames(typeof(RoomOperationsDbContext).Assembly);
 
         Assert.DoesNotContain("HuGuWeb.Api", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService.Infrastructure", referencedNames);
         AssertNoRejectedInfrastructure(typeof(RoomOperationsDbContext).Assembly);
         AssertNoDeferredDomains(typeof(RoomOperationsDbContext).Assembly.GetTypes().Select(type => type.Name));
+    }
+
+    [Fact]
+    public void RoomOperations_DoesNotReference_TechnicalServiceAssemblies()
+    {
+        var domainNames = GetReferencedAssemblyNames(typeof(Room).Assembly);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService", domainNames);
+        Assert.DoesNotContain("HuGuWeb.TechnicalService.Infrastructure", domainNames);
+        Assert.True(typeof(IRoomServiceabilityLookup).IsAssignableFrom(typeof(TechnicalServiceRoomServiceabilityLookup)));
     }
 
     [Fact]
@@ -118,6 +137,81 @@ public class ProductionAssemblyGuardTests
         Assert.DoesNotContain("OutboxMessage", names);
         Assert.DoesNotContain("IMessageBroker", names);
         AssertNoDeferredDomains(names);
+    }
+
+    [Fact]
+    public void TechnicalServiceDomain_DoesNotDependOn_ApiHostEfOrSiblingImplementations()
+    {
+        var referencedNames = GetReferencedAssemblyNames(typeof(MaintenanceIssue).Assembly);
+
+        Assert.DoesNotContain("HuGuWeb.Api", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.RoomOperations", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.RoomOperations.Infrastructure", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.Workforce", referencedNames);
+        Assert.DoesNotContain("HuGuWeb.Workforce.Infrastructure", referencedNames);
+        Assert.DoesNotContain("Microsoft.EntityFrameworkCore", referencedNames);
+        Assert.DoesNotContain("Npgsql.EntityFrameworkCore.PostgreSQL", referencedNames);
+        Assert.DoesNotContain("Microsoft.AspNetCore.Identity.EntityFrameworkCore", referencedNames);
+        AssertNoRejectedInfrastructure(typeof(MaintenanceIssue).Assembly);
+    }
+
+    [Fact]
+    public void TechnicalServiceInfrastructure_DoesNotDependOn_ApiHostOrRejectedLibraries()
+    {
+        var referencedNames = GetReferencedAssemblyNames(typeof(TechnicalServiceDbContext).Assembly);
+
+        Assert.DoesNotContain("HuGuWeb.Api", referencedNames);
+        AssertNoRejectedInfrastructure(typeof(TechnicalServiceDbContext).Assembly);
+    }
+
+    [Fact]
+    public void TechnicalService_HasNoGenericRepositoryOrBroker()
+    {
+        var names = typeof(MaintenanceIssue).Assembly.GetTypes()
+            .Concat(typeof(TechnicalServiceDbContext).Assembly.GetTypes())
+            .Select(type => type.Name)
+            .ToArray();
+
+        Assert.DoesNotContain("IRepository", names);
+        Assert.DoesNotContain("IGenericRepository", names);
+        Assert.DoesNotContain("GenericRepository", names);
+        Assert.DoesNotContain("IOutbox", names);
+        Assert.DoesNotContain("OutboxMessage", names);
+        Assert.DoesNotContain("IMessageBroker", names);
+        Assert.DoesNotContain("MaintenanceWorkOrder", names);
+        Assert.DoesNotContain("IWorkflowEngine", names);
+    }
+
+    [Fact]
+    public void TechnicalService_DoesNotAuthorizeByEmailPositionOrDepartmentName()
+    {
+        var names = typeof(MaintenanceIssue).Assembly.GetTypes()
+            .Concat(typeof(TechnicalServiceDbContext).Assembly.GetTypes())
+            .Concat(typeof(MaintenancePermissions).Assembly.GetTypes())
+            .Select(type => type.FullName ?? type.Name)
+            .ToArray();
+        var joined = string.Join(' ', names);
+
+        Assert.DoesNotContain("KatGorevlisi", joined, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Teknisyen", joined, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("IkMuduru", joined, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("TeknikServisUzmani", joined, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("maintenance.read", MaintenancePermissions.Read);
+        Assert.Equal("maintenance.manage", MaintenancePermissions.Manage);
+        Assert.Equal("maintenance.resolve", MaintenancePermissions.Resolve);
+        Assert.Null(typeof(MaintenanceIssue).GetProperty("ApplicationUserId"));
+        Assert.Null(typeof(MaintenanceIssue).GetProperty("UserId"));
+    }
+
+    [Fact]
+    public void TechnicalService_DoesNotWriteRoomReadinessOrSellable()
+    {
+        Assert.Null(typeof(MaintenanceIssue).GetProperty("RoomReadiness"));
+        Assert.Null(typeof(MaintenanceIssue).GetProperty("Sellable"));
+        Assert.Null(typeof(MaintenanceIssue).GetProperty("RoomStatus"));
+        Assert.Equal(["Dirty", "Clean", "Inspected", "Ready"], Enum.GetNames<RoomReadiness>());
+        Assert.Equal(["Open", "InProgress", "UnableToResolve", "Resolved"], Enum.GetNames<MaintenanceIssueStatus>());
+        Assert.Equal(["Normal", "High", "Urgent"], Enum.GetNames<MaintenancePriority>());
     }
 
     [Fact]

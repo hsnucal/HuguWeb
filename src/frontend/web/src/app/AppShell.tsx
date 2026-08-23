@@ -91,6 +91,30 @@ function headingFor(pathname: string, t: (key: string) => string) {
     }
   }
 
+  if (pathname === '/app/technical-service/new') {
+    return {
+      kicker: t('navigation.technicalService'),
+      title: t('maintenance.create'),
+      subtitle: t('maintenance.createIntro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/technical-service/')) {
+    return {
+      kicker: t('navigation.technicalService'),
+      title: t('maintenance.detailTitle'),
+      subtitle: t('maintenance.detailIntro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/technical-service')) {
+    return {
+      kicker: t('navigation.technicalService'),
+      title: t('maintenance.title'),
+      subtitle: t('maintenance.intro'),
+    }
+  }
+
   return {
     kicker: t('navigation.home'),
     title: t('operations.title'),

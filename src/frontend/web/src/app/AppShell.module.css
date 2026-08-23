@@ -1,7 +1,9 @@
 .shell {
   display: grid;
   grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background:
     radial-gradient(ellipse 60% 40% at 0% 0%, color-mix(in srgb, var(--color-brand-soft) 55%, transparent), transparent 55%),
     var(--color-surface-page);
@@ -11,8 +13,11 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   margin: 0.85rem 0.85rem 0.85rem 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--color-surface-elevated) 65%, transparent), transparent 8rem),
     var(--color-surface-workspace);
@@ -55,6 +60,10 @@
 @media (max-width: 768px) {
   .shell {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow: visible;
     --space-page-gutter: var(--space-4);
   }
 
@@ -67,6 +76,8 @@
     border: 0;
     border-radius: 0;
     box-shadow: none;
+    overflow: visible;
+    overscroll-behavior: auto;
   }
 
   .mobileBar {

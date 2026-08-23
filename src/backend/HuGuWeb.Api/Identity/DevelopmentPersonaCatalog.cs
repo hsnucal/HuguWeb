@@ -17,7 +17,10 @@ public static class DevelopmentPersonaCatalog
         WorkforcePermissions.Manage,
         RoomOperationsPermissions.Read,
         RoomOperationsPermissions.Manage,
-        RoomOperationsPermissions.Inspect
+        RoomOperationsPermissions.Inspect,
+        MaintenancePermissions.Read,
+        MaintenancePermissions.Manage,
+        MaintenancePermissions.Resolve
     ];
 
     public static readonly IReadOnlyList<string> BroadPermissions = AllDevelopmentPermissions;
@@ -38,12 +41,22 @@ public static class DevelopmentPersonaCatalog
         "roomops.manager@localhost",
         [RoomOperationsPermissions.Read, RoomOperationsPermissions.Manage, RoomOperationsPermissions.Inspect]);
 
+    public static readonly DevelopmentPersonaDefinition MaintenanceTechnician = new(
+        "maintenance.technician@localhost",
+        [MaintenancePermissions.Read, MaintenancePermissions.Resolve]);
+
+    public static readonly DevelopmentPersonaDefinition MaintenanceManager = new(
+        "maintenance.manager@localhost",
+        [MaintenancePermissions.Read, MaintenancePermissions.Manage, MaintenancePermissions.Resolve]);
+
     public static IReadOnlyList<DevelopmentPersonaDefinition> AdditionalPersonas { get; } =
     [
         HumanResourcesManager,
         RoomOperationsAttendant,
         RoomOperationsInspector,
-        RoomOperationsManager
+        RoomOperationsManager,
+        MaintenanceTechnician,
+        MaintenanceManager
     ];
 
     public static DevelopmentPersonaDefinition Broad(string? configuredEmail)

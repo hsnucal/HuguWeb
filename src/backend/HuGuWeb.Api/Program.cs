@@ -3,6 +3,8 @@ using HuGuWeb.Api.Extensions;
 using HuGuWeb.Api.Identity;
 using HuGuWeb.RoomOperations.Infrastructure.Persistence;
 using HuGuWeb.RoomOperations.Infrastructure.Seeding;
+using HuGuWeb.TechnicalService.Infrastructure.Persistence;
+using HuGuWeb.TechnicalService.Infrastructure.Seeding;
 using HuGuWeb.Workforce.Infrastructure.Persistence;
 using HuGuWeb.Workforce.Infrastructure.Seeding;
 
@@ -34,6 +36,7 @@ if (app.Environment.IsDevelopment())
     await DevelopmentUserSeeder.TrySeedAsync(app);
     await TrySeedWorkforceAsync(app);
     await TrySeedRoomOperationsAsync(app);
+    await TrySeedTechnicalServiceAsync(app);
 }
 
 app.Run();
@@ -63,5 +66,19 @@ static async Task TrySeedRoomOperationsAsync(WebApplication app)
     catch (Exception exception)
     {
         app.Logger.LogWarning(exception, "Development room operations data was not seeded.");
+    }
+}
+
+static async Task TrySeedTechnicalServiceAsync(WebApplication app)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TechnicalServiceDbContext>();
+        await DevelopmentTechnicalServiceSeeder.TrySeedAsync(dbContext, app.Logger);
+    }
+    catch (Exception exception)
+    {
+        app.Logger.LogWarning(exception, "Development technical service data was not seeded.");
     }
 }

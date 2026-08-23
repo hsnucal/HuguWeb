@@ -13,6 +13,8 @@
     <ProjectReference Include="..\modules\HuGuWeb.Workforce.Infrastructure\HuGuWeb.Workforce.Infrastructure.csproj" />
     <ProjectReference Include="..\modules\HuGuWeb.RoomOperations\HuGuWeb.RoomOperations.csproj" />
     <ProjectReference Include="..\modules\HuGuWeb.RoomOperations.Infrastructure\HuGuWeb.RoomOperations.Infrastructure.csproj" />
+    <ProjectReference Include="..\modules\HuGuWeb.TechnicalService\HuGuWeb.TechnicalService.csproj" />
+    <ProjectReference Include="..\modules\HuGuWeb.TechnicalService.Infrastructure\HuGuWeb.TechnicalService.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

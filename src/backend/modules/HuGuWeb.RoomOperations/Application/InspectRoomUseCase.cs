@@ -5,6 +5,7 @@ namespace HuGuWeb.RoomOperations.Application;
 public sealed class InspectRoomUseCase(
     IRoomOperationsStore store,
     IAssignableEmployeeDirectory employees,
+    IRoomServiceabilityLookup serviceability,
     IRoomOperationsWorkplace workplace,
     IRoomOperationsClock clock)
 {
@@ -156,7 +157,7 @@ public sealed class InspectRoomUseCase(
         }
 
         await store.SaveChangesAsync(cancellationToken);
-        return await RoomOperationsComposer.DetailAsync(store, employees, room, cancellationToken);
+        return await RoomOperationsComposer.DetailAsync(store, employees, serviceability, room, cancellationToken);
     }
 }
 

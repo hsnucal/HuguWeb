@@ -1,5 +1,11 @@
 import type { StatusBadgeVariant, StatusTone } from '../ui/StatusBadge'
-import type { HousekeepingWorkState, NeededAction, RoomReadiness, TaskPriority } from './roomOperationsApi'
+import type {
+  HousekeepingWorkState,
+  NeededAction,
+  RoomReadiness,
+  RoomTechnicalServiceability,
+  TaskPriority,
+} from './roomOperationsApi'
 
 export function readinessTone(readiness: RoomReadiness): StatusTone {
   switch (readiness) {
@@ -77,6 +83,25 @@ export function neededActionFromState(
 
 export function readinessLabelKey(readiness: RoomReadiness): string {
   return `roomOperations.readiness.${readiness}`
+}
+
+export function isTechnicallyUnusable(serviceability: RoomTechnicalServiceability): boolean {
+  return serviceability !== 'Serviceable'
+}
+
+export function serviceabilityLabelKey(serviceability: RoomTechnicalServiceability): string {
+  return `roomOperations.serviceability.${serviceability}`
+}
+
+export function serviceabilityTone(serviceability: RoomTechnicalServiceability): StatusTone {
+  switch (serviceability) {
+    case 'OutOfService':
+      return 'danger'
+    case 'OutOfOrder':
+      return 'warning'
+    default:
+      return 'neutral'
+  }
 }
 
 export function priorityLabelKey(priority: TaskPriority): string {

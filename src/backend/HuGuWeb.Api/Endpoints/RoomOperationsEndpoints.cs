@@ -50,10 +50,11 @@ public static class RoomOperationsEndpoints
     private static async Task<IResult> GetRoom(
         Guid id,
         GetRoomOperationsDetailQuery query,
+        ClaimsPrincipal principal,
         CancellationToken cancellationToken)
     {
         var result = await query.ExecuteAsync(id, cancellationToken);
-        return result.ToHttp();
+        return result.ToHttp(principal);
     }
 
     private static async Task<IResult> ListAssignableEmployees(
@@ -84,7 +85,7 @@ public static class RoomOperationsEndpoints
         var result = await useCase.ExecuteAsync(
             new RequestNeedsCleaningCommand(id, request.AssignedEmployeeId, priority, actorUserId),
             cancellationToken);
-        return result.ToHttp();
+        return result.ToHttp(principal);
     }
 
     private static async Task<IResult> CompleteCleaning(
@@ -99,7 +100,7 @@ public static class RoomOperationsEndpoints
         }
 
         var result = await useCase.ExecuteAsync(new CompleteCleaningCommand(id, actorUserId), cancellationToken);
-        return result.ToHttp();
+        return result.ToHttp(principal);
     }
 
     private static async Task<IResult> InspectRoom(
@@ -127,7 +128,7 @@ public static class RoomOperationsEndpoints
         var result = await useCase.ExecuteAsync(
             new InspectRoomCommand(id, accepted, request.Reason, actorUserId),
             cancellationToken);
-        return result.ToHttp();
+        return result.ToHttp(principal);
     }
 
     private static bool TryParseUserId(ClaimsPrincipal principal, out Guid userId)
@@ -155,6 +156,11 @@ internal static class RoomOperationsHttpResults
 {
     public static IResult ToHttp<T>(this RoomOperationsResult<T> result) =>
         result.IsSuccess ? Results.Ok(result.Value) : result.Error!.ToHttp();
+
+    public static IResult ToHttp(this RoomOperationsResult<RoomOperationsDetail> result, ClaimsPrincipal principal) =>
+        result.IsSuccess
+            ? Results.Ok(RoomOperationsExposure.ForCaller(result.Value!, RoomOperationsExposure.CanReadMaintenance(principal)))
+            : result.Error!.ToHttp();
 
     public static IResult ToHttp(this RoomOperationsError error) =>
         Results.Problem(

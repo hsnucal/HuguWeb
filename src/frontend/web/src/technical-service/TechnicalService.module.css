@@ -1,0 +1,337 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  width: fit-content;
+  color: var(--color-text-secondary);
+  font-size: var(--type-supporting-size);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+.list {
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+}
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  column-gap: var(--space-inline);
+  row-gap: var(--space-2);
+  align-items: center;
+  min-width: 0;
+  padding: var(--space-row-y) var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+
+.opsRow {
+  position: relative;
+  grid-template-columns: 4.5rem minmax(0, 1.6fr) minmax(0, 0.72fr) minmax(0, 0.95fr) minmax(0, 0.9fr) minmax(0, 1.2fr);
+  grid-template-areas: 'room issue priority person status action';
+  min-height: 3.2rem;
+  padding-left: 1.15rem;
+}
+
+.opsRow::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: transparent;
+}
+
+.opsRow > * {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.rowLink:hover {
+  background: color-mix(in srgb, var(--color-brand-primary) 4%, var(--color-surface-elevated));
+}
+
+.rowLink:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: -2px;
+}
+
+.rowOpen::before {
+  background: var(--color-info);
+}
+
+.rowProgress::before {
+  background: var(--color-warning);
+}
+
+.rowUnable::before {
+  background: var(--color-danger);
+}
+
+.rowResolved::before {
+  background: var(--color-success);
+}
+
+.head {
+  color: var(--color-text-muted);
+  font-size: var(--type-table-header-size);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--color-surface-inset);
+}
+
+.roomCell {
+  grid-area: room;
+}
+
+.issueCell {
+  grid-area: issue;
+}
+
+.priorityCell {
+  grid-area: priority;
+}
+
+.personCell {
+  grid-area: person;
+}
+
+.statusCell {
+  grid-area: status;
+}
+
+.actionCell {
+  grid-area: action;
+}
+
+.roomNumber {
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+}
+
+.issueText,
+.personName,
+.truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issueMeta {
+  color: var(--color-text-muted);
+  font-size: var(--type-supporting-size);
+}
+
+.muted {
+  color: var(--color-text-muted);
+}
+
+.cellLabel {
+  display: none;
+}
+
+.chip {
+  max-width: 100%;
+}
+
+.actionZone {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.actionText {
+  min-width: 0;
+  flex: 1;
+  font-weight: var(--font-weight-medium);
+}
+
+.actionQuiet {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-regular);
+}
+
+.actionChevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 1fr);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+}
+
+.heroNumber {
+  margin: 0;
+  font-size: 2.1rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.03em;
+}
+
+.heroIssue {
+  margin: 0.35rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+}
+
+.heroStatus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+.heroMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.summaryItem {
+  min-width: 0;
+}
+
+.summaryLabel {
+  color: var(--color-text-muted);
+  font-size: var(--type-supporting-size);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.formFooter {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--type-section-title-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (max-width: 1279px) {
+  .opsRow {
+    grid-template-columns: 4.75rem minmax(0, 1.4fr) minmax(0, 1.1fr) minmax(0, 1.2fr);
+    grid-template-areas:
+      'room issue person action'
+      'room priority status action';
+    align-items: start;
+    min-height: 0;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+  }
+
+  .head {
+    display: none;
+  }
+
+  .cellLabel {
+    display: block;
+    margin-bottom: 0.15rem;
+    color: var(--color-text-muted);
+    font-size: var(--type-table-header-size);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .chip,
+  .issueText,
+  .personName,
+  .truncate {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .heroMeta,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .opsRow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'room'
+      'issue'
+      'priority'
+      'person'
+      'status'
+      'action';
+  }
+
+  .roomNumber {
+    font-size: 1.35rem;
+  }
+
+  .heroNumber {
+    font-size: 1.8rem;
+  }
+}

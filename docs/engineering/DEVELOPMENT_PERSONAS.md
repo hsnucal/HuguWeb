@@ -28,11 +28,13 @@ If those secrets are missing, Development startup skips the affected accounts an
 
 | Email | Purpose | Permissions | Sidebar | Can | Cannot |
 | --- | --- | --- | --- | --- | --- |
-| `dev@localhost` | Broad regression | `workforce.read`, `workforce.manage`, `room-operations.read`, `room-operations.manage`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları, Personel | Current Workforce + Room Operations | — |
-| `hr.manager@localhost` | İnsan Kaynakları manager | `workforce.read`, `workforce.manage` | Ana Sayfa, Personel | Workforce management | Room Operations (menu hidden; API 403) |
-| `roomops.attendant@localhost` | Cleaning work | `room-operations.read`, `room-operations.manage` | Ana Sayfa, Oda Operasyonları | View rooms; needs-cleaning; complete cleaning | Inspect / approve / reject; Workforce |
-| `roomops.inspector@localhost` | Inspection | `room-operations.read`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | View rooms; accept / reject when Clean | Cleaning manage actions; Workforce |
-| `roomops.manager@localhost` | Room Operations regression | `room-operations.read`, `room-operations.manage`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | Current Room Operations | Workforce |
+| `dev@localhost` | Broad regression | `workforce.read`, `workforce.manage`, `room-operations.read`, `room-operations.manage`, `room-operations.inspect`, `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Oda Operasyonları, Personel, Teknik Servis | Current Workforce + Room Operations + Technical Service | — |
+| `hr.manager@localhost` | İnsan Kaynakları manager | `workforce.read`, `workforce.manage` | Ana Sayfa, Personel | Workforce management | Room Operations; Technical Service (menus hidden; API 403) |
+| `roomops.attendant@localhost` | Cleaning work | `room-operations.read`, `room-operations.manage` | Ana Sayfa, Oda Operasyonları | View rooms; needs-cleaning; complete cleaning | Inspect / approve / reject; Workforce; Technical Service |
+| `roomops.inspector@localhost` | Inspection | `room-operations.read`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | View rooms; accept / reject when Clean | Cleaning manage actions; Workforce; Technical Service |
+| `roomops.manager@localhost` | Room Operations regression | `room-operations.read`, `room-operations.manage`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | Current Room Operations | Workforce; Technical Service |
+| `maintenance.technician@localhost` | Technical work | `maintenance.read`, `maintenance.resolve` | Ana Sayfa, Teknik Servis | View issues; start / unable / resume / resolve | Create / assign; Workforce; Room Operations |
+| `maintenance.manager@localhost` | Technical Service manager | `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Teknik Servis | Create, assign, classify, and resolve issues | Workforce; Room Operations |
 
 `hr.specialist@localhost` is **not** added. Workforce has no meaningful İK Uzmanı vs İK Müdürü permission split yet.
 
@@ -42,6 +44,7 @@ If those secrets are missing, Development startup skips the affected accounts an
 | --- | --- |
 | Personel | `workforce.read` |
 | Oda Operasyonları | `room-operations.read` |
+| Teknik Servis | `maintenance.read` |
 
 Ana Sayfa is visible to every authenticated user. Hiding a menu is not authorization; the API still returns 401 unauthenticated and 403 for authenticated users without the required claim.
 

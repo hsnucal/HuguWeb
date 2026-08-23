@@ -183,9 +183,11 @@ Create the identity schema with EF Core migrations. Do not use `EnsureCreated()`
 ```bash
 dotnet ef database update --project src/backend/HuGuWeb.Api --context AppIdentityDbContext
 dotnet ef database update --project src/backend/modules/HuGuWeb.Workforce.Infrastructure --startup-project src/backend/HuGuWeb.Api --context WorkforceDbContext
+dotnet ef database update --project src/backend/modules/HuGuWeb.RoomOperations.Infrastructure --startup-project src/backend/HuGuWeb.Api --context RoomOperationsDbContext
+dotnet ef database update --project src/backend/modules/HuGuWeb.TechnicalService.Infrastructure --startup-project src/backend/HuGuWeb.Api --context TechnicalServiceDbContext
 ```
 
-The Identity migrations contain ASP.NET Core Identity tables and nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). The Workforce migration adds Organization & Workforce tables only. Apply pending migrations with the commands above; do not auto-apply in Production.
+The Identity migrations contain ASP.NET Core Identity tables and nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). The Workforce migration adds Organization & Workforce tables only. Room Operations and Technical Service each own their tables. Apply pending migrations with the commands above; do not auto-apply in Production.
 
 ## Backend (manual fallback)
 

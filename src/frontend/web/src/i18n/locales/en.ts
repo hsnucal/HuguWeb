@@ -29,6 +29,7 @@ export type Translations = {
     unavailable: string
     workforce: string
     roomOperations: string
+    technicalService: string
   }
   operations: {
     title: string
@@ -160,6 +161,9 @@ export type Translations = {
     intro: string
     room: string
     readinessLabel: string
+    technicalCondition: string
+    activeTechnicalIssue: string
+    viewTechnicalIssue: string
     assignedEmployee: string
     priorityLabel: string
     workState: string
@@ -191,6 +195,7 @@ export type Translations = {
     noHistory: string
     noInspections: string
     readiness: { Dirty: string; Clean: string; Inspected: string; Ready: string }
+    serviceability: { Serviceable: string; OutOfOrder: string; OutOfService: string }
     priority: { Normal: string; High: string; Urgent: string }
     work: { Open: string; Completed: string }
     needed: { 'needs-cleaning': string; 'complete-cleaning': string; inspect: string; none: string }
@@ -212,6 +217,87 @@ export type Translations = {
       rejectionRequired: string
       inspectionNotAllowed: string
       assignmentRequired: string
+      generic: string
+    }
+  }
+  maintenance: {
+    title: string
+    intro: string
+    create: string
+    createIntro: string
+    createSubmit: string
+    detailTitle: string
+    detailIntro: string
+    room: string
+    issue: string
+    category: string
+    priorityLabel: string
+    assigned: string
+    statusLabel: string
+    nextAction: string
+    unassigned: string
+    rowSummary: string
+    loading: string
+    empty: string
+    emptyHint: string
+    noAccess: string
+    noManage: string
+    back: string
+    createdAt: string
+    serviceabilityLabel: string
+    blocksRoomUse: string
+    blocksYes: string
+    blocksNo: string
+    outageLabel: string
+    managerActions: string
+    assign: string
+    reassign: string
+    changePriority: string
+    changeBlocking: string
+    startTitle: string
+    startIntro: string
+    start: string
+    resolveTitle: string
+    resolve: string
+    resolutionNote: string
+    unable: string
+    unableNote: string
+    resumeTitle: string
+    resume: string
+    preparationImpact: string
+    history: string
+    noHistory: string
+    status: { Open: string; InProgress: string; UnableToResolve: string; Resolved: string }
+    priority: { Normal: string; High: string; Urgent: string }
+    needed: { assign: string; start: string; resolve: string; resume: string; none: string }
+    serviceability: { Serviceable: string; OutOfOrder: string; OutOfService: string }
+    outage: { OutOfOrder: string; OutOfService: string }
+    impact: { None: string; RequiresPreparation: string }
+    historyEvent: {
+      Created: string
+      Assigned: string
+      Reassigned: string
+      PriorityChanged: string
+      BlockingChanged: string
+      Started: string
+      UnableToResolve: string
+      Resumed: string
+      Resolved: string
+    }
+    errors: {
+      issueNotFound: string
+      roomNotFound: string
+      categoryNotFound: string
+      employeeNotFound: string
+      invalidTransition: string
+      assignmentRequired: string
+      invalidPriority: string
+      invalidBlocking: string
+      noteRequired: string
+      invalidPreparationImpact: string
+      staleIssue: string
+      roomInactive: string
+      preparationFailed: string
       generic: string
     }
   }
@@ -249,6 +335,7 @@ export const en: Translations = {
     unavailable: '{{label}}, not available yet',
     workforce: 'Workforce',
     roomOperations: 'Room Operations',
+    technicalService: 'Technical Service',
   },
   operations: {
     title: 'Operations Center',
@@ -383,6 +470,9 @@ export const en: Translations = {
     intro: 'Which rooms need readiness attention now.',
     room: 'Room',
     readinessLabel: 'Readiness',
+    technicalCondition: 'Technical condition',
+    activeTechnicalIssue: 'Active technical issue',
+    viewTechnicalIssue: 'View technical service record',
     assignedEmployee: 'Assigned',
     priorityLabel: 'Priority',
     workState: 'Work status',
@@ -391,7 +481,7 @@ export const en: Translations = {
     noPriority: '—',
     noWork: 'No current work',
     rowSummary:
-      'Room {{number}}. Readiness {{readiness}}. {{person}}. Priority {{priority}}. {{work}}. {{action}}.',
+      'Room {{number}}. Readiness {{readiness}}. Technical condition {{technical}}. {{person}}. Priority {{priority}}. {{work}}. {{action}}.',
     rejectionHint: 'Required when rejecting the room.',
     loading: 'Loading rooms…',
     empty: 'No rooms are available yet.',
@@ -415,6 +505,11 @@ export const en: Translations = {
     noHistory: 'No readiness history yet.',
     noInspections: 'No inspections yet.',
     readiness: { Dirty: 'Dirty', Clean: 'Clean', Inspected: 'Inspected', Ready: 'Ready' },
+    serviceability: {
+      Serviceable: 'Available',
+      OutOfOrder: 'Unavailable',
+      OutOfService: 'Out of service',
+    },
     priority: { Normal: 'Normal', High: 'High', Urgent: 'Urgent' },
     work: { Open: 'Open', Completed: 'Completed' },
     needed: {
@@ -442,6 +537,109 @@ export const en: Translations = {
       inspectionNotAllowed: 'Inspection is only allowed when the room is Clean.',
       assignmentRequired: 'Choose an assigned employee.',
       generic: 'The room operations request could not be completed.',
+    },
+  },
+  maintenance: {
+    title: 'Technical Service',
+    intro: 'Which technical work needs attention now.',
+    create: 'New issue',
+    createIntro: 'Record a room fault, its priority, and the person responsible.',
+    createSubmit: 'Create issue',
+    detailTitle: 'Issue',
+    detailIntro: 'Current state, next action, and history.',
+    room: 'Room',
+    issue: 'Issue',
+    category: 'Category',
+    priorityLabel: 'Priority',
+    assigned: 'Assigned technician',
+    statusLabel: 'Status',
+    nextAction: 'Next action',
+    unassigned: 'Unassigned',
+    rowSummary:
+      'Room {{room}}. {{issue}}. Priority {{priority}}. {{person}}. {{status}}. {{action}}.',
+    loading: 'Loading technical work…',
+    empty: 'No technical work yet.',
+    emptyHint: 'New issues appear here when they are recorded.',
+    noAccess: 'You do not have access to technical service.',
+    noManage: 'You cannot create or assign technical work.',
+    back: 'Back to technical service',
+    createdAt: 'Created',
+    serviceabilityLabel: 'Technical condition',
+    blocksRoomUse: 'Blocks room use',
+    blocksYes: 'Yes — the room cannot be used',
+    blocksNo: 'No — the room can still be used',
+    outageLabel: 'Expected duration',
+    managerActions: 'Assignment and classification',
+    assign: 'Assign',
+    reassign: 'Reassign',
+    changePriority: 'Change priority',
+    changeBlocking: 'Update blocking',
+    startTitle: 'Start work',
+    startIntro: 'Work can start after a technician is assigned.',
+    start: 'Start',
+    resolveTitle: 'Complete work',
+    resolve: 'Resolved',
+    resolutionNote: 'How it was resolved',
+    unable: 'Unable to resolve',
+    unableNote: 'Why it cannot be resolved now',
+    resumeTitle: 'Continue work',
+    resume: 'Resume',
+    preparationImpact: 'Did the repair affect room preparation?',
+    history: 'History',
+    noHistory: 'No history yet.',
+    status: {
+      Open: 'Open',
+      InProgress: 'In progress',
+      UnableToResolve: 'Unable to resolve',
+      Resolved: 'Resolved',
+    },
+    priority: { Normal: 'Normal', High: 'High', Urgent: 'Urgent' },
+    needed: {
+      assign: 'Assign technician',
+      start: 'Start work',
+      resolve: 'Resolve',
+      resume: 'Resume work',
+      none: 'No action',
+    },
+    serviceability: {
+      Serviceable: 'Technically usable',
+      OutOfOrder: 'Out of order',
+      OutOfService: 'Out of service',
+    },
+    outage: {
+      OutOfOrder: 'Same-day repair expected',
+      OutOfService: 'Not same-day',
+    },
+    impact: {
+      None: 'Preparation was not affected',
+      RequiresPreparation: 'Room needs preparation again',
+    },
+    historyEvent: {
+      Created: 'Created',
+      Assigned: 'Assigned',
+      Reassigned: 'Reassigned',
+      PriorityChanged: 'Priority changed',
+      BlockingChanged: 'Blocking changed',
+      Started: 'Started',
+      UnableToResolve: 'Unable to resolve',
+      Resumed: 'Resumed',
+      Resolved: 'Resolved',
+    },
+    errors: {
+      issueNotFound: 'The technical issue was not found.',
+      roomNotFound: 'The room was not found.',
+      categoryNotFound: 'The category was not found.',
+      employeeNotFound: 'The employee was not found or is not currently employed.',
+      invalidTransition: 'That step is not allowed for this issue now.',
+      assignmentRequired: 'Assign a technician before starting work.',
+      invalidPriority: 'Choose Normal, High, or Urgent.',
+      invalidBlocking: 'A blocking issue needs a same-day or not-same-day classification.',
+      noteRequired: 'A note is required.',
+      invalidPreparationImpact: 'Say whether the repair affected room preparation.',
+      staleIssue: 'This issue was changed by someone else. Reload and try again.',
+      roomInactive: 'An inactive room cannot receive a technical issue.',
+      preparationFailed: 'The issue was recorded, but room preparation could not be requested.',
+      generic: 'The technical service request could not be completed.',
     },
   },
 }

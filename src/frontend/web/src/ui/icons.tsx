@@ -64,6 +64,14 @@ export function SettingsIcon({ className }: IconProps) {
   )
 }
 
+export function WrenchIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L5 16l3 3 4.3-4.3a4 4 0 0 1 5.4-5.4l-2-2Z" />
+    </svg>
+  )
+}
+
 export function PeopleIcon({ className }: IconProps) {
   return (
     <svg className={className} {...svg}>

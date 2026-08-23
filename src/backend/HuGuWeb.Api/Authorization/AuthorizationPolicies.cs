@@ -8,4 +8,7 @@ public static class AuthorizationPolicies
     public const string RoomOperationsRead = "RoomOperationsRead";
     public const string RoomOperationsManage = "RoomOperationsManage";
     public const string RoomOperationsInspect = "RoomOperationsInspect";
+    public const string MaintenanceRead = "MaintenanceRead";
+    public const string MaintenanceManage = "MaintenanceManage";
+    public const string MaintenanceResolve = "MaintenanceResolve";
 }

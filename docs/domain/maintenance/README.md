@@ -47,7 +47,8 @@ Do **not** name the module Housekeeping. Do **not** reuse `HousekeepingWorkItem`
 | [WORKFLOW.md](WORKFLOW.md) | Report → assign → intervene → resolve / unable |
 | [CROSS_DEPARTMENT_COORDINATION.md](CROSS_DEPARTMENT_COORDINATION.md) | Ön Büro, Kat Hizmetleri / Oda Operasyonları, future Stay |
 | [INVARIANTS.md](INVARIANTS.md) | Binding rules for a later implementation |
-| [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen Sprint **0.11B** scope (not started) |
+| [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen Sprint **0.11B** scope |
+| [DEFERRED_AUTHORIZATION.md](DEFERRED_AUTHORIZATION.md) | DB-managed roles/permissions are later work, not 0.11B |
 | [MAINT-DOMAIN-001.md](MAINT-DOMAIN-001.md) | Domain decision record (**Accepted**) |
 
 Related (do not contradict):

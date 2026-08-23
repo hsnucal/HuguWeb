@@ -3,6 +3,7 @@ namespace HuGuWeb.RoomOperations.Application;
 public sealed class GetRoomOperationsDetailQuery(
     IRoomOperationsStore store,
     IAssignableEmployeeDirectory employees,
+    IRoomServiceabilityLookup serviceability,
     IRoomOperationsWorkplace workplace)
 {
     public async Task<RoomOperationsResult<RoomOperationsDetail>> ExecuteAsync(
@@ -21,6 +22,6 @@ public sealed class GetRoomOperationsDetailQuery(
             return RoomOperationsError.RoomNotFound();
         }
 
-        return await RoomOperationsComposer.DetailAsync(store, employees, room, cancellationToken);
+        return await RoomOperationsComposer.DetailAsync(store, employees, serviceability, room, cancellationToken);
     }
 }

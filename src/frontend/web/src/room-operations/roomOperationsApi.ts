@@ -6,6 +6,7 @@ export type HousekeepingWorkState = 'Open' | 'Completed'
 export type HousekeepingWorkOrigin = 'NeedsCleaning' | 'Rework'
 export type InspectionResult = 'Accepted' | 'Rejected'
 export type NeededAction = 'needs-cleaning' | 'complete-cleaning' | 'inspect' | 'none'
+export type RoomTechnicalServiceability = 'Serviceable' | 'OutOfOrder' | 'OutOfService'
 
 export type RoomOperationsListItem = {
   id: string
@@ -20,6 +21,8 @@ export type RoomOperationsListItem = {
   assignedEmployeeId: string | null
   assignedEmployeeName: string | null
   neededAction: NeededAction
+  technicalServiceability: RoomTechnicalServiceability
+  hasActiveTechnicalIssue: boolean
 }
 
 export type HousekeepingWorkSummary = {
@@ -67,6 +70,10 @@ export type RoomOperationsDetail = {
   currentWork: HousekeepingWorkSummary | null
   readinessHistory: ReadinessHistoryItem[]
   inspectionHistory: InspectionHistoryItem[]
+  technicalServiceability: RoomTechnicalServiceability
+  hasActiveTechnicalIssue: boolean
+  governingIssueId: string | null
+  activeTechnicalIssueDescription: string | null
 }
 
 export type AssignableEmployeeItem = {
