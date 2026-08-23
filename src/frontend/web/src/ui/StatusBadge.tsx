@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 import styles from './StatusBadge.module.css'
 
-export type StatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
-export type StatusBadgeVariant = 'fill' | 'outline'
+export type StatusTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent'
+export type StatusBadgeVariant = 'fill' | 'outline' | 'priority'
 
 export function StatusBadge({
   tone,

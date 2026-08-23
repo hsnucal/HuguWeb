@@ -4,16 +4,20 @@ import type { HousekeepingWorkState, NeededAction, RoomReadiness, TaskPriority }
 export function readinessTone(readiness: RoomReadiness): StatusTone {
   switch (readiness) {
     case 'Dirty':
-      return 'danger'
-    case 'Clean':
       return 'warning'
-    case 'Inspected':
+    case 'Clean':
       return 'info'
+    case 'Inspected':
+      return 'accent'
     case 'Ready':
       return 'success'
     default:
       return 'neutral'
   }
+}
+
+export function readinessMarker(readiness: RoomReadiness): 'warning' | 'info' | 'accent' | 'success' {
+  return readinessTone(readiness) as 'warning' | 'info' | 'accent' | 'success'
 }
 
 export function priorityTone(priority: TaskPriority): StatusTone {
@@ -28,7 +32,15 @@ export function priorityTone(priority: TaskPriority): StatusTone {
 }
 
 export function priorityVariant(priority: TaskPriority): StatusBadgeVariant {
-  return priority === 'Urgent' ? 'fill' : 'outline'
+  if (priority === 'Urgent') {
+    return 'fill'
+  }
+
+  if (priority === 'High') {
+    return 'priority'
+  }
+
+  return 'outline'
 }
 
 export function workStateTone(state: HousekeepingWorkState | null): StatusTone {

@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
+import { AvatarMark } from '../ui/AvatarMark'
 import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
@@ -47,7 +48,9 @@ export function Sidebar({
           end
           className={({ isActive }) => (isActive ? styles.current : styles.item)}
         >
-          <HomeIcon />
+          <span className={styles.icon}>
+            <HomeIcon />
+          </span>
           {t('navigation.home')}
         </NavLink>
 
@@ -56,7 +59,9 @@ export function Sidebar({
             to="/app/room-operations"
             className={({ isActive }) => (isActive ? styles.current : styles.item)}
           >
-            <RoomsIcon />
+            <span className={styles.icon}>
+              <RoomsIcon />
+            </span>
             {t('navigation.roomOperations')}
           </NavLink>
         ) : null}
@@ -66,7 +71,9 @@ export function Sidebar({
             to="/app/workforce"
             className={({ isActive }) => (isActive ? styles.current : styles.item)}
           >
-            <PeopleIcon />
+            <span className={styles.icon}>
+              <PeopleIcon />
+            </span>
             {t('navigation.workforce')}
           </NavLink>
         ) : null}
@@ -81,7 +88,9 @@ export function Sidebar({
               aria-disabled="true"
               aria-label={t('navigation.unavailable', { label })}
             >
-              <Icon />
+              <span className={styles.icon}>
+                <Icon />
+              </span>
               {label}
             </span>
           )
@@ -94,13 +103,18 @@ export function Sidebar({
           aria-disabled="true"
           aria-label={t('navigation.unavailable', { label: t('navigation.settings') })}
         >
-          <SettingsIcon />
+          <span className={styles.icon}>
+            <SettingsIcon />
+          </span>
           {t('navigation.settings')}
         </span>
 
         <div className={styles.account}>
-          <span className={styles.accountName}>{userLabel}</span>
-          <span className={styles.accountHint}>{t('auth.signedIn')}</span>
+          <AvatarMark name={userLabel} size="sm" />
+          <div className={styles.accountCopy}>
+            <span className={styles.accountName}>{userLabel}</span>
+            <span className={styles.accountHint}>{t('auth.signedIn')}</span>
+          </div>
         </div>
 
         <LanguageSelect

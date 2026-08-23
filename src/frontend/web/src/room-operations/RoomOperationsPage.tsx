@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
+import { EmptyState } from '../ui/EmptyState'
+import { ChevronRightIcon } from '../ui/icons'
+import { Notice } from '../ui/Notice'
+import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
 import { displayEmployeeName } from './employeeName'
 import styles from './RoomOperations.module.css'
@@ -47,23 +51,21 @@ export function RoomOperationsPage() {
   }, [t])
 
   if (!canReadRoomOperations(user)) {
-    return <p className={styles.empty}>{t('roomOperations.noAccess')}</p>
+    return <Notice tone="danger">{t('roomOperations.noAccess')}</Notice>
   }
 
   return (
     <div className={styles.page}>
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
 
-      <div className={styles.list}>
-        {rooms === null ? (
-          <p className={styles.empty}>{t('roomOperations.loading')}</p>
-        ) : rooms.length === 0 ? (
-          <p className={styles.empty}>{t('roomOperations.empty')}</p>
-        ) : (
+      {rooms === null ? (
+        <Skeleton variant="list" rows={6} label={t('roomOperations.loading')} />
+      ) : rooms.length === 0 ? (
+        <div className={styles.list}>
+          <EmptyState title={t('roomOperations.empty')} description={t('roomOperations.emptyHint')} />
+        </div>
+      ) : (
+        <div className={styles.list}>
           <div className={styles.table} role="table" aria-label={t('roomOperations.title')}>
             <div className={`${styles.row} ${styles.opsRow} ${styles.head}`} role="row">
               <span className={styles.roomCell} role="columnheader">
@@ -90,10 +92,38 @@ export function RoomOperationsPage() {
               <RoomRow key={room.id} room={room} />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function rowKind(room: RoomOperationsListItem): string {
+  if (room.readiness === 'Dirty' && room.currentWorkOrigin === 'Rework') {
+    return styles.rowRework
+  }
+
+  if (room.readiness === 'Dirty' && room.currentWorkState === 'Open') {
+    return styles.rowCleaning
+  }
+
+  if (room.readiness === 'Dirty') {
+    return styles.rowDirty
+  }
+
+  if (room.readiness === 'Clean') {
+    return styles.rowInspect
+  }
+
+  if (room.readiness === 'Inspected') {
+    return styles.rowInspected
+  }
+
+  if (room.readiness === 'Ready') {
+    return styles.rowReady
+  }
+
+  return ''
 }
 
 function RoomRow({ room }: { room: RoomOperationsListItem }) {
@@ -111,7 +141,7 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
   return (
     <Link
       to={`/app/room-operations/${room.id}`}
-      className={`${styles.row} ${styles.opsRow} ${styles.rowLink} ${needsAction ? styles.rowNeedsAction : ''}`}
+      className={`${styles.row} ${styles.opsRow} ${styles.rowLink} ${rowKind(room)} ${needsAction ? styles.rowNeedsAction : ''}`}
       role="row"
       aria-label={t('roomOperations.rowSummary', {
         number: room.number,
@@ -128,9 +158,12 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
       </span>
       <span className={styles.readinessCell} role="cell">
         <span className={styles.cellLabel}>{t('roomOperations.readinessLabel')}</span>
-        <StatusBadge tone={readinessTone(room.readiness)} className={styles.chip} title={readinessLabel}>
-          {readinessLabel}
-        </StatusBadge>
+        <span className={styles.readinessStack}>
+          <StatusBadge tone={readinessTone(room.readiness)} className={styles.chip} title={readinessLabel}>
+            {readinessLabel}
+          </StatusBadge>
+          <span className={`${styles.readinessMeter} ${styles[`meter${room.readiness}`]}`} aria-hidden="true" />
+        </span>
       </span>
       <span className={styles.personCell} role="cell">
         <span className={styles.cellLabel}>{t('roomOperations.assignedEmployee')}</span>
@@ -170,7 +203,10 @@ function RoomRow({ room }: { room: RoomOperationsListItem }) {
       </span>
       <span className={styles.actionCell} role="cell">
         <span className={styles.cellLabel}>{t('roomOperations.actionNeeded')}</span>
-        <span className={`${styles.actionText} ${needsAction ? '' : styles.actionQuiet}`}>{actionLabel}</span>
+        <span className={styles.actionZone}>
+          <span className={`${styles.actionText} ${needsAction ? '' : styles.actionQuiet}`}>{actionLabel}</span>
+          <ChevronRightIcon className={styles.actionChevron} />
+        </span>
       </span>
     </Link>
   )

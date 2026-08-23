@@ -8,7 +8,7 @@ const svg = {
   viewBox: '0 0 24 24',
   fill: 'none',
   stroke: 'currentColor',
-  strokeWidth: 1.75,
+  strokeWidth: 1.65,
   strokeLinecap: 'round' as const,
   strokeLinejoin: 'round' as const,
   'aria-hidden': true as const,
@@ -81,6 +81,22 @@ export function SignOutIcon({ className }: IconProps) {
       <path d="M10 5H6.5A1.5 1.5 0 0 0 5 6.5v11A1.5 1.5 0 0 0 6.5 19H10" />
       <path d="M10 12h9" />
       <path d="M16 8.5 19.5 12 16 15.5" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M9 6.5 14.5 12 9 17.5" />
+    </svg>
+  )
+}
+
+export function ChevronLeftIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M15 6.5 9.5 12 15 17.5" />
     </svg>
   )
 }

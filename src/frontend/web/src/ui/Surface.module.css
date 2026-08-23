@@ -4,6 +4,37 @@
   border-radius: var(--radius-m);
 }
 
+.panel {
+  background: var(--color-surface-elevated);
+}
+
+.section {
+  background: transparent;
+  border-color: transparent;
+}
+
+.inset {
+  background: var(--color-surface-subtle);
+}
+
 .raised {
+  box-shadow: var(--shadow-m);
+  border-color: color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
+}
+
+.workspace {
+  background: var(--color-surface-workspace);
+  border-color: transparent;
+}
+
+.interactive {
+  background: var(--color-surface-elevated);
+  transition:
+    background-color var(--motion-duration-fast) var(--motion-easing-standard),
+    box-shadow var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.interactive:hover {
+  background: color-mix(in srgb, var(--color-surface-elevated) 88%, var(--color-surface-subtle));
   box-shadow: var(--shadow-s);
 }

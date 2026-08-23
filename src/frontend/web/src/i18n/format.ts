@@ -61,6 +61,27 @@ export function formatTime(hours: number, minutes: number, language: AppLanguage
   }).format(value)
 }
 
+export function formatTimeFromIso(value: string, language: AppLanguage): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat(language, {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+}
+
+export function formatDateFromIso(value: string, language: AppLanguage): string {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(date)
+}
+
 export function formatCurrency(
   value: number,
   language: AppLanguage,

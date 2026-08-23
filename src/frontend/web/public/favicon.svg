@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Keep glyph geometry in sync with src/ui/HgMonogram.tsx -->
+  <rect width="32" height="32" rx="7" fill="#5c2a6e"/>
+  <g fill="#fbf7f4" transform="translate(16 16) scale(1.06) translate(-16 -16)">
+    <rect x="2.25" y="4" width="6.25" height="24" rx="1.15"/>
+    <rect x="12.75" y="4" width="6.25" height="24" rx="1.15"/>
+    <rect x="2.25" y="12.875" width="19.5" height="6.25" rx="1.15"/>
+    <path d="M16 4h8.15A6.25 6.25 0 0 1 30.4 10.25v11.5A6.25 6.25 0 0 1 24.15 28H16v-6.25h8.15V10.25H16V4z"/>
+  </g>
+</svg>

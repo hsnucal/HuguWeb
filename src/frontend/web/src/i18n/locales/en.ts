@@ -59,6 +59,8 @@ export type Translations = {
     ready: string
     groupArrival: string
     vipArrival: string
+    distribution: string
+    roomsInSnapshot: string
   }
   workforce: {
     title: string
@@ -111,11 +113,17 @@ export type Translations = {
     allDepartments: string
     loading: string
     emptyActive: string
+    emptyActiveHint: string
     emptyScheduled: string
+    emptyScheduledHint: string
     emptyFormer: string
+    emptyFormerHint: string
     emptySearch: string
+    emptySearchHint: string
     emptyDepartments: string
+    emptyDepartmentsHint: string
     emptyPositions: string
+    emptyPositionsHint: string
     hireNeedsStructure: string
     personalSection: string
     startSection: string
@@ -163,6 +171,7 @@ export type Translations = {
     rejectionHint: string
     loading: string
     empty: string
+    emptyHint: string
     noAccess: string
     back: string
     noEmployees: string
@@ -270,6 +279,8 @@ export const en: Translations = {
     ready: 'Ready',
     groupArrival: 'Group arrival · {{count}} rooms',
     vipArrival: 'VIP arrival · {{room}}',
+    distribution: 'Room readiness mix',
+    roomsInSnapshot: '{{value}} rooms',
   },
   workforce: {
     title: 'Workforce',
@@ -324,15 +335,21 @@ export const en: Translations = {
     allDepartments: 'All departments',
     loading: 'Loading staff…',
     emptyActive: 'No staff members yet.',
+    emptyActiveHint: 'When someone joins the hotel, they will appear here.',
     emptyScheduled: 'No scheduled starts.',
+    emptyScheduledHint: 'Future start dates will show in this view.',
     emptyFormer: 'No former staff yet.',
+    emptyFormerHint: 'People who have left remain visible here.',
     emptySearch: 'No staff match this search.',
-    emptyDepartments: 'No departments yet. Add the hotel structure before hiring.',
-    emptyPositions: 'No positions yet. Add a job title before hiring.',
+    emptySearchHint: 'Try a different name, number, or department.',
+    emptyDepartments: 'No departments yet.',
+    emptyDepartmentsHint: 'Add the hotel structure before hiring.',
+    emptyPositions: 'No positions yet.',
+    emptyPositionsHint: 'Add a job title before hiring.',
     hireNeedsStructure: 'Add at least one active department and one active position before hiring.',
-    personalSection: 'Personal details',
-    startSection: 'Start of work',
-    placementSection: 'Department and position',
+    personalSection: 'Staff details',
+    startSection: 'Work details',
+    placementSection: 'Assignment',
     currentWork: 'Current work',
     lastWork: 'Last work',
     workHistory: 'Work history',
@@ -378,6 +395,7 @@ export const en: Translations = {
     rejectionHint: 'Required when rejecting the room.',
     loading: 'Loading rooms…',
     empty: 'No rooms are available yet.',
+    emptyHint: 'Rooms appear here once the property has been set up.',
     noAccess: 'You do not have access to room operations.',
     back: 'Back to room operations',
     noEmployees: 'No currently employed people are available to assign. Hire staff in Workforce first.',

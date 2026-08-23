@@ -5,9 +5,14 @@ import { useAuthSession } from '../auth/AuthContext'
 import { addDaysIso, formatDateOnly, laterIsoDate, todayIsoDate } from '../i18n/format'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
+import { EmptyState } from '../ui/EmptyState'
+import { ChevronLeftIcon } from '../ui/icons'
+import { Notice } from '../ui/Notice'
 import { DateField, SelectField } from '../ui/SelectField'
+import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
-import { Surface } from '../ui/Surface'
+import { AvatarMark } from '../ui/AvatarMark'
+import { Timeline, TimelineItem } from '../ui/Timeline'
 import styles from './Workforce.module.css'
 import { canManageWorkforce } from './workforceAccess'
 import {
@@ -183,19 +188,11 @@ export function EmployeeDetailPage() {
   }
 
   if (loading) {
-    return (
-      <p className={styles.muted} role="status">
-        {t('workforce.loading')}
-      </p>
-    )
+    return <Skeleton variant="block" label={t('workforce.loading')} />
   }
 
   if (!employee) {
-    return error ? (
-      <p className={styles.error} role="alert">
-        {error}
-      </p>
-    ) : null
+    return error ? <Notice tone="danger">{error}</Notice> : null
   }
 
   const status = employee.currentEmployment?.status ?? employee.employments[0]?.status
@@ -211,12 +208,14 @@ export function EmployeeDetailPage() {
   return (
     <div className={styles.page}>
       <Link className={styles.backLink} to="/app/workforce">
+        <ChevronLeftIcon />
         {t('workforce.backToDirectory')}
       </Link>
 
-      <div className={styles.toolbar}>
-        <div>
-          <p className={styles.personName}>
+      <section className={styles.hero} aria-label={`${employee.givenName} ${employee.familyName}`}>
+        <AvatarMark name={`${employee.givenName} ${employee.familyName}`} size="lg" />
+        <div className={styles.heroCopy}>
+          <p className={styles.heroName}>
             {employee.givenName} {employee.familyName}
           </p>
           <p className={styles.muted}>
@@ -224,37 +223,39 @@ export function EmployeeDetailPage() {
           </p>
         </div>
         <StatusBadge tone={employmentStatusTone(status)}>{statusLabel(status, t)}</StatusBadge>
-      </div>
+      </section>
 
-      <h2 className={styles.sectionTitle}>
-        {ended ? t('workforce.lastWork') : t('workforce.currentWork')}
-      </h2>
-      <Surface className={styles.summary}>
-        <div className={styles.summaryItem}>
-          <span className={styles.summaryLabel}>{t('workforce.status')}</span>
-          <span>{statusLabel(status, t)}</span>
-        </div>
-        <div className={styles.summaryItem}>
-          <span className={styles.summaryLabel}>{t('workforce.startDate')}</span>
-          <span>
-            {currentEmployment ? formatDateOnly(currentEmployment.startDate, language) : '—'}
-          </span>
-        </div>
-        {ended && currentEmployment?.endDate ? (
+      <section className={styles.currentBand}>
+        <h2 className={styles.sectionTitle}>
+          {ended ? t('workforce.lastWork') : t('workforce.currentWork')}
+        </h2>
+        <dl className={styles.summary}>
           <div className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>{t('workforce.endDate')}</span>
-            <span>{formatDateOnly(currentEmployment.endDate, language)}</span>
+            <dt className={styles.summaryLabel}>{t('workforce.status')}</dt>
+            <dd>{statusLabel(status, t)}</dd>
           </div>
-        ) : null}
-        <div className={styles.summaryItem}>
-          <span className={styles.summaryLabel}>{t('workforce.department')}</span>
-          <span>{assignment?.departmentName ?? '—'}</span>
-        </div>
-        <div className={styles.summaryItem}>
-          <span className={styles.summaryLabel}>{t('workforce.position')}</span>
-          <span>{assignment?.positionName ?? '—'}</span>
-        </div>
-      </Surface>
+          <div className={styles.summaryItem}>
+            <dt className={styles.summaryLabel}>{t('workforce.startDate')}</dt>
+            <dd>
+              {currentEmployment ? formatDateOnly(currentEmployment.startDate, language) : '—'}
+            </dd>
+          </div>
+          {ended && currentEmployment?.endDate ? (
+            <div className={styles.summaryItem}>
+              <dt className={styles.summaryLabel}>{t('workforce.endDate')}</dt>
+              <dd>{formatDateOnly(currentEmployment.endDate, language)}</dd>
+            </div>
+          ) : null}
+          <div className={styles.summaryItem}>
+            <dt className={styles.summaryLabel}>{t('workforce.department')}</dt>
+            <dd>{assignment?.departmentName ?? '—'}</dd>
+          </div>
+          <div className={styles.summaryItem}>
+            <dt className={styles.summaryLabel}>{t('workforce.position')}</dt>
+            <dd>{assignment?.positionName ?? '—'}</dd>
+          </div>
+        </dl>
+      </section>
 
       {canMutate ? (
         <div className={styles.actions}>
@@ -336,8 +337,8 @@ export function EmployeeDetailPage() {
               </div>
             </section>
           </div>
-          <div className={styles.actions}>
-            <Button type="submit" layout="inline" disabled={saving}>
+          <div className={styles.formFooter}>
+            <Button type="submit" layout="inline" loading={saving}>
               {t('workforce.transferSubmit')}
             </Button>
             <Button variant="ghost" onClick={() => setMode('none')}>
@@ -355,7 +356,7 @@ export function EmployeeDetailPage() {
             void onEnd()
           }}
         >
-          <p className={styles.endNotice}>{t('workforce.confirmEnd')}</p>
+          <Notice tone="warning">{t('workforce.confirmEnd')}</Notice>
           <DateField
             id="end-date"
             label={t('workforce.endDate')}
@@ -363,8 +364,8 @@ export function EmployeeDetailPage() {
             onChange={setEndDate}
             required
           />
-          <div className={styles.actions}>
-            <Button type="submit" variant="danger" layout="inline" disabled={saving}>
+          <div className={styles.formFooter}>
+            <Button type="submit" variant="danger" layout="inline" loading={saving}>
               {t('workforce.endEmploymentSubmit')}
             </Button>
             <Button variant="ghost" onClick={() => setMode('none')}>
@@ -374,34 +375,32 @@ export function EmployeeDetailPage() {
         </form>
       ) : null}
 
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
 
-      <section>
+      <section className={styles.historyWell}>
         <h2 className={styles.sectionTitle}>{t('workforce.workHistory')}</h2>
-        <div className={styles.history}>
-          {timeline.length === 0 ? (
-            <p className={styles.emptyPlain}>{t('workforce.noHistory')}</p>
-          ) : (
-            timeline.map((assignmentRow) => (
-              <div key={assignmentRow.id} className={styles.historyItem}>
-                <span className={styles.muted}>
-                  {formatDateOnly(assignmentRow.startDate, language)}
-                  {' – '}
-                  {assignmentRow.endDate
+        {timeline.length === 0 ? (
+          <EmptyState compact title={t('workforce.noHistory')} />
+        ) : (
+          <Timeline label={t('workforce.workHistory')}>
+            {timeline.map((assignmentRow) => (
+              <TimelineItem
+                key={assignmentRow.id}
+                time={formatDateOnly(assignmentRow.startDate, language)}
+                supporting={
+                  assignmentRow.endDate
                     ? formatDateOnly(assignmentRow.endDate, language)
-                    : t('workforce.present')}
-                </span>
+                    : t('workforce.present')
+                }
+                marker={assignmentRow.endDate ? 'neutral' : 'success'}
+              >
                 <span>
                   {assignmentRow.departmentName} · {assignmentRow.positionName}
                 </span>
-              </div>
-            ))
-          )}
-        </div>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        )}
       </section>
     </div>
   )

@@ -5,9 +5,13 @@ import { useAuthSession } from '../auth/AuthContext'
 import { formatDateOnly, todayIsoDate } from '../i18n/format'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
+import { EmptyState } from '../ui/EmptyState'
+import { Notice } from '../ui/Notice'
 import { DateField, SelectField } from '../ui/SelectField'
+import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
 import { TextField } from '../ui/TextField'
+import { AvatarMark } from '../ui/AvatarMark'
 import styles from './Workforce.module.css'
 import { canManageWorkforce } from './workforceAccess'
 import {
@@ -139,11 +143,7 @@ export function ActiveWorkforcePage() {
   }
 
   if (directory === null && error === null) {
-    return (
-      <p className={styles.muted} role="status">
-        {t('workforce.loading')}
-      </p>
-    )
+    return <Skeleton variant="list" rows={6} label={t('workforce.loading')} />
   }
 
   return (
@@ -251,8 +251,8 @@ export function ActiveWorkforcePage() {
                   </SelectField>
                 </div>
               </fieldset>
-              <div className={styles.actions}>
-                <Button type="submit" layout="inline" disabled={saving}>
+              <div className={styles.formFooter}>
+                <Button type="submit" layout="inline" loading={saving}>
                   {t('workforce.hireSubmit')}
                 </Button>
                 <Button variant="ghost" onClick={() => setHiring(false)}>
@@ -266,11 +266,7 @@ export function ActiveWorkforcePage() {
         </form>
       ) : null}
 
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
 
       <div className={styles.segments} role="tablist" aria-label={t('workforce.directory')}>
         <ViewTab
@@ -317,29 +313,39 @@ export function ActiveWorkforcePage() {
       <section className={styles.list} aria-label={t('workforce.directory')}>
         <div className={`${styles.row} ${styles.head} ${styles.directoryRow}`}>
           <span>{t('workforce.fullName')}</span>
-          <span>{t('workforce.personnelNumber')}</span>
           <span>{t('workforce.department')}</span>
           <span>{t('workforce.position')}</span>
           <span>{t('workforce.startDate')}</span>
           <span>{t('workforce.status')}</span>
         </div>
         {visible.length === 0 ? (
-          <div className={styles.empty}>
-            <p>
-              {query.trim() !== '' || departmentFilter !== ''
+          <EmptyState
+            title={
+              query.trim() !== '' || departmentFilter !== ''
                 ? t('workforce.emptySearch')
                 : view === 'active'
                   ? t('workforce.emptyActive')
                   : view === 'scheduled'
                     ? t('workforce.emptyScheduled')
-                    : t('workforce.emptyFormer')}
-            </p>
-            {view === 'active' && canManage && query.trim() === '' && departmentFilter === '' ? (
-              <Button layout="inline" onClick={() => setHiring(true)}>
-                {t('workforce.hireNew')}
-              </Button>
-            ) : null}
-          </div>
+                    : t('workforce.emptyFormer')
+            }
+            description={
+              query.trim() !== '' || departmentFilter !== ''
+                ? t('workforce.emptySearchHint')
+                : view === 'active'
+                  ? t('workforce.emptyActiveHint')
+                  : view === 'scheduled'
+                    ? t('workforce.emptyScheduledHint')
+                    : t('workforce.emptyFormerHint')
+            }
+            action={
+              view === 'active' && canManage && query.trim() === '' && departmentFilter === '' ? (
+                <Button layout="inline" onClick={() => setHiring(true)}>
+                  {t('workforce.hireNew')}
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           visible.map((person) => (
             <Link
@@ -347,13 +353,17 @@ export function ActiveWorkforcePage() {
               className={`${styles.row} ${styles.rowLink} ${styles.directoryRow}`}
               to={`/app/workforce/employees/${person.employeeId}`}
             >
-              <span className={styles.personName}>
-                <span className={styles.cellLabel}>{t('workforce.fullName')}</span>
-                {person.givenName} {person.familyName}
-              </span>
               <span>
-                <span className={styles.cellLabel}>{t('workforce.personnelNumber')}</span>
-                {person.personnelNumber}
+                <span className={styles.cellLabel}>{t('workforce.fullName')}</span>
+                <span className={styles.identityCell}>
+                  <AvatarMark name={`${person.givenName} ${person.familyName}`} />
+                  <span className={styles.identityCopy}>
+                    <span className={styles.personName}>
+                      {person.givenName} {person.familyName}
+                    </span>
+                    <span className={styles.personMeta}>{person.personnelNumber}</span>
+                  </span>
+                </span>
               </span>
               <span>
                 <span className={styles.cellLabel}>{t('workforce.department')}</span>

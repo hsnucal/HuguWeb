@@ -1,0 +1,89 @@
+.wrap {
+  width: 100%;
+}
+
+.list,
+.block {
+  overflow: hidden;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row,
+.line {
+  display: block;
+  background: color-mix(in srgb, var(--color-border-subtle) 70%, var(--color-surface-elevated));
+}
+
+.row {
+  height: var(--size-row);
+  margin: 0 var(--space-4);
+  border-radius: var(--radius-s);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-border-subtle) 55%, var(--color-surface-elevated)) 0%,
+      color-mix(in srgb, var(--color-border-subtle) 80%, var(--color-surface-elevated)) 46%,
+      color-mix(in srgb, var(--color-border-subtle) 55%, var(--color-surface-elevated)) 100%
+    );
+  background-size: 140% 100%;
+  animation: shimmer var(--motion-duration-panel) var(--motion-easing-standard) infinite alternate;
+}
+
+.row + .row {
+  border-top: 1px solid transparent;
+  margin-top: 0;
+}
+
+.list .row {
+  margin: var(--space-2) var(--space-4);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-surface);
+}
+
+.line {
+  height: 0.7rem;
+  border-radius: var(--radius-s);
+  animation: shimmer var(--motion-duration-panel) var(--motion-easing-standard) infinite alternate;
+}
+
+.line:first-child {
+  width: 28%;
+  height: 1rem;
+}
+
+.line:nth-child(2) {
+  width: 72%;
+}
+
+.line:nth-child(3) {
+  width: 54%;
+}
+
+@keyframes shimmer {
+  from {
+    opacity: 0.55;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .line {
+    animation: none;
+  }
+}

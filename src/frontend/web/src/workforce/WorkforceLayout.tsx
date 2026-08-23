@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
+import { Notice } from '../ui/Notice'
 import styles from './Workforce.module.css'
 import { canReadWorkforce } from './workforceAccess'
 
@@ -13,15 +14,11 @@ export function WorkforceLayout() {
     || location.pathname.startsWith('/app/workforce/employees/')
 
   if (!canReadWorkforce(user)) {
-    return (
-      <p className={styles.error} role="alert">
-        {t('workforce.noAccess')}
-      </p>
-    )
+    return <Notice tone="danger">{t('workforce.noAccess')}</Notice>
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.layout}>
       <nav className={styles.subnav} aria-label={t('workforce.title')}>
         <NavLink to="/app/workforce" end aria-current={directoryCurrent ? 'page' : undefined}>
           {t('workforce.directory')}

@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
-import { formatDateTime } from '../i18n/format'
+import { formatDateFromIso, formatTimeFromIso } from '../i18n/format'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
+import { EmptyState } from '../ui/EmptyState'
+import { ChevronLeftIcon } from '../ui/icons'
+import { Notice } from '../ui/Notice'
 import { SelectField } from '../ui/SelectField'
+import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
-import { TextField } from '../ui/TextField'
+import { TextArea } from '../ui/TextField'
+import { Timeline, TimelineItem } from '../ui/Timeline'
 import { displayEmployeeName } from './employeeName'
 import styles from './RoomOperations.module.css'
 import {
@@ -17,6 +22,7 @@ import {
   priorityTone,
   priorityVariant,
   readinessLabelKey,
+  readinessMarker,
   readinessTone,
   workStateTone,
 } from './readiness'
@@ -30,6 +36,7 @@ import {
   roomOperationsErrorKey,
   type AssignableEmployeeItem,
   type RoomOperationsDetail,
+  type RoomReadiness,
   type TaskPriority,
 } from './roomOperationsApi'
 
@@ -44,9 +51,11 @@ export function RoomDetailPage() {
   const [employees, setEmployees] = useState<AssignableEmployeeItem[]>([])
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [flash, setFlash] = useState(false)
   const [employeeId, setEmployeeId] = useState('')
   const [priority, setPriority] = useState<TaskPriority>('Normal')
   const [rejectionReason, setRejectionReason] = useState('')
+  const previousReadiness = useRef<RoomReadiness | null>(null)
 
   useEffect(() => {
     if (!roomId) {
@@ -80,8 +89,24 @@ export function RoomDetailPage() {
     }
   }, [roomId, t])
 
+  useEffect(() => {
+    if (!detail) {
+      return
+    }
+
+    const next = detail.readiness
+    if (previousReadiness.current !== null && previousReadiness.current !== next) {
+      setFlash(true)
+      const timer = window.setTimeout(() => setFlash(false), 220)
+      previousReadiness.current = next
+      return () => window.clearTimeout(timer)
+    }
+
+    previousReadiness.current = next
+  }, [detail])
+
   if (!canReadRoomOperations(user)) {
-    return <p className={styles.empty}>{t('roomOperations.noAccess')}</p>
+    return <Notice tone="danger">{t('roomOperations.noAccess')}</Notice>
   }
 
   async function run(action: () => Promise<RoomOperationsDetail>) {
@@ -111,78 +136,79 @@ export function RoomDetailPage() {
   return (
     <div className={styles.page}>
       <Link to="/app/room-operations" className={styles.backLink}>
+        <ChevronLeftIcon />
         {t('roomOperations.back')}
       </Link>
 
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
 
       {detail === null ? (
-        <p className={styles.empty}>{t('roomOperations.loading')}</p>
+        <Skeleton variant="block" label={t('roomOperations.loading')} />
       ) : (
         <>
-          <section className={styles.panel} aria-label={`${t('roomOperations.room')} ${detail.number}`}>
-            <div className={styles.identity}>
-              <div className={styles.summaryItem}>
-                <span className={styles.summaryLabel}>{t('roomOperations.room')}</span>
-                <span className={styles.identityNumber}>{detail.number}</span>
-              </div>
-              <div className={styles.identityState}>
+          <section
+            className={`${styles.hero} ${styles[`hero${detail.readiness}`]} ${flash ? styles.flash : ''}`}
+            aria-label={`${t('roomOperations.room')} ${detail.number}`}
+          >
+            <div className={styles.heroMain}>
+              <p className="kicker">{t('roomOperations.room')}</p>
+              <p className={styles.heroNumber}>{detail.number}</p>
+              <div className={styles.heroStatus}>
                 <StatusBadge tone={readinessTone(detail.readiness)} title={t(readinessLabelKey(detail.readiness))}>
                   {t(readinessLabelKey(detail.readiness))}
                 </StatusBadge>
-                <div className={styles.currentAction}>
-                  <span className={styles.summaryLabel}>{t('roomOperations.actionNeeded')}</span>
-                  <span className={`${styles.actionText} ${neededAction === 'none' ? styles.actionQuiet : ''}`}>
-                    {actionLabel}
-                  </span>
-                </div>
+                <span className={`${styles.actionText} ${neededAction === 'none' ? styles.actionQuiet : ''}`}>
+                  {actionLabel}
+                </span>
               </div>
             </div>
 
-            <div className={styles.meta}>
+            <dl className={styles.heroMeta}>
               <div className={styles.summaryItem}>
-                <span className={styles.summaryLabel}>{t('roomOperations.assignedEmployee')}</span>
-                {assignedName ? (
-                  <span className={styles.truncate} title={assignedName}>
-                    {assignedName}
-                  </span>
-                ) : (
-                  <span className={styles.muted}>{t('roomOperations.unassigned')}</span>
-                )}
+                <dt className={styles.summaryLabel}>{t('roomOperations.assignedEmployee')}</dt>
+                <dd>
+                  {assignedName ? (
+                    <span className={styles.truncate} title={assignedName}>
+                      {assignedName}
+                    </span>
+                  ) : (
+                    <span className={styles.muted}>{t('roomOperations.unassigned')}</span>
+                  )}
+                </dd>
               </div>
               <div className={styles.summaryItem}>
-                <span className={styles.summaryLabel}>{t('roomOperations.priorityLabel')}</span>
-                {work ? (
-                  <StatusBadge
-                    tone={priorityTone(work.priority)}
-                    variant={priorityVariant(work.priority)}
-                    title={t(priorityLabelKey(work.priority))}
-                  >
-                    {t(priorityLabelKey(work.priority))}
+                <dt className={styles.summaryLabel}>{t('roomOperations.priorityLabel')}</dt>
+                <dd>
+                  {work ? (
+                    <StatusBadge
+                      tone={priorityTone(work.priority)}
+                      variant={priorityVariant(work.priority)}
+                      title={t(priorityLabelKey(work.priority))}
+                    >
+                      {t(priorityLabelKey(work.priority))}
+                    </StatusBadge>
+                  ) : (
+                    <span className={styles.muted}>{t('roomOperations.noPriority')}</span>
+                  )}
+                </dd>
+              </div>
+              <div className={styles.summaryItem}>
+                <dt className={styles.summaryLabel}>{t('roomOperations.workState')}</dt>
+                <dd>
+                  <StatusBadge tone={workStateTone(work?.state ?? null)} variant="outline" title={workLabel}>
+                    {workLabel}
                   </StatusBadge>
-                ) : (
-                  <span className={styles.muted}>{t('roomOperations.noPriority')}</span>
-                )}
+                </dd>
               </div>
-              <div className={styles.summaryItem}>
-                <span className={styles.summaryLabel}>{t('roomOperations.workState')}</span>
-                <StatusBadge tone={workStateTone(work?.state ?? null)} variant="outline" title={workLabel}>
-                  {workLabel}
-                </StatusBadge>
-              </div>
-            </div>
+            </dl>
           </section>
 
           {showNeedsCleaning ? (
-            <section className={styles.panel}>
+            <section className={styles.workSurface}>
               <h2 className={styles.sectionTitle}>{t('roomOperations.needsCleaningTitle')}</h2>
               <p className={styles.muted}>{t('roomOperations.needsCleaningIntro')}</p>
               {employees.length === 0 ? (
-                <p className={styles.empty}>{t('roomOperations.noEmployees')}</p>
+                <EmptyState compact title={t('roomOperations.noEmployees')} />
               ) : (
                 <div className={styles.formStack}>
                   <SelectField
@@ -210,10 +236,11 @@ export function RoomDetailPage() {
                     <option value="High">{t('roomOperations.priority.High')}</option>
                     <option value="Urgent">{t('roomOperations.priority.Urgent')}</option>
                   </SelectField>
-                  <div className={styles.actions}>
+                  <div className={styles.formFooter}>
                     <Button
                       layout="inline"
-                      disabled={saving || !employeeId}
+                      loading={saving}
+                      disabled={!employeeId}
                       onClick={() => void run(() => requestNeedsCleaning(detail.id, employeeId, priority))}
                     >
                       {t('roomOperations.needsCleaningSubmit')}
@@ -225,11 +252,11 @@ export function RoomDetailPage() {
           ) : null}
 
           {showComplete ? (
-            <section className={styles.panel}>
+            <section className={styles.workSurface}>
               <h2 className={styles.sectionTitle}>{t('roomOperations.completeTitle')}</h2>
               <p className={styles.muted}>{t('roomOperations.completeIntro')}</p>
-              <div className={styles.actions}>
-                <Button layout="inline" disabled={saving} onClick={() => void run(() => completeCleaning(work!.id))}>
+              <div className={styles.formFooter}>
+                <Button layout="inline" loading={saving} onClick={() => void run(() => completeCleaning(work!.id))}>
                   {t('roomOperations.completeSubmit')}
                 </Button>
               </div>
@@ -237,38 +264,36 @@ export function RoomDetailPage() {
           ) : null}
 
           {showInspect ? (
-            <section className={styles.panel} aria-labelledby="inspect-heading">
+            <section className={styles.workSurface} aria-labelledby="inspect-heading">
               <h2 className={styles.sectionTitle} id="inspect-heading">
                 {t('roomOperations.inspectTitle')}
               </h2>
               <p className={styles.muted}>{t('roomOperations.inspectIntro')}</p>
               <div className={styles.inspectActions}>
-                <div className={styles.actions}>
+                <div className={styles.formFooter}>
                   <Button
                     layout="inline"
-                    disabled={saving}
+                    loading={saving}
                     onClick={() => void run(() => inspectRoom(detail.id, 'accepted'))}
                   >
                     {t('roomOperations.accept')}
                   </Button>
                 </div>
                 <div className={styles.rejectBlock}>
-                  <TextField
+                  <TextArea
                     id="rejection-reason"
                     label={t('roomOperations.rejectionReason')}
                     value={rejectionReason}
                     onChange={setRejectionReason}
                     autoComplete="off"
-                    aria-describedby="rejection-reason-hint"
+                    hint={t('roomOperations.rejectionHint')}
+                    rows={3}
                   />
-                  <p className={styles.hint} id="rejection-reason-hint">
-                    {t('roomOperations.rejectionHint')}
-                  </p>
                   <div className={styles.actions}>
                     <Button
                       variant="danger"
                       layout="inline"
-                      disabled={saving}
+                      loading={saving}
                       onClick={() => void run(() => inspectRoom(detail.id, 'rejected', rejectionReason))}
                     >
                       {t('roomOperations.reject')}
@@ -279,55 +304,56 @@ export function RoomDetailPage() {
             </section>
           ) : null}
 
-          <section className={`${styles.panel} ${styles.panelHistory}`}>
+          <section className={styles.historyWell}>
             <h2 className={styles.sectionTitle}>{t('roomOperations.readinessHistory')}</h2>
             {detail.readinessHistory.length === 0 ? (
-              <p className={styles.muted}>{t('roomOperations.noHistory')}</p>
+              <EmptyState compact title={t('roomOperations.noHistory')} />
             ) : (
-              <div className={styles.history}>
+              <Timeline label={t('roomOperations.readinessHistory')}>
                 {detail.readinessHistory.map((item) => {
                   const actorName = displayEmployeeName(item.actorEmployeeName)
                   return (
-                    <div key={item.id} className={styles.historyItem}>
-                      <span>{formatDateTime(item.occurredAt, language)}</span>
-                      <span className={styles.historyBody}>
-                        <StatusBadge tone={readinessTone(item.readiness)}>
-                          {t(readinessLabelKey(item.readiness))}
-                        </StatusBadge>
-                        <span>
-                          {t(`roomOperations.cause.${item.cause}`)}
-                          {actorName ? ` · ${actorName}` : ''}
-                          {item.comment ? ` · ${item.comment}` : ''}
-                        </span>
+                    <TimelineItem
+                      key={item.id}
+                      time={formatTimeFromIso(item.occurredAt, language)}
+                      supporting={formatDateFromIso(item.occurredAt, language)}
+                      marker={readinessMarker(item.readiness)}
+                    >
+                      <StatusBadge tone={readinessTone(item.readiness)}>
+                        {t(readinessLabelKey(item.readiness))}
+                      </StatusBadge>
+                      <span>
+                        {t(`roomOperations.cause.${item.cause}`)}
+                        {actorName ? ` · ${actorName}` : ''}
+                        {item.comment ? ` · ${item.comment}` : ''}
                       </span>
-                    </div>
+                    </TimelineItem>
                   )
                 })}
-              </div>
+              </Timeline>
             )}
           </section>
 
-          <section className={`${styles.panel} ${styles.panelHistory}`}>
+          <section className={styles.historyWell}>
             <h2 className={styles.sectionTitle}>{t('roomOperations.inspectionHistory')}</h2>
             {detail.inspectionHistory.length === 0 ? (
-              <p className={styles.muted}>{t('roomOperations.noInspections')}</p>
+              <EmptyState compact title={t('roomOperations.noInspections')} />
             ) : (
-              <div className={styles.history}>
+              <Timeline label={t('roomOperations.inspectionHistory')}>
                 {detail.inspectionHistory.map((item) => (
-                  <div key={item.id} className={styles.historyItem}>
-                    <span>{formatDateTime(item.occurredAt, language)}</span>
-                    <span className={styles.historyBody}>
-                      <StatusBadge
-                        tone={item.result === 'Rejected' ? 'danger' : 'success'}
-                        variant="outline"
-                      >
-                        {t(`roomOperations.inspectionResult.${item.result}`)}
-                      </StatusBadge>
-                      {item.reason ? <span>{item.reason}</span> : null}
-                    </span>
-                  </div>
+                  <TimelineItem
+                    key={item.id}
+                    time={formatTimeFromIso(item.occurredAt, language)}
+                    supporting={formatDateFromIso(item.occurredAt, language)}
+                    marker={item.result === 'Rejected' ? 'danger' : 'success'}
+                  >
+                    <StatusBadge tone={item.result === 'Rejected' ? 'danger' : 'success'} variant="outline">
+                      {t(`roomOperations.inspectionResult.${item.result}`)}
+                    </StatusBadge>
+                    {item.reason ? <span>{item.reason}</span> : null}
+                  </TimelineItem>
                 ))}
-              </div>
+              </Timeline>
             )}
           </section>
         </>

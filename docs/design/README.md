@@ -1,8 +1,8 @@
 # Design Documentation
 
-> **Status:** Sprint 0.4 — Product Experience & Design Foundation. Proposed for Product Owner + CTO review. **Not implementation authorization.**
+This directory is the index for HuGuWeb design direction. It does not replace product scope documents.
 
-This directory is the index for HuGuWeb design direction. It does not replace product scope documents. Navigation hypotheses are not approved modules. Visual direction is not a component library.
+Sprint 0.10B implemented a structural visual redesign in the React ERP. See [Visual Foundation 2026](VISUAL_FOUNDATION_2026.md).
 
 ---
 
@@ -17,6 +17,7 @@ This directory is the index for HuGuWeb design direction. It does not replace pr
 | [Design Tokens](DESIGN_TOKENS.md) | Token categories and naming philosophy |
 | [Responsive Strategy](RESPONSIVE_STRATEGY.md) | Desktop-first web ERP vs future mobile products |
 | [Brand Direction](BRAND_DIRECTION.md) | Personality, purple direction, logo direction, candidate color families |
+| [Visual Foundation 2026](VISUAL_FOUNDATION_2026.md) | Implemented product visual language: structural composition, tokens, surfaces, lists, motion, charts, anti-patterns |
 
 Cross-reference these documents instead of copying long sections.
 
@@ -87,36 +88,16 @@ Do not auto-select these during implementation sprints.
 
 ---
 
-## Current Bootstrap UI
+## Current UI
 
-The Sprint 0.3B React UI is **temporary**. Inspected, not modified, in Sprint 0.4.
+The React ERP now uses the accepted Sprint 0.10 visual foundation:
 
-Files: `src/frontend/web/src/auth/LoginPage.tsx`, `src/frontend/web/src/app/AppShell.tsx`, `src/frontend/web/src/index.css`, routing in `App.tsx`.
+- Tokens: `src/frontend/web/src/styles/tokens.css`
+- Primitives: `src/frontend/web/src/ui/`
+- Applied surfaces: Login, shell, Operations Center, Workforce, Room Operations
+- Temporary HG identity is in use; final monogram / favicon refinement is deferred
 
-### Remove from the product experience (Sprint 0.5 visual work)
-
-- Unstyled `system-ui` page with default browser form chrome
-- “Temporary bootstrap sign-in / Authenticated bootstrap shell” as the standing product surfaces
-- Technical status copy as a substitute for Home
-- Login and app as a single un-shelled `<main>` with no Operations Center and no work navigation
-
-### Retain technically
-
-- Cookie session flow (`AuthSession`, `sessionApi`, CSRF)
-- Email/password sign-in, failure alert, submitting state
-- `ProtectedRoute` and `/login` → `/app` routing
-- React 19 + Vite + TypeScript foundation ([ADR-003](../architecture/adr/ADR-003-Frontend-Architecture.md))
-- Sign-out against the Identity API
-
-### Redesign in Sprint 0.5 (when UI implementation is authorized)
-
-- Login visual per [Login Experience](LOGIN_EXPERIENCE.md)
-- Application shell (sidebar + top bar) per [UX Architecture](UX_ARCHITECTURE.md)
-- Home as [Operations Center](OPERATIONS_CENTER.md)
-- Token-based styling per [Design Tokens](DESIGN_TOKENS.md) — still without freezing unapproved hex/font/library choices
-- Empty / loading / error presentation on those two surfaces
-
-Sprint 0.5 must not invent modules, charts, or role dashboards to look finished.
+Authentication, authorization, and domain behavior are unchanged. Do not add fake dashboard charts or a UI framework. Future screens should use these primitives. Visual evolution is allowed without breaking product workflows.
 
 ---
 

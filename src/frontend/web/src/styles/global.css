@@ -19,11 +19,14 @@ html {
 body {
   margin: 0;
   font-family: var(--font-family-ui);
-  font-size: var(--font-size-md);
+  font-size: var(--type-body-size);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-body);
   color: var(--color-text-primary);
-  background: var(--color-surface-page);
+  background:
+    radial-gradient(ellipse 70% 45% at 8% -10%, color-mix(in srgb, var(--color-brand-soft) 70%, transparent), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, color-mix(in srgb, var(--color-warning-soft) 35%, transparent), transparent 50%),
+    var(--color-surface-page);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -51,7 +54,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-interaction-focus-ring);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
@@ -81,10 +84,22 @@ a {
 }
 
 .skip-link:focus {
-  outline: 2px solid var(--color-interaction-focus-ring);
+  outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
 }
 
 .skip-link:focus-visible {
   transform: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.kicker {
+  font-size: var(--type-kicker-size);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--type-kicker-tracking);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }

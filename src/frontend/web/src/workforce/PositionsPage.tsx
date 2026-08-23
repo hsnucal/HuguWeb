@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
 import { Button } from '../ui/Button'
+import { EmptyState } from '../ui/EmptyState'
+import { Notice } from '../ui/Notice'
+import { Skeleton } from '../ui/Skeleton'
 import { StatusBadge } from '../ui/StatusBadge'
 import { TextField } from '../ui/TextField'
 import styles from './Workforce.module.css'
@@ -91,11 +94,7 @@ export function PositionsPage() {
   }
 
   if (rows === null && error === null) {
-    return (
-      <p className={styles.muted} role="status">
-        {t('workforce.loading')}
-      </p>
-    )
+    return <Skeleton variant="list" rows={5} label={t('workforce.loading')} />
   }
 
   const list = rows ?? []
@@ -121,21 +120,22 @@ export function PositionsPage() {
             />
             <TextField id="position-code" label={t('workforce.code')} value={code} onChange={setCode} />
           </div>
-          <Button type="submit" layout="inline">
-            {t('workforce.createPosition')}
-          </Button>
+          <div className={styles.formFooter}>
+            <Button type="submit" layout="inline">
+              {t('workforce.createPosition')}
+            </Button>
+          </div>
         </form>
       ) : null}
 
-      {error ? (
-        <p className={styles.error} role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <Notice tone="danger">{error}</Notice> : null}
 
       <section className={styles.list} aria-label={t('workforce.positions')}>
         {list.length === 0 ? (
-          <p className={styles.empty}>{t('workforce.emptyPositions')}</p>
+          <EmptyState
+            title={t('workforce.emptyPositions')}
+            description={t('workforce.emptyPositionsHint')}
+          />
         ) : (
           list.map((row) => (
             <div key={row.id} className={`${styles.row} ${styles.structureRow}`}>
@@ -164,15 +164,15 @@ export function PositionsPage() {
               {canManage ? (
                 <div className={styles.actions}>
                   {editingId === row.id ? (
-                    <Button layout="inline" onClick={() => void onSave(row)}>
+                    <Button variant="secondary" size="sm" layout="inline" onClick={() => void onSave(row)}>
                       {t('workforce.save')}
                     </Button>
                   ) : (
-                    <Button variant="ghost" onClick={() => setEditingId(row.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => setEditingId(row.id)}>
                       {t('workforce.rename')}
                     </Button>
                   )}
-                  <Button variant="ghost" onClick={() => void onToggle(row)}>
+                  <Button variant="ghost" size="sm" onClick={() => void onToggle(row)}>
                     {row.isActive ? t('workforce.deactivate') : t('workforce.activate')}
                   </Button>
                 </div>

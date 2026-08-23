@@ -5,11 +5,11 @@
 
 .select {
   width: 100%;
-  min-height: 2rem;
+  min-height: var(--size-control-sm);
   padding: 0 1.7rem 0 0.65rem;
   border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-s);
-  background-color: var(--color-surface-elevated);
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-input);
   background-image: linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
     linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
   background-position:
@@ -21,6 +21,9 @@
   font-size: var(--font-size-sm);
   line-height: 1.2;
   appearance: none;
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing-standard),
+    color var(--motion-duration-fast) var(--motion-easing-standard);
 }
 
 .select:hover:not(:disabled) {
@@ -28,8 +31,14 @@
   color: var(--color-text-primary);
 }
 
+.select:focus-visible {
+  outline: none;
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 3px var(--color-focus-ring-soft);
+}
+
 .select:disabled {
-  color: var(--color-interaction-disabled);
+  color: var(--color-text-disabled);
 }
 
 .select option {
