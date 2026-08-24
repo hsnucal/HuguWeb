@@ -265,6 +265,20 @@ A time-boxed development cycle with a defined goal, requirements, implementation
 
 ---
 
+## Employee / Personel
+
+**Status:** Accepted identity in [HR-DOMAIN-001](../domain/hr/HR-DOMAIN-001-Organization-Workforce-Foundation.md). **Not** `ApplicationUser`. **Not** a permission. Technical id is the PK; `PersonnelNumber` (Sicil No) is the business identifier.
+
+---
+
+## Personel Master
+
+**Status:** Accepted — [HR-01A](../domain/hr/personnel-master/README.md).
+
+The HR identity/profile layer that extends Employee (contact, national identity, photo, later payment profile) without collapsing Employment, Assignment, payroll, leave, or official submissions into one Employee record. The Personel Card is a UI composition surface, not one aggregate.
+
+---
+
 ## Related Documents
 
 - [Target Customer](TARGET_CUSTOMER.md)
@@ -273,3 +287,4 @@ A time-boxed development cycle with a defined goal, requirements, implementation
 - [Evidence Model](EVIDENCE_MODEL.md)
 - [Room Operations](../domain/room-operations/README.md) (Accepted — Sprint 0.9A)
 - [Teknik Servis / Maintenance](../domain/maintenance/README.md) (Accepted — Sprint 0.11A; 0.11B not started)
+- [Personel Master](../domain/hr/personnel-master/README.md) (Accepted — HR-01A; HR-01B not started)

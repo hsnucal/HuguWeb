@@ -175,6 +175,7 @@ Former discovery questions, now decided:
 - [WORKFORCE_MODEL.md](WORKFORCE_MODEL.md)
 - [INVARIANTS.md](INVARIANTS.md)
 - [FIRST_SLICE.md](FIRST_SLICE.md)
+- [HR-DOMAIN-002 Personel Master](personnel-master/HR-DOMAIN-002-Personnel-Master.md) — **Accepted** extension; does not supersede this record
 - [ADR-001](../../architecture/adr/ADR-001-Architecture-Style.md)
 - [ADR-007](../../architecture/adr/ADR-007-Authentication-Strategy.md)
 - [ADR-008](../../architecture/adr/ADR-008-Authorization-Strategy.md)

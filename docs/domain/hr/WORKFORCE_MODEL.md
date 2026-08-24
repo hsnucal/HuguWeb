@@ -102,9 +102,9 @@ Management hierarchy may be added later as a separate concern. It is not require
 | Employment period and status | **In** (on Employment) |
 | Assignment, department, position | **In** (on Assignment) |
 | `UserId` / invitation | **Out of 0.7B** |
-| TCKN, bank, address, tax, emergency contact, photo, SGK numbers, KBS-specific fields | **Out** until a justified later slice |
+| TCKN, bank, address, tax, emergency contact, photo, SGK numbers, KBS-specific fields | **Out** of this Accepted foundation. The later slice is **Accepted** as [Personel Master (HR-01A)](personnel-master/README.md). This document’s Accepted status is unchanged. |
 
-Do not collect government identifiers “for future integration.” Adapters can request data when an integration slice is approved.
+Do not collect government identifiers “for future integration” **in this foundation**. Official adapters remain outside the core. Personel Master (Accepted) may collect **prerequisite identity/contact fields** without implementing SGK/KBS.
 
 ---
 

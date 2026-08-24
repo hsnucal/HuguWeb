@@ -36,7 +36,7 @@ If those secrets are missing, Development startup skips the affected accounts an
 | `maintenance.technician@localhost` | Technical work | `maintenance.read`, `maintenance.resolve` | Ana Sayfa, Teknik Servis | View issues; start / unable / resume / resolve | Create / assign; Workforce; Room Operations |
 | `maintenance.manager@localhost` | Technical Service manager | `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Teknik Servis | Create, assign, classify, and resolve issues | Workforce; Room Operations |
 
-`hr.specialist@localhost` is **not** added. Workforce has no meaningful İK Uzmanı vs İK Müdürü permission split yet.
+`hr.specialist@localhost` is **not** added. Workforce has no meaningful İK Uzmanı vs İK Müdürü permission split yet. Accepted direction (not implemented): [Personel Master privacy & permissions](../domain/hr/personnel-master/PRIVACY_AND_PERMISSIONS.md).
 
 ## Navigation rules
 

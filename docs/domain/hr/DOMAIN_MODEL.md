@@ -147,7 +147,7 @@ Property is an operational platform concept. The first implementation may persis
 
 ### Value object candidates (only if useful in 0.7B)
 
-`PersonnelNumber`, employment/assignment periods. Do not invent value objects for purity. Do not add national-id, money, or address types.
+`PersonnelNumber`, employment/assignment periods. Do not invent value objects for purity. Sprint 0.7B does not add national-id, money, or address types. Those belong to the **Accepted** [Personel Master](personnel-master/README.md) extension, not this foundation.
 
 ---
 
@@ -226,8 +226,8 @@ Do **not** implement cross-property assignments, multi-property UI, or Tenant in
 
 - Prefer **end-date / deactivate** over generic `IsDeleted`.
 - Never physically delete employment or assignment history as a normal operation.
-- Collect only given name, family name, and personnel number now.
-- National ID, bank, address, tax, emergency contact, and government registration numbers wait for a later justified slice.
+- Collect only given name, family name, and personnel number **in this Accepted foundation**.
+- National ID, bank, address, tax, emergency contact, photo, and government registration numbers wait for a later justified slice. That slice is now **Accepted** as [Personel Master (HR-01A)](personnel-master/README.md). This foundation document is unchanged.
 - Historical need does not mean unrestricted access.
 
 ---

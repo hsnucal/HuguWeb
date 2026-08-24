@@ -43,6 +43,13 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | [SPRINT_0_8_WORKFORCE_UX_VALIDATION.md](SPRINT_0_8_WORKFORCE_UX_VALIDATION.md) | Sprint 0.8 local launcher + Workforce UX validation |
 | [HR-DOMAIN-001](HR-DOMAIN-001-Organization-Workforce-Foundation.md) | Domain decision record (**Accepted**) |
 
+**Extension (Accepted — does not change HR-DOMAIN-001 status above):**
+
+| Document | Purpose |
+|----------|---------|
+| [personnel-master/](personnel-master/README.md) | HR-01A Personel Master (**Accepted**) |
+| [HR-DOMAIN-002](personnel-master/HR-DOMAIN-002-Personnel-Master.md) | Personel Master decision record (**Accepted**) |
+
 Related architecture (do not contradict):
 
 - [ADR-001](../../architecture/adr/ADR-001-Architecture-Style.md) — modular monolith; no premature modules in code
