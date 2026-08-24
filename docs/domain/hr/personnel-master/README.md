@@ -51,6 +51,7 @@ Do **not** localize stored code identifiers (`Tckn`, `Active`, permission ids). 
 Related (do not contradict):
 
 - [HR-DOMAIN-001](../HR-DOMAIN-001-Organization-Workforce-Foundation.md) — **Accepted**
+- [HR-DOMAIN-003 Official Employment Data](../official-employment/README.md) — **Accepted** (HR-03A); does not change this folder’s Accepted status
 - [WORKFORCE_MODEL.md](../WORKFORCE_MODEL.md) — Employee → Employment → Assignment
 - [INVARIANTS.md](../INVARIANTS.md) — Accepted workforce invariants still hold
 - [ADR-007](../../../architecture/adr/ADR-007-Authentication-Strategy.md) — Employee ≠ ApplicationUser

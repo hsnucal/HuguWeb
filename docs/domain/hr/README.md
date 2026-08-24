@@ -50,6 +50,13 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | [personnel-master/](personnel-master/README.md) | HR-01A Personel Master (**Accepted**) |
 | [HR-DOMAIN-002](personnel-master/HR-DOMAIN-002-Personnel-Master.md) | Personel Master decision record (**Accepted**) |
 
+**Extension (Accepted — does not change HR-DOMAIN-001 or HR-DOMAIN-002 status above):**
+
+| Document | Purpose |
+|----------|---------|
+| [official-employment/](official-employment/README.md) | HR-03A Official Employment Data / Bildirge Kodları (**Accepted**) |
+| [HR-DOMAIN-003](official-employment/HR-DOMAIN-003-Official-Employment-Data.md) | Official employment decision record (**Accepted**) |
+
 Related architecture (do not contradict):
 
 - [ADR-001](../../architecture/adr/ADR-001-Architecture-Style.md) — modular monolith; no premature modules in code

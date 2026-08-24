@@ -279,6 +279,14 @@ The HR identity/profile layer that extends Employee (contact, national identity,
 
 ---
 
+## Official Employment Data / Bildirge Kodları
+
+**Status:** Accepted — [HR-03A](../domain/hr/official-employment/README.md).
+
+Statutory classification for an Employment (belge türü, tabi kanun, sigorta kolu, meslek kodu) plus Property-owned SGK workplace registrations (0..*). `OfficialEmploymentProfile` may reference the applicable registration. **Not** SGK/KBS/İŞKUR submission. **Not** Employee master columns.
+
+---
+
 ## Related Documents
 
 - [Target Customer](TARGET_CUSTOMER.md)
@@ -287,4 +295,5 @@ The HR identity/profile layer that extends Employee (contact, national identity,
 - [Evidence Model](EVIDENCE_MODEL.md)
 - [Room Operations](../domain/room-operations/README.md) (Accepted — Sprint 0.9A)
 - [Teknik Servis / Maintenance](../domain/maintenance/README.md) (Accepted — Sprint 0.11A; 0.11B not started)
-- [Personel Master](../domain/hr/personnel-master/README.md) (Accepted — HR-01A; HR-01B not started)
+- [Personel Master](../domain/hr/personnel-master/README.md) (Accepted — HR-01A / HR-01B)
+- [Official Employment Data](../domain/hr/official-employment/README.md) (Accepted — HR-03A)
