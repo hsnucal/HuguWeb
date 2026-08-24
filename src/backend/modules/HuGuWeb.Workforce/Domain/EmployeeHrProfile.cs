@@ -26,6 +26,16 @@ public sealed class EmployeeHrProfile
     public MaritalStatus? MaritalStatus { get; private set; }
     public BloodType? BloodType { get; private set; }
     public EducationLevel? EducationLevel { get; private set; }
+    public string? EducationDescription { get; private set; }
+    public string? SchoolName { get; private set; }
+    public DateOnly? GraduationDate { get; private set; }
+    public ForeignLanguageSummary? ForeignLanguage { get; private set; }
+    public string? ArgeProjectCode { get; private set; }
+    public DrivingLicenceCategory? DrivingLicenceCategory { get; private set; }
+    public MilitaryServiceStatus? MilitaryServiceStatus { get; private set; }
+    public string? MilitaryExemptionReason { get; private set; }
+    public string? MilitaryDefermentReason { get; private set; }
+    public string? KepAddress { get; private set; }
     public string? MobilePhone { get; private set; }
     public string? HomePhone { get; private set; }
     public string? Email { get; private set; }
@@ -56,11 +66,7 @@ public sealed class EmployeeHrProfile
             return false;
         }
 
-        if (!ContactValue.TryNormalizeOptionalText(
-                values.Nationality,
-                ContactValue.NationalityMaxLength,
-                out var nationality,
-                out code))
+        if (!Iso3166Alpha2Catalog.TryNormalize(values.Nationality, out var nationality, out code))
         {
             field = HrValidation.Fields.Nationality;
             return false;
@@ -150,6 +156,82 @@ public sealed class EmployeeHrProfile
             return false;
         }
 
+        var militaryStatus = values.MilitaryServiceStatus;
+        var exemptionReason = militaryStatus == HuGuWeb.Workforce.Domain.MilitaryServiceStatus.Exempt
+            ? values.MilitaryExemptionReason
+            : null;
+        var defermentReason = militaryStatus == HuGuWeb.Workforce.Domain.MilitaryServiceStatus.Deferred
+            ? values.MilitaryDefermentReason
+            : null;
+        if (militaryStatus == HuGuWeb.Workforce.Domain.MilitaryServiceStatus.Exempt)
+        {
+            if (!ContactValue.TryNormalizeOptionalText(
+                    exemptionReason,
+                    ContactValue.MilitaryReasonMaxLength,
+                    out exemptionReason,
+                    out code)
+                || exemptionReason is null)
+            {
+                field = HrValidation.Fields.MilitaryExemptionReason;
+                code = code ?? HrValidation.Codes.MilitaryExemptionReasonRequired;
+                return false;
+            }
+        }
+
+        if (militaryStatus == HuGuWeb.Workforce.Domain.MilitaryServiceStatus.Deferred)
+        {
+            if (!ContactValue.TryNormalizeOptionalText(
+                    defermentReason,
+                    ContactValue.MilitaryReasonMaxLength,
+                    out defermentReason,
+                    out code)
+                || defermentReason is null)
+            {
+                field = HrValidation.Fields.MilitaryDefermentReason;
+                code = code ?? HrValidation.Codes.MilitaryDefermentReasonRequired;
+                return false;
+            }
+        }
+
+        if (!ContactValue.TryNormalizeEmail(values.KepAddress, out var kepAddress, out code))
+        {
+            field = HrValidation.Fields.KepAddress;
+            code = code == HrValidation.Codes.EmailInvalid || code == HrValidation.Codes.EmailTooLong
+                ? HrValidation.Codes.KepInvalid
+                : code;
+            return false;
+        }
+
+        if (!ContactValue.TryNormalizeOptionalText(
+                values.EducationDescription,
+                ContactValue.EducationTextMaxLength,
+                out var educationDescription,
+                out code))
+        {
+            field = HrValidation.Fields.EducationDescription;
+            return false;
+        }
+
+        if (!ContactValue.TryNormalizeOptionalText(
+                values.SchoolName,
+                ContactValue.EducationTextMaxLength,
+                out var schoolName,
+                out code))
+        {
+            field = HrValidation.Fields.SchoolName;
+            return false;
+        }
+
+        if (!ContactValue.TryNormalizeOptionalText(
+                values.ArgeProjectCode,
+                ContactValue.ArgeProjectCodeMaxLength,
+                out var argeProjectCode,
+                out code))
+        {
+            field = HrValidation.Fields.ArgeProjectCode;
+            return false;
+        }
+
         NationalIdentityScheme = scheme;
         NationalIdentityNumber = displayNumber;
         NormalizedNationalIdentityNumber = normalizedNumber;
@@ -160,6 +242,16 @@ public sealed class EmployeeHrProfile
         MaritalStatus = values.MaritalStatus;
         BloodType = values.BloodType;
         EducationLevel = values.EducationLevel;
+        EducationDescription = educationDescription;
+        SchoolName = schoolName;
+        GraduationDate = values.GraduationDate;
+        ForeignLanguage = values.ForeignLanguage;
+        ArgeProjectCode = argeProjectCode;
+        DrivingLicenceCategory = values.DrivingLicenceCategory;
+        MilitaryServiceStatus = militaryStatus;
+        MilitaryExemptionReason = exemptionReason;
+        MilitaryDefermentReason = defermentReason;
+        KepAddress = kepAddress;
         MobilePhone = mobile;
         HomePhone = homePhone;
         Email = email;
@@ -193,4 +285,14 @@ public sealed record EmployeeHrProfileValues(
     string? ResidenceCity,
     string? ResidenceDistrict,
     string? NotificationAddress,
-    string? HrNotes);
+    string? HrNotes,
+    DrivingLicenceCategory? DrivingLicenceCategory,
+    MilitaryServiceStatus? MilitaryServiceStatus,
+    string? MilitaryExemptionReason,
+    string? MilitaryDefermentReason,
+    string? KepAddress,
+    string? EducationDescription,
+    string? SchoolName,
+    DateOnly? GraduationDate,
+    ForeignLanguageSummary? ForeignLanguage,
+    string? ArgeProjectCode);

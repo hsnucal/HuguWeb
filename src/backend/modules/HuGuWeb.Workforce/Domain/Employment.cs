@@ -20,6 +20,15 @@ public sealed class Employment
     public DateOnly StartDate { get; private set; }
     public DateOnly? EndDate { get; private set; }
     public EmploymentStatus Status { get; private set; }
+    public EmploymentContractType? ContractType { get; private set; }
+    public DateOnly? ContractEndDate { get; private set; }
+    public decimal? PartTimeMonthlyHours { get; private set; }
+    public IskurStatus? IskurStatus { get; private set; }
+    public DateOnly? IncentiveStartDate { get; private set; }
+    public DateOnly? IncentiveEndDate { get; private set; }
+    public IskurWorkforceStatus? IskurWorkforceStatus { get; private set; }
+    public DateOnly? WorkPermitStartDate { get; private set; }
+    public DateOnly? WorkPermitEndDate { get; private set; }
 
     public DatePeriod Period => new(StartDate, EndDate);
 
@@ -101,5 +110,79 @@ public sealed class Employment
         Status = startDateIsFuture(today) ? EmploymentStatus.Scheduled : EmploymentStatus.Active;
     }
 
+    public bool TryApplyWorkforceTerms(EmploymentWorkforceTermsValues values, out string? field, out string? code)
+    {
+        field = null;
+        code = null;
+
+        var contractType = values.ContractType;
+        var contractEnd = contractType == EmploymentContractType.FixedTerm ? values.ContractEndDate : null;
+        var monthlyHours = contractType == EmploymentContractType.PartTime ? values.PartTimeMonthlyHours : null;
+
+        if (contractType == EmploymentContractType.FixedTerm && contractEnd is null)
+        {
+            field = HrValidation.Fields.ContractEndDate;
+            code = HrValidation.Codes.ContractEndDateRequired;
+            return false;
+        }
+
+        if (contractType == EmploymentContractType.PartTime)
+        {
+            if (monthlyHours is null)
+            {
+                field = HrValidation.Fields.PartTimeMonthlyHours;
+                code = HrValidation.Codes.PartTimeHoursRequired;
+                return false;
+            }
+
+            if (monthlyHours.Value <= 0)
+            {
+                field = HrValidation.Fields.PartTimeMonthlyHours;
+                code = HrValidation.Codes.PartTimeHoursInvalid;
+                return false;
+            }
+        }
+
+        if (values.IncentiveStartDate is { } incentiveStart
+            && values.IncentiveEndDate is { } incentiveEnd
+            && incentiveEnd < incentiveStart)
+        {
+            field = HrValidation.Fields.IncentiveEndDate;
+            code = HrValidation.Codes.IncentiveRangeInvalid;
+            return false;
+        }
+
+        if (values.WorkPermitStartDate is { } permitStart
+            && values.WorkPermitEndDate is { } permitEnd
+            && permitEnd < permitStart)
+        {
+            field = HrValidation.Fields.WorkPermitEndDate;
+            code = HrValidation.Codes.WorkPermitRangeInvalid;
+            return false;
+        }
+
+        ContractType = contractType;
+        ContractEndDate = contractEnd;
+        PartTimeMonthlyHours = monthlyHours;
+        IskurStatus = values.IskurStatus;
+        IncentiveStartDate = values.IncentiveStartDate;
+        IncentiveEndDate = values.IncentiveEndDate;
+        IskurWorkforceStatus = values.IskurWorkforceStatus;
+        WorkPermitStartDate = values.WorkPermitStartDate;
+        WorkPermitEndDate = values.WorkPermitEndDate;
+        return true;
+    }
+
     private bool startDateIsFuture(DateOnly today) => StartDate > today;
 }
+
+public sealed record EmploymentWorkforceTermsValues(
+    EmploymentContractType? ContractType,
+    DateOnly? ContractEndDate,
+    decimal? PartTimeMonthlyHours,
+    IskurStatus? IskurStatus,
+    DateOnly? IncentiveStartDate,
+    DateOnly? IncentiveEndDate,
+    IskurWorkforceStatus? IskurWorkforceStatus,
+    DateOnly? WorkPermitStartDate,
+    DateOnly? WorkPermitEndDate);

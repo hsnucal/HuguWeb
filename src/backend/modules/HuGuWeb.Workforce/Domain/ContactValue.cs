@@ -11,6 +11,9 @@ public static class ContactValue
     public const int PlaceMaxLength = 100;
     public const int NationalityMaxLength = 64;
     public const int NotesMaxLength = 2000;
+    public const int MilitaryReasonMaxLength = 200;
+    public const int EducationTextMaxLength = 200;
+    public const int ArgeProjectCodeMaxLength = 64;
 
     public static bool TryNormalizePhone(string? value, bool required, out string? normalized, out string? error)
     {

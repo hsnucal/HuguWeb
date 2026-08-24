@@ -1,8 +1,8 @@
 # First implementation slice
 
-> **Status:** Accepted freeze for **HR-03B** (next) and **HR-03C+** (later). HR-03A does **not** start either. Implementation is **not** started.
+> **Status:** Accepted freeze for **HR-03B** / **HR-03C+**. **Accepted Product Owner amendment — 2026-08-24** expands the HR-03B Personel Card composition before commit. Status remains Accepted.
 
-Official Employment Data **model** is larger than the first production slice. Do not make HR-03B an SGK product.
+Official Employment Data **model** is larger than the first production slice. Do not make HR-03B an SGK product. SAVE still does not submit to SGK, İŞKUR, or KBS, and does not calculate payroll.
 
 ---
 
@@ -13,11 +13,11 @@ Official Employment Data **model** is larger than the first production slice. Do
 3. Saving Bildirge Kodları does not submit to any government system. SAVE ≠ SUBMIT.
 4. Personel Card visible tabs: Genel, Kimlik & iletişim, Çalışma, Resmî bilgiler, Geçmiş. Bildirge Kodları is a section.
 5. Hire remains HR-01B-minimum; all Bildirge Kodları optional. Card save does not infer SGK completeness.
-6. Lookups are explicit families; meslek is code + importable catalogue, not 7765 rows in application source.
+6. Lookups are explicit families; meslek is code + **importable JSON artefact** (full snapshot catalogue), never a 7,765-row C# array.
 7. Position ≠ SGK occupation code.
-8. Görev Kodu is out of 03B.
+8. Görev Kodu is **IN** (PO amendment 2026-08-24). Original freeze had it out.
 9. Current `OfficialEmploymentProfile` 0..1 per Employment; effective-dated history deferred but must remain migratable.
-10. Operational DTOs unchanged — no workplace registration, document type, applicable law, insurance branch, or occupation code.
+10. Operational DTOs unchanged — no workplace registration, document type, applicable law, insurance branch, occupation, duty code, İŞKUR, BES, military, passport, KEP, work permits, education, or nationality.
 11. Existing `hr.employee.*` permissions; no `hr.official.*`. Property registrations are configuration (`workforce.manage`).
 12. HR-DOMAIN-001 and HR-DOMAIN-002 remain Accepted.
 13. TR/EN/RU for new UI strings.
@@ -30,16 +30,18 @@ Official Employment Data **model** is larger than the first production slice. Do
 ### In
 
 - Personel Card **Resmî bilgiler** tab (visible).
-- **Bildirge Kodları** section only, fields:
+- **Bildirge Kodları** section fields:
   - SGK İşyeri (select existing `SgkWorkplaceRegistration`)
   - Belge türü
   - Tabi olduğu kanun
   - Sigorta kolu
-  - SGK meslek kodu (searchable)
-- `OfficialEmploymentProfile` 1:0..1 owned by Employment (current-value).
-- Profile fields: `EmploymentId`, `SgkWorkplaceRegistrationId`, `DocumentTypeCode`, `ApplicableLawCode`, `InsuranceBranchCode`, `OccupationCode`.
-- Lookup tables: `SgkDocumentType`, `ApplicableLawCode`, `InsuranceBranch`, `SgkOccupationCode`.
-- Seed small closed lists from [LOOKUP_CODES.md](LOOKUP_CODES.md). Occupation: reference structure + practical bootstrap/import; **not** full 7765 in git.
+  - SGK meslek kodu (searchable; **full** catalogue via JSON artifact + importer)
+  - Görev Kodu (PO amendment)
+- Composition sections on the same tab (PO amendment; not a god object): İŞKUR Aylık İşgücü Çizelgesi, BES (config only, no AGİ), Sosyal Bilgiler, Eğitim Bilgileri.
+- `OfficialEmploymentProfile` 1:0..1 owned by Employment (current-value), plus `DutyCode`.
+- Profile fields: `EmploymentId`, `SgkWorkplaceRegistrationId`, `DocumentTypeCode`, `ApplicableLawCode`, `InsuranceBranchCode`, `OccupationCode`, `DutyCode`.
+- Lookup tables: `SgkDocumentType`, `ApplicableLawCode`, `InsuranceBranch`, `SgkOccupationCode`, `EmploymentDutyCode`.
+- Occupation: versioned data artifact `data/reference/sgk-occupation-codes.json` + idempotent importer. **Not** 7,765 rows in a C# array. **Not** a competing 6-row bootstrap.
 - `SgkWorkplaceRegistration` collection on Property (**0..\***). Configuration editor (not Personel Card typing) so registrations exist to be selected. Permission: `workforce.manage`.
 - Validity: when `SgkWorkplaceRegistrationId` is set, `registration.PropertyId` must match the Employment’s relevant Property via current/last Primary Assignment → Department.
 - Validations: lookup membership; occupation format when present; registration Property correspondence; do not invent legal regex for sicil beyond “non-empty trimmed” + optional digit-length **hint**.
@@ -51,17 +53,16 @@ Official Employment Data **model** is larger than the first production slice. Do
 
 - SGK işe giriş / işten ayrılış HTTP/XML clients
 - KBS / Jandarma clients
-- İŞKUR monthly chart
+- İŞKUR **report submission** (master İŞKUR fields are IN per PO amendment)
 - Notification obligation/result tables
 - Credentials, workers, outbox, brokers, retry
 - Submission statuses
 - Exit codes on the card
-- İŞKUR / teşvik / AGİ / BES sections
-- Parent names, disability, booklet fields
+- AGİ and payroll incentive **rates** (BES configuration dates/flags: Kesinti / Oran / Ek Tutar are IN; 5510 % fields remain OUT)
+- Parent names (including Anne kızlık soyadı), disability, booklet fields
 - Effective-dated OfficialEmploymentClassification
-- DutyCode / Görev Kodu UI, field, and lookup table
 - Position.DefaultOccupationCode (and any automatic occupation write)
-- Full 7,765-row occupation catalogue in application source seed
+- Full 7,765-row occupation catalogue **in a C# array** (JSON artifact is required)
 - One-active-per-Property uniqueness
 - VKN/MERSİS legal master
 - `hr.official.*` permissions
@@ -84,9 +85,8 @@ HR-03B **will not**: send SGK işe giriş; send SGK işten çıkış; create sub
 | Notification records | Pending/Submitted/Accepted/Rejected — not Employment status |
 | Retry / status infrastructure | Evidence-driven when a real adapter exists |
 | KBS | Personel Master already has identity/address prerequisites; do not add statuses in 03B |
-| İŞKUR | Meslek kodu is a prerequisite; contract type / disability / quota wait |
+| İŞKUR **report submission** | Master İŞKUR fields are IN (PO amendment). Monthly chart filing / XML remains later |
 | Intra-employment classification history | Option C; 03B profile must remain a viable migration source |
-| Görev Kodu | After domain/legal validation that it is a required statutory catalogue |
 | Position recommended occupation | FUTURE / suggestion only if ever added |
 | Government credentials vault | Not Property columns in git |
 
@@ -152,7 +152,7 @@ Bootstrap vs empty occupation table at first run is an **HR-03B implementation c
 | Employment → workplace | Optional `SgkWorkplaceRegistrationId`; validity via Assignment → Department → Property |
 | Position vs meslek kodu | Position ≠ occupation code. Profile owns OccupationCode. Position default is FUTURE / suggestion only |
 | Meslek catalogue | Importable/maintained reference; not full seed in source |
-| Görev Kodu | Out of 03B. DEFERRED / NEEDS DOMAIN OR LEGAL VALIDATION. Evidence retained |
+| Görev Kodu | **IN** as of PO amendment 2026-08-24 (`EmploymentDutyCode`). Original freeze had it deferred. |
 | History | Snapshot per Employment in 03B; effective-dated deferred; must remain migratable |
 | Permissions | Existing `hr.employee.*`; Property registrations = configuration |
 | Save vs submit | Save is not submit |

@@ -53,10 +53,9 @@ Owned record. At most one per Employment. All business fields optional at hire a
 | ApplicableLawCode | Tabi kanun — lookup `ApplicableLawCode` |
 | InsuranceBranchCode | Sigorta kolu — lookup `InsuranceBranch` |
 | OccupationCode | Meslek kodu — lookup `SgkOccupationCode`, code only |
+| DutyCode | Görev Kodu — lookup `EmploymentDutyCode` (PO amendment 2026-08-24). HuGu internal identifier, not an invented SGK number. |
 
-**Do not add DutyCode** in 03B.
-
-No SGK notified flags. No exit codes. No incentive flags. No duplicate workplace sicil string.
+No SGK notified flags. No exit codes. No incentive **rate** flags. No duplicate workplace sicil string.
 
 ---
 
@@ -110,27 +109,22 @@ Do not blindly treat the profile as “the only codes SGK ever saw” if a later
 Position name          = hotel job title (customer data)
 Assignment             = where/when that title applies
 OccupationCode         = SGK/ISCO-style statutory occupation
-DutyCode / Görev Kodu  = WebİK Bildirge label set — NOT in 03B
+DutyCode / Görev Kodu  = HuGu `EmploymentDutyCode` on OfficialEmploymentProfile (PO amendment)
 ```
 
-Do **not** derive OccupationCode from Position.Name. Do **not** attach authoritative SGK occupation identity to Position in HR-03B.
+Do **not** derive OccupationCode from Position.Name. Do **not** attach authoritative SGK occupation identity to Position in HR-03B. Do **not** map Position names to Görev Kodu.
 
 **FUTURE / NEEDS VALIDATION:** Position may later store a recommended `DefaultOccupationCode` to speed hire. That default is a **suggestion only**: never an automatic write, never statutory truth, never authorization.
 
 ---
 
-## Görev Kodu (out of 03B, evidence retained)
+## Görev Kodu (PO amendment 2026-08-24)
 
-WebİK Personel Kartı Bildirge section exposes **Görev Kodu** (`gorevKodu`) with **six Turkish labels** and **no separate numeric code** in the UI:
+WebİK Personel Kartı Bildirge section exposes **Görev Kodu** (`gorevKodu`) with **six Turkish labels** and **no separate numeric code** in the UI. Original freeze deferred modeling. Product Owner now requires the field.
 
-- İşveren veya Vekili
-- İşçi
-- 657 SK (4/b) Kapsamında Çalışanlar
-- 657 SK (4/c) Kapsamında Çalışanlar
-- Çıraklar ve Stajer Öğrenciler
-- Diğerleri
+HuGu model: `OfficialEmploymentProfile.DutyCode` → `EmploymentDutyCode` (`EmployerOrRepresentative`, `Worker`, `CivilServant4B`, `CivilServant4C`, `ApprenticeOrIntern`, `Other`). Labels stay localized. Not an authorization role. Not Position.
 
-**HuGuWeb does not yet model this.** Classification: **DEFERRED / NEEDS DOMAIN OR LEGAL VALIDATION**. It can be added later if validated as a stable official statutory catalogue required by the SGK model. Discovery evidence stays in [LOOKUP_CODES.md](LOOKUP_CODES.md) and [FIELD_CATALOG.md](FIELD_CATALOG.md). Do not show the field on the Personel Card in 03B.
+Discovery evidence stays in [LOOKUP_CODES.md](LOOKUP_CODES.md).
 
 ---
 

@@ -1,4 +1,5 @@
 import { ApiError, apiRequest } from '../shared/apiClient'
+import type { SgkWorkplaceRecord } from './hrApi'
 
 export type DepartmentRecord = {
   id: string
@@ -160,6 +161,30 @@ export async function endEmployment(employeeId: string, endDate: string) {
   })
 }
 
+export async function listSgkWorkplaces() {
+  return apiRequest<SgkWorkplaceRecord[]>('/api/workforce/sgk-workplace-registrations')
+}
+
+export async function createSgkWorkplace(registrationNumber: string, displayName: string) {
+  return apiRequest<SgkWorkplaceRecord>('/api/workforce/sgk-workplace-registrations', {
+    method: 'POST',
+    body: JSON.stringify({
+      registrationNumber,
+      displayName: displayName.trim() === '' ? null : displayName,
+    }),
+  })
+}
+
+export async function updateSgkWorkplace(
+  id: string,
+  body: { registrationNumber?: string; displayName?: string | null; isActive?: boolean },
+) {
+  return apiRequest<SgkWorkplaceRecord>(`/api/workforce/sgk-workplace-registrations/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
 const errorKeys: Record<string, string> = {
   'personnel-number-in-use': 'workforce.errors.personnelNumberInUse',
   'department-inactive': 'workforce.errors.departmentInactive',
@@ -171,6 +196,8 @@ const errorKeys: Record<string, string> = {
   'invalid-employment-period': 'workforce.errors.invalidEmploymentPeriod',
   'same-assignment': 'workforce.errors.sameAssignment',
   'position-not-available-for-department': 'personnel.validation.positionNotAvailable',
+  'invalid-sgk-workplace': 'workforce.errors.invalidSgkWorkplace',
+  'registration-number-required': 'workforce.errors.invalidSgkWorkplace',
 }
 
 export function workforceErrorKey(error: unknown): string {

@@ -20,6 +20,16 @@ public sealed record HrProfileWriteModel(
     string? ResidenceDistrict,
     string? NotificationAddress,
     string? HrNotes,
+    DrivingLicenceCategory? DrivingLicenceCategory,
+    MilitaryServiceStatus? MilitaryServiceStatus,
+    string? MilitaryExemptionReason,
+    string? MilitaryDefermentReason,
+    string? KepAddress,
+    string? EducationDescription,
+    string? SchoolName,
+    DateOnly? GraduationDate,
+    ForeignLanguageSummary? ForeignLanguage,
+    string? ArgeProjectCode,
     IReadOnlyList<EmergencyContactDraft> EmergencyContacts);
 
 public static class HrProfileAccess
@@ -51,7 +61,17 @@ public static class HrProfileAccess
             model.ResidenceCity,
             model.ResidenceDistrict,
             model.NotificationAddress,
-            model.HrNotes);
+            model.HrNotes,
+            model.DrivingLicenceCategory,
+            model.MilitaryServiceStatus,
+            model.MilitaryExemptionReason,
+            model.MilitaryDefermentReason,
+            model.KepAddress,
+            model.EducationDescription,
+            model.SchoolName,
+            model.GraduationDate,
+            model.ForeignLanguage,
+            model.ArgeProjectCode);
 }
 
 public static class HrProfileComposer
@@ -157,5 +177,15 @@ public static class HrProfileComposer
             current.ResidenceCity,
             current.ResidenceDistrict,
             current.NotificationAddress,
-            model.HrNotes);
+            model.HrNotes,
+            model.DrivingLicenceCategory,
+            model.MilitaryServiceStatus,
+            model.MilitaryExemptionReason,
+            model.MilitaryDefermentReason,
+            model.KepAddress,
+            model.EducationDescription,
+            model.SchoolName,
+            model.GraduationDate,
+            model.ForeignLanguage,
+            model.ArgeProjectCode);
 }

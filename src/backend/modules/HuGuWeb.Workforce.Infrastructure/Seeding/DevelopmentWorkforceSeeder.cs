@@ -78,6 +78,8 @@ public static class DevelopmentWorkforceSeeder
             await TrySeedPersonnelMasterDemoAsync(dbContext, logger, cancellationToken);
             await TrySeedPersonnelNumberSequenceAsync(dbContext, cancellationToken);
             await TrySeedPositionApplicabilityAsync(dbContext, logger, cancellationToken);
+            await TrySeedOfficialEmploymentLookupsAsync(dbContext, logger, cancellationToken);
+            await TrySeedSgkWorkplaceRegistrationsAsync(dbContext, logger, cancellationToken);
 
             logger.LogInformation(
                 "Development workplace is available. Organization {OrganizationId}, Property {PropertyId}.",
@@ -190,7 +192,17 @@ public static class DevelopmentWorkforceSeeder
                 ResidenceCity: null,
                 ResidenceDistrict: null,
                 NotificationAddress: null,
-                HrNotes: null),
+                HrNotes: null,
+                DrivingLicenceCategory: null,
+                MilitaryServiceStatus: null,
+                MilitaryExemptionReason: null,
+                MilitaryDefermentReason: null,
+                KepAddress: null,
+                EducationDescription: null,
+                SchoolName: null,
+                GraduationDate: null,
+                ForeignLanguage: null,
+                ArgeProjectCode: null),
             [],
             today,
             cancellationToken);
@@ -242,7 +254,8 @@ public static class DevelopmentWorkforceSeeder
                 "Ankara",
                 "Çankaya",
                 "Otel lojmanı A-2",
-                "Referans transfer geçmişi."),
+                "Referans transfer geçmişi.",
+                null, null, null, null, null, null, null, null, null, null),
             [
                 new EmergencyContactDraft(Guid.Empty, "Mehmet Yılmaz", "Eş", "+905557778899", true),
                 new EmergencyContactDraft(Guid.Empty, "Elif Kaya", "Kardeş", "+905559990011", false)
@@ -286,7 +299,8 @@ public static class DevelopmentWorkforceSeeder
                 "Bursa",
                 "Osmangazi",
                 null,
-                "İşten ayrılmış; profil korunur."),
+                "İşten ayrılmış; profil korunur.",
+                null, null, null, null, null, null, null, null, null, null),
             [new EmergencyContactDraft(Guid.Empty, "Fatma Kaya", "Anne", "+905551234567", true)],
             today,
             cancellationToken);
@@ -327,7 +341,8 @@ public static class DevelopmentWorkforceSeeder
                 null,
                 null,
                 null,
-                "Yabancı personel; TCKN yok."),
+                "Yabancı personel; TCKN yok.",
+                null, null, null, null, null, null, null, null, null, null),
             [],
             today,
             cancellationToken);
@@ -542,5 +557,93 @@ public static class DevelopmentWorkforceSeeder
         }
 
         dbContext.Positions.Add(position);
+    }
+
+    private static async Task TrySeedOfficialEmploymentLookupsAsync(
+        WorkforceDbContext dbContext,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        if (!await dbContext.SgkDocumentTypes.AnyAsync(cancellationToken))
+        {
+            foreach (var (code, description) in OfficialLookupCatalog.DocumentTypes)
+            {
+                dbContext.SgkDocumentTypes.Add(new SgkDocumentType(code, description));
+            }
+        }
+
+        if (!await dbContext.ApplicableLawCodes.AnyAsync(cancellationToken))
+        {
+            foreach (var (code, description) in OfficialLookupCatalog.ApplicableLaws)
+            {
+                dbContext.ApplicableLawCodes.Add(new ApplicableLawCode(code, description));
+            }
+        }
+
+        if (!await dbContext.InsuranceBranches.AnyAsync(cancellationToken))
+        {
+            foreach (var (code, description) in OfficialLookupCatalog.InsuranceBranches)
+            {
+                dbContext.InsuranceBranches.Add(new InsuranceBranch(code, description));
+            }
+        }
+
+        if (!await dbContext.EmploymentDutyCodes.AnyAsync(cancellationToken))
+        {
+            foreach (var (code, description) in OfficialLookupCatalog.DutyCodes)
+            {
+                dbContext.EmploymentDutyCodes.Add(new EmploymentDutyCode(code, description));
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await SgkOccupationCatalogueImporter.ImportAsync(dbContext, logger, cancellationToken);
+    }
+
+    private static readonly Guid HotelWorkplaceId = Guid.Parse("a1e1c0de-0004-4000-8000-000000000001");
+    private static readonly Guid RestaurantWorkplaceId = Guid.Parse("a1e1c0de-0004-4000-8000-000000000002");
+
+    private static async Task TrySeedSgkWorkplaceRegistrationsAsync(
+        WorkforceDbContext dbContext,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        if (await dbContext.SgkWorkplaceRegistrations.AnyAsync(
+                item => item.PropertyId == PropertyId,
+                cancellationToken))
+        {
+            return;
+        }
+
+        var createdAt = DateTimeOffset.UtcNow;
+        if (!SgkWorkplaceRegistration.TryCreate(
+                HotelWorkplaceId,
+                PropertyId,
+                "123456789012345678901",
+                "Otel",
+                createdAt,
+                out var hotel,
+                out _,
+                out _)
+            || hotel is null
+            || !SgkWorkplaceRegistration.TryCreate(
+                RestaurantWorkplaceId,
+                PropertyId,
+                "123456789012345678902",
+                "Restoran",
+                createdAt,
+                out var restaurant,
+                out _,
+                out _)
+            || restaurant is null)
+        {
+            logger.LogWarning("Development SGK workplace registrations were not seeded because the numbers are invalid.");
+            return;
+        }
+
+        dbContext.SgkWorkplaceRegistrations.Add(hotel);
+        dbContext.SgkWorkplaceRegistrations.Add(restaurant);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Development SGK workplace registrations are available for the seeded property.");
     }
 }

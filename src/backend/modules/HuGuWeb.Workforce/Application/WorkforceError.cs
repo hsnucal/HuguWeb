@@ -173,4 +173,73 @@ public sealed record WorkforceError(
 
     public static WorkforceError InvalidPhoto(string detail) =>
         InvalidRequest("invalid-photo", detail);
+
+    public static WorkforceError EmploymentNotFound() =>
+        NotFound("employment-not-found", "The employment was not found.");
+
+    public static WorkforceError SgkWorkplaceNotFound() =>
+        NotFound("sgk-workplace-not-found", "The SGK workplace registration was not found.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [HrValidation.Fields.SgkWorkplaceRegistrationId] = ["sgk-workplace-not-found"]
+            }
+        };
+
+    public static WorkforceError SgkWorkplaceInactive() =>
+        InvalidFields(
+            "sgk-workplace-inactive",
+            "An inactive SGK workplace registration cannot be newly selected.",
+            HrValidation.Fields.SgkWorkplaceRegistrationId,
+            "sgk-workplace-inactive");
+
+    public static WorkforceError SgkWorkplaceNotForProperty() =>
+        InvalidFields(
+            "sgk-workplace-not-for-property",
+            "The SGK workplace registration does not belong to this employment's property.",
+            HrValidation.Fields.SgkWorkplaceRegistrationId,
+            "sgk-workplace-not-for-property");
+
+    public static WorkforceError InvalidDocumentTypeCode() =>
+        InvalidFields(
+            "invalid-document-type-code",
+            "The document type code is not a valid active lookup value.",
+            HrValidation.Fields.DocumentTypeCode,
+            "invalid-document-type-code");
+
+    public static WorkforceError InvalidApplicableLawCode() =>
+        InvalidFields(
+            "invalid-applicable-law-code",
+            "The applicable law code is not a valid active lookup value.",
+            HrValidation.Fields.ApplicableLawCode,
+            "invalid-applicable-law-code");
+
+    public static WorkforceError InvalidInsuranceBranchCode() =>
+        InvalidFields(
+            "invalid-insurance-branch-code",
+            "The insurance branch code is not a valid active lookup value.",
+            HrValidation.Fields.InsuranceBranchCode,
+            "invalid-insurance-branch-code");
+
+    public static WorkforceError InvalidOccupationCode() =>
+        InvalidFields(
+            "invalid-occupation-code",
+            "The occupation code is not a valid active catalogue value.",
+            HrValidation.Fields.OccupationCode,
+            "invalid-occupation-code");
+
+    public static WorkforceError InvalidDutyCode() =>
+        InvalidFields(
+            "invalid-duty-code",
+            "The duty code is not a valid active lookup value.",
+            HrValidation.Fields.DutyCode,
+            "invalid-duty-code");
+
+    public static WorkforceError EmploymentPropertyUnresolved() =>
+        InvalidRequest(
+            "employment-property-unresolved",
+            "This employment does not have an unambiguous property context for SGK workplace selection.");
+
+    public static WorkforceError InvalidSgkWorkplace(string code, string field, string detail) =>
+        InvalidFields(code, detail, field, code);
 }

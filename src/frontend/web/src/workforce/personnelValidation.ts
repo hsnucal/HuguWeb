@@ -1,7 +1,8 @@
 import type { PersonnelForm } from './personnelForm'
 import { MOBILE_DIGIT_MAX, normalizeMobileDigits } from './personnelInput'
 
-export type PersonnelTabId = 'general' | 'identity' | 'work' | 'history'
+export type PersonnelTabId = 'general' | 'identity' | 'work' | 'official' | 'history'
+export type OfficialSectionId = 'declaration' | 'iskur' | 'bes' | 'social' | 'education'
 
 export const HrValidationCodes = {
   tcknLength: 'tckn-length',
@@ -37,6 +38,22 @@ export const HrValidationCodes = {
   positionInactive: 'position-inactive',
   departmentNotFound: 'department-not-found',
   positionNotFound: 'position-not-found',
+  invalidDocumentType: 'invalid-document-type-code',
+  invalidApplicableLaw: 'invalid-applicable-law-code',
+  invalidInsuranceBranch: 'invalid-insurance-branch-code',
+  invalidOccupation: 'invalid-occupation-code',
+  invalidDutyCode: 'invalid-duty-code',
+  invalidNationality: 'invalid-nationality',
+  militaryExemptionRequired: 'military-exemption-reason-required',
+  militaryDefermentRequired: 'military-deferment-reason-required',
+  contractEndRequired: 'contract-end-date-required',
+  partTimeHoursRequired: 'part-time-hours-required',
+  partTimeHoursInvalid: 'part-time-hours-invalid',
+  incentiveRangeInvalid: 'incentive-range-invalid',
+  workPermitRangeInvalid: 'work-permit-range-invalid',
+  besRateInvalid: 'bes-rate-invalid',
+  besExtraInvalid: 'bes-extra-amount-invalid',
+  kepInvalid: 'kep-invalid',
 } as const
 
 const NAME_MAX = 100
@@ -46,7 +63,6 @@ const PHONE_MAX = 32
 const EMAIL_MAX = 254
 const ADDRESS_MAX = 500
 const PLACE_MAX = 100
-const NATIONALITY_MAX = 64
 const NOTES_MAX = 2000
 const RELATIONSHIP_MAX = 64
 
@@ -61,6 +77,7 @@ type FieldTarget = {
   field: string
   tab: PersonnelTabId
   controlId: string
+  officialSection?: OfficialSectionId
 }
 
 export function validationMessageKey(code: string): string {
@@ -131,6 +148,38 @@ export function validationMessageKey(code: string): string {
       return 'personnel.validation.departmentRequired'
     case HrValidationCodes.positionNotFound:
       return 'personnel.validation.positionRequired'
+    case HrValidationCodes.invalidDocumentType:
+      return 'personnel.validation.invalidDocumentType'
+    case HrValidationCodes.invalidApplicableLaw:
+      return 'personnel.validation.invalidApplicableLaw'
+    case HrValidationCodes.invalidInsuranceBranch:
+      return 'personnel.validation.invalidInsuranceBranch'
+    case HrValidationCodes.invalidOccupation:
+      return 'personnel.validation.invalidOccupation'
+    case HrValidationCodes.invalidDutyCode:
+      return 'personnel.validation.invalidDutyCode'
+    case HrValidationCodes.invalidNationality:
+      return 'personnel.validation.invalidNationality'
+    case HrValidationCodes.militaryExemptionRequired:
+      return 'personnel.validation.militaryExemptionRequired'
+    case HrValidationCodes.militaryDefermentRequired:
+      return 'personnel.validation.militaryDefermentRequired'
+    case HrValidationCodes.contractEndRequired:
+      return 'personnel.validation.contractEndRequired'
+    case HrValidationCodes.partTimeHoursRequired:
+      return 'personnel.validation.partTimeHoursRequired'
+    case HrValidationCodes.partTimeHoursInvalid:
+      return 'personnel.validation.partTimeHoursInvalid'
+    case HrValidationCodes.incentiveRangeInvalid:
+      return 'personnel.validation.incentiveRangeInvalid'
+    case HrValidationCodes.workPermitRangeInvalid:
+      return 'personnel.validation.workPermitRangeInvalid'
+    case HrValidationCodes.besRateInvalid:
+      return 'personnel.validation.besRateInvalid'
+    case HrValidationCodes.besExtraInvalid:
+      return 'personnel.validation.besExtraInvalid'
+    case HrValidationCodes.kepInvalid:
+      return 'personnel.validation.kepInvalid'
     default:
       return 'personnel.errors.generic'
   }
@@ -182,7 +231,11 @@ export function validatePersonnelField(
     return validateIdentity(form, field)
   }
   if (field === 'nationality') {
-    return optionalMax(form.nationality, NATIONALITY_MAX)
+    const value = form.nationality.trim()
+    if (value === '') {
+      return undefined
+    }
+    return /^[A-Za-z]{2}$/.test(value) ? undefined : HrValidationCodes.invalidNationality
   }
   if (field === 'birthDate') {
     return validateBirthDate(form.birthDate, context.today)
@@ -210,6 +263,84 @@ export function validatePersonnelField(
   }
   if (field === 'hrNotes') {
     return optionalMax(form.hrNotes, NOTES_MAX)
+  }
+  if (field === 'occupationCode') {
+    const value = form.occupationCode.trim()
+    if (value === '') {
+      return undefined
+    }
+    return /^\d{4}\.\d{2}$/.test(value) ? undefined : HrValidationCodes.invalidOccupation
+  }
+  if (field === 'contractEndDate') {
+    return form.contractType === 'FixedTerm' && form.contractEndDate.trim() === ''
+      ? HrValidationCodes.contractEndRequired
+      : undefined
+  }
+  if (field === 'partTimeMonthlyHours') {
+    if (form.contractType !== 'PartTime') {
+      return undefined
+    }
+    const parsed = Number(form.partTimeMonthlyHours.trim().replace(',', '.'))
+    if (form.partTimeMonthlyHours.trim() === '') {
+      return HrValidationCodes.partTimeHoursRequired
+    }
+    return Number.isFinite(parsed) && parsed > 0 ? undefined : HrValidationCodes.partTimeHoursInvalid
+  }
+  if (field === 'incentiveStartDate' || field === 'incentiveEndDate') {
+    if (form.incentiveStartDate && form.incentiveEndDate && form.incentiveEndDate < form.incentiveStartDate) {
+      return field === 'incentiveEndDate' ? HrValidationCodes.incentiveRangeInvalid : undefined
+    }
+    return undefined
+  }
+  if (field === 'workPermitStartDate' || field === 'workPermitEndDate') {
+    if (form.workPermitStartDate && form.workPermitEndDate && form.workPermitEndDate < form.workPermitStartDate) {
+      return field === 'workPermitEndDate' ? HrValidationCodes.workPermitRangeInvalid : undefined
+    }
+    return undefined
+  }
+  if (field === 'besRatePercent') {
+    if (!form.besDeductionEnabled || form.besRatePercent.trim() === '') {
+      return undefined
+    }
+    const parsed = Number(form.besRatePercent.trim().replace(',', '.'))
+    return Number.isFinite(parsed) && parsed >= 0 && parsed <= 100 ? undefined : HrValidationCodes.besRateInvalid
+  }
+  if (field === 'besExtraAmount') {
+    if (!form.besDeductionEnabled || form.besExtraAmount.trim() === '') {
+      return undefined
+    }
+    const parsed = Number(form.besExtraAmount.trim().replace(',', '.'))
+    return Number.isFinite(parsed) && parsed >= 0 ? undefined : HrValidationCodes.besExtraInvalid
+  }
+  if (field === 'militaryExemptionReason') {
+    return form.militaryServiceStatus === 'Exempt' && form.militaryExemptionReason.trim() === ''
+      ? HrValidationCodes.militaryExemptionRequired
+      : optionalMax(form.militaryExemptionReason, 200)
+  }
+  if (field === 'militaryDefermentReason') {
+    return form.militaryServiceStatus === 'Deferred' && form.militaryDefermentReason.trim() === ''
+      ? HrValidationCodes.militaryDefermentRequired
+      : optionalMax(form.militaryDefermentReason, 200)
+  }
+  if (field === 'kepAddress') {
+    const code = validateEmail(form.kepAddress)
+    return code === HrValidationCodes.emailInvalid || code === HrValidationCodes.emailTooLong
+      ? HrValidationCodes.kepInvalid
+      : code
+  }
+  if (
+    field === 'educationDescription'
+    || field === 'schoolName'
+    || field === 'argeProjectCode'
+  ) {
+    return optionalMax(
+      field === 'educationDescription'
+        ? form.educationDescription
+        : field === 'schoolName'
+          ? form.schoolName
+          : form.argeProjectCode,
+      field === 'argeProjectCode' ? 64 : 200,
+    )
   }
 
   const emergency = /^emergencyContacts\[(\d+)\]\.(name|relationship|phone)$/.exec(field)
@@ -264,7 +395,57 @@ export function firstInvalidTarget(
   }
 
   const leftover = Object.keys(errors)[0]
-  return leftover ? { field: leftover, tab: tabForField(leftover), controlId: controlIdForField(leftover, form) } : null
+  return leftover
+    ? {
+        field: leftover,
+        tab: tabForField(leftover),
+        controlId: controlIdForField(leftover, form),
+        officialSection: tabForField(leftover) === 'official' ? officialSectionForField(leftover) : undefined,
+      }
+    : null
+}
+
+export function officialSectionForField(field: string): OfficialSectionId {
+  if (
+    field === 'contractType'
+    || field === 'contractEndDate'
+    || field === 'partTimeMonthlyHours'
+    || field === 'iskurStatus'
+    || field === 'incentiveStartDate'
+    || field === 'incentiveEndDate'
+    || field === 'iskurWorkforceStatus'
+  ) {
+    return 'iskur'
+  }
+
+  if (field === 'besDeductionEnabled' || field === 'besRatePercent' || field === 'besExtraAmount') {
+    return 'bes'
+  }
+
+  if (
+    field === 'drivingLicenceCategory'
+    || field === 'militaryServiceStatus'
+    || field === 'militaryExemptionReason'
+    || field === 'militaryDefermentReason'
+    || field === 'kepAddress'
+    || field === 'workPermitStartDate'
+    || field === 'workPermitEndDate'
+  ) {
+    return 'social'
+  }
+
+  if (
+    field === 'educationLevel'
+    || field === 'educationDescription'
+    || field === 'schoolName'
+    || field === 'graduationDate'
+    || field === 'foreignLanguage'
+    || field === 'argeProjectCode'
+  ) {
+    return 'education'
+  }
+
+  return 'declaration'
 }
 
 export function tabForField(field: string): PersonnelTabId {
@@ -284,6 +465,39 @@ export function tabForField(field: string): PersonnelTabId {
     || field.startsWith('emergencyContacts')
   ) {
     return 'identity'
+  }
+
+  if (
+    field === 'sgkWorkplaceRegistrationId'
+    || field === 'documentTypeCode'
+    || field === 'applicableLawCode'
+    || field === 'insuranceBranchCode'
+    || field === 'occupationCode'
+    || field === 'dutyCode'
+    || field === 'contractType'
+    || field === 'contractEndDate'
+    || field === 'partTimeMonthlyHours'
+    || field === 'iskurStatus'
+    || field === 'incentiveStartDate'
+    || field === 'incentiveEndDate'
+    || field === 'iskurWorkforceStatus'
+    || field === 'besRatePercent'
+    || field === 'besExtraAmount'
+    || field === 'drivingLicenceCategory'
+    || field === 'militaryServiceStatus'
+    || field === 'militaryExemptionReason'
+    || field === 'militaryDefermentReason'
+    || field === 'kepAddress'
+    || field === 'workPermitStartDate'
+    || field === 'workPermitEndDate'
+    || field === 'educationLevel'
+    || field === 'educationDescription'
+    || field === 'schoolName'
+    || field === 'graduationDate'
+    || field === 'foreignLanguage'
+    || field === 'argeProjectCode'
+  ) {
+    return 'official'
   }
 
   return 'general'
@@ -321,6 +535,34 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     residenceDistrict: 'hr-district',
     notificationAddress: 'hr-notify',
     emergencyContacts: form.emergencyContacts.length > 0 ? 'hr-em-name-0' : 'hr-scheme',
+    sgkWorkplaceRegistrationId: 'hr-sgk-workplace',
+    documentTypeCode: 'hr-document-type',
+    applicableLawCode: 'hr-applicable-law',
+    insuranceBranchCode: 'hr-insurance-branch',
+    occupationCode: 'hr-occupation',
+    dutyCode: 'hr-duty-code',
+    contractType: 'hr-contract-type',
+    contractEndDate: 'hr-contract-end',
+    partTimeMonthlyHours: 'hr-part-time-hours',
+    iskurStatus: 'hr-iskur-status',
+    incentiveStartDate: 'hr-incentive-start',
+    incentiveEndDate: 'hr-incentive-end',
+    iskurWorkforceStatus: 'hr-iskur-workforce',
+    besDeductionEnabled: 'hr-bes-enabled',
+    besRatePercent: 'hr-bes-rate',
+    besExtraAmount: 'hr-bes-extra',
+    drivingLicenceCategory: 'hr-licence',
+    militaryServiceStatus: 'hr-military',
+    militaryExemptionReason: 'hr-military-exemption',
+    militaryDefermentReason: 'hr-military-deferment',
+    kepAddress: 'hr-kep',
+    workPermitStartDate: 'hr-work-permit-start',
+    workPermitEndDate: 'hr-work-permit-end',
+    educationDescription: 'hr-education-description',
+    schoolName: 'hr-school',
+    graduationDate: 'hr-graduation',
+    foreignLanguage: 'hr-foreign-language',
+    argeProjectCode: 'hr-arge-code',
   }
 
   return ids[field] ?? 'hr-given'
@@ -382,7 +624,31 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     )
   })
 
-  return [...general, ...identity]
+  return [
+    ...general,
+    ...identity,
+    { field: 'sgkWorkplaceRegistrationId', tab: 'official', controlId: 'hr-sgk-workplace', officialSection: 'declaration' },
+    { field: 'documentTypeCode', tab: 'official', controlId: 'hr-document-type', officialSection: 'declaration' },
+    { field: 'applicableLawCode', tab: 'official', controlId: 'hr-applicable-law', officialSection: 'declaration' },
+    { field: 'insuranceBranchCode', tab: 'official', controlId: 'hr-insurance-branch', officialSection: 'declaration' },
+    { field: 'occupationCode', tab: 'official', controlId: 'hr-occupation', officialSection: 'declaration' },
+    { field: 'dutyCode', tab: 'official', controlId: 'hr-duty-code', officialSection: 'declaration' },
+    { field: 'contractType', tab: 'official', controlId: 'hr-contract-type', officialSection: 'iskur' },
+    { field: 'contractEndDate', tab: 'official', controlId: 'hr-contract-end', officialSection: 'iskur' },
+    { field: 'partTimeMonthlyHours', tab: 'official', controlId: 'hr-part-time-hours', officialSection: 'iskur' },
+    { field: 'incentiveStartDate', tab: 'official', controlId: 'hr-incentive-start', officialSection: 'iskur' },
+    { field: 'incentiveEndDate', tab: 'official', controlId: 'hr-incentive-end', officialSection: 'iskur' },
+    { field: 'besRatePercent', tab: 'official', controlId: 'hr-bes-rate', officialSection: 'bes' },
+    { field: 'besExtraAmount', tab: 'official', controlId: 'hr-bes-extra', officialSection: 'bes' },
+    { field: 'militaryExemptionReason', tab: 'official', controlId: 'hr-military-exemption', officialSection: 'social' },
+    { field: 'militaryDefermentReason', tab: 'official', controlId: 'hr-military-deferment', officialSection: 'social' },
+    { field: 'kepAddress', tab: 'official', controlId: 'hr-kep', officialSection: 'social' },
+    { field: 'workPermitStartDate', tab: 'official', controlId: 'hr-work-permit-start', officialSection: 'social' },
+    { field: 'workPermitEndDate', tab: 'official', controlId: 'hr-work-permit-end', officialSection: 'social' },
+    { field: 'educationDescription', tab: 'official', controlId: 'hr-education-description', officialSection: 'education' },
+    { field: 'schoolName', tab: 'official', controlId: 'hr-school', officialSection: 'education' },
+    { field: 'argeProjectCode', tab: 'official', controlId: 'hr-arge-code', officialSection: 'education' },
+  ]
 }
 
 function requiredName(value: string, required: string, tooLong: string): string | undefined {

@@ -23,6 +23,14 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<EmployeeHrProfile> EmployeeHrProfiles => Set<EmployeeHrProfile>();
     public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
     public DbSet<EmployeePhoto> EmployeePhotos => Set<EmployeePhoto>();
+    public DbSet<SgkWorkplaceRegistration> SgkWorkplaceRegistrations => Set<SgkWorkplaceRegistration>();
+    public DbSet<OfficialEmploymentProfile> OfficialEmploymentProfiles => Set<OfficialEmploymentProfile>();
+    public DbSet<EmploymentBesSettings> EmploymentBesSettings => Set<EmploymentBesSettings>();
+    public DbSet<SgkDocumentType> SgkDocumentTypes => Set<SgkDocumentType>();
+    public DbSet<ApplicableLawCode> ApplicableLawCodes => Set<ApplicableLawCode>();
+    public DbSet<InsuranceBranch> InsuranceBranches => Set<InsuranceBranch>();
+    public DbSet<SgkOccupationCode> SgkOccupationCodes => Set<SgkOccupationCode>();
+    public DbSet<EmploymentDutyCode> EmploymentDutyCodes => Set<EmploymentDutyCode>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +46,14 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new EmployeeHrProfileConfiguration());
         modelBuilder.ApplyConfiguration(new EmergencyContactConfiguration());
         modelBuilder.ApplyConfiguration(new EmployeePhotoConfiguration());
+        modelBuilder.ApplyConfiguration(new SgkWorkplaceRegistrationConfiguration());
+        modelBuilder.ApplyConfiguration(new OfficialEmploymentProfileConfiguration());
+        modelBuilder.ApplyConfiguration(new EmploymentBesSettingsConfiguration());
+        modelBuilder.ApplyConfiguration(new SgkDocumentTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApplicableLawCodeConfiguration());
+        modelBuilder.ApplyConfiguration(new InsuranceBranchConfiguration());
+        modelBuilder.ApplyConfiguration(new SgkOccupationCodeConfiguration());
+        modelBuilder.ApplyConfiguration(new EmploymentDutyCodeConfiguration());
     }
 }
 
@@ -173,6 +189,12 @@ file sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employment>
             table.HasCheckConstraint(
                 "CK_Employments_EndedHasEndDate",
                 "\"Status\" <> 'Ended' OR \"EndDate\" IS NOT NULL");
+            table.HasCheckConstraint(
+                "CK_Employments_IncentiveRange",
+                "\"IncentiveEndDate\" IS NULL OR \"IncentiveStartDate\" IS NULL OR \"IncentiveEndDate\" >= \"IncentiveStartDate\"");
+            table.HasCheckConstraint(
+                "CK_Employments_WorkPermitRange",
+                "\"WorkPermitEndDate\" IS NULL OR \"WorkPermitStartDate\" IS NULL OR \"WorkPermitEndDate\" >= \"WorkPermitStartDate\"");
         });
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.StartDate).HasColumnType("date").IsRequired();
@@ -181,6 +203,15 @@ file sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employment>
             .HasConversion<string>()
             .HasMaxLength(32)
             .IsRequired();
+        builder.Property(entity => entity.ContractType).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.ContractEndDate).HasColumnType("date");
+        builder.Property(entity => entity.PartTimeMonthlyHours).HasPrecision(6, 2);
+        builder.Property(entity => entity.IskurStatus).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.IncentiveStartDate).HasColumnType("date");
+        builder.Property(entity => entity.IncentiveEndDate).HasColumnType("date");
+        builder.Property(entity => entity.IskurWorkforceStatus).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.WorkPermitStartDate).HasColumnType("date");
+        builder.Property(entity => entity.WorkPermitEndDate).HasColumnType("date");
         builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
         builder.HasOne<Employee>()
             .WithMany()
@@ -244,6 +275,16 @@ file sealed class EmployeeHrProfileConfiguration : IEntityTypeConfiguration<Empl
         builder.Property(entity => entity.MaritalStatus).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.BloodType).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.EducationLevel).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.EducationDescription).HasMaxLength(ContactValue.EducationTextMaxLength);
+        builder.Property(entity => entity.SchoolName).HasMaxLength(ContactValue.EducationTextMaxLength);
+        builder.Property(entity => entity.GraduationDate).HasColumnType("date");
+        builder.Property(entity => entity.ForeignLanguage).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.ArgeProjectCode).HasMaxLength(ContactValue.ArgeProjectCodeMaxLength);
+        builder.Property(entity => entity.DrivingLicenceCategory).HasConversion<string>().HasMaxLength(8);
+        builder.Property(entity => entity.MilitaryServiceStatus).HasConversion<string>().HasMaxLength(32);
+        builder.Property(entity => entity.MilitaryExemptionReason).HasMaxLength(ContactValue.MilitaryReasonMaxLength);
+        builder.Property(entity => entity.MilitaryDefermentReason).HasMaxLength(ContactValue.MilitaryReasonMaxLength);
+        builder.Property(entity => entity.KepAddress).HasMaxLength(ContactValue.EmailMaxLength);
         builder.Property(entity => entity.MobilePhone).HasMaxLength(ContactValue.PhoneMaxLength);
         builder.Property(entity => entity.HomePhone).HasMaxLength(ContactValue.PhoneMaxLength);
         builder.Property(entity => entity.Email).HasMaxLength(ContactValue.EmailMaxLength);
@@ -315,5 +356,165 @@ file sealed class EmployeePhotoConfiguration : IEntityTypeConfiguration<Employee
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(entity => entity.EmployeeId).IsUnique();
         builder.HasIndex(entity => entity.StorageKey).IsUnique();
+    }
+}
+
+file sealed class SgkWorkplaceRegistrationConfiguration : IEntityTypeConfiguration<SgkWorkplaceRegistration>
+{
+    public void Configure(EntityTypeBuilder<SgkWorkplaceRegistration> builder)
+    {
+        builder.ToTable("SgkWorkplaceRegistrations");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.RegistrationNumber)
+            .HasMaxLength(SgkWorkplaceRegistration.RegistrationNumberMaxLength)
+            .IsRequired();
+        builder.Property(entity => entity.DisplayName).HasMaxLength(SgkWorkplaceRegistration.DisplayNameMaxLength);
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.HasOne<Property>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PropertyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => entity.PropertyId);
+        builder.HasIndex(entity => new { entity.PropertyId, entity.IsActive });
+    }
+}
+
+file sealed class OfficialEmploymentProfileConfiguration : IEntityTypeConfiguration<OfficialEmploymentProfile>
+{
+    public void Configure(EntityTypeBuilder<OfficialEmploymentProfile> builder)
+    {
+        builder.ToTable("OfficialEmploymentProfiles");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.DocumentTypeCode).HasMaxLength(SgkDocumentType.CodeMaxLength);
+        builder.Property(entity => entity.ApplicableLawCode).HasMaxLength(ApplicableLawCode.CodeMaxLength);
+        builder.Property(entity => entity.InsuranceBranchCode).HasMaxLength(InsuranceBranch.CodeMaxLength);
+        builder.Property(entity => entity.OccupationCode).HasMaxLength(SgkOccupationCode.CodeMaxLength);
+        builder.Property(entity => entity.DutyCode).HasMaxLength(EmploymentDutyCode.CodeMaxLength);
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => entity.EmploymentId).IsUnique();
+        builder.HasOne<SgkWorkplaceRegistration>()
+            .WithMany()
+            .HasForeignKey(entity => entity.SgkWorkplaceRegistrationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<SgkDocumentType>()
+            .WithMany()
+            .HasForeignKey(entity => entity.DocumentTypeCode)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ApplicableLawCode>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ApplicableLawCode)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<InsuranceBranch>()
+            .WithMany()
+            .HasForeignKey(entity => entity.InsuranceBranchCode)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<SgkOccupationCode>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OccupationCode)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<EmploymentDutyCode>()
+            .WithMany()
+            .HasForeignKey(entity => entity.DutyCode)
+            .OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
+file sealed class SgkDocumentTypeConfiguration : IEntityTypeConfiguration<SgkDocumentType>
+{
+    public void Configure(EntityTypeBuilder<SgkDocumentType> builder)
+    {
+        builder.ToTable("SgkDocumentTypes");
+        builder.HasKey(entity => entity.Code);
+        builder.Property(entity => entity.Code).HasMaxLength(SgkDocumentType.CodeMaxLength);
+        builder.Property(entity => entity.Description).HasMaxLength(SgkDocumentType.DescriptionMaxLength).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+    }
+}
+
+file sealed class ApplicableLawCodeConfiguration : IEntityTypeConfiguration<ApplicableLawCode>
+{
+    public void Configure(EntityTypeBuilder<ApplicableLawCode> builder)
+    {
+        builder.ToTable("ApplicableLawCodes");
+        builder.HasKey(entity => entity.Code);
+        builder.Property(entity => entity.Code).HasMaxLength(ApplicableLawCode.CodeMaxLength);
+        builder.Property(entity => entity.Description)
+            .HasMaxLength(ApplicableLawCode.DescriptionMaxLength)
+            .IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+    }
+}
+
+file sealed class InsuranceBranchConfiguration : IEntityTypeConfiguration<InsuranceBranch>
+{
+    public void Configure(EntityTypeBuilder<InsuranceBranch> builder)
+    {
+        builder.ToTable("InsuranceBranches");
+        builder.HasKey(entity => entity.Code);
+        builder.Property(entity => entity.Code).HasMaxLength(InsuranceBranch.CodeMaxLength);
+        builder.Property(entity => entity.Description)
+            .HasMaxLength(InsuranceBranch.DescriptionMaxLength)
+            .IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+    }
+}
+
+file sealed class SgkOccupationCodeConfiguration : IEntityTypeConfiguration<SgkOccupationCode>
+{
+    public void Configure(EntityTypeBuilder<SgkOccupationCode> builder)
+    {
+        builder.ToTable("SgkOccupationCodes");
+        builder.HasKey(entity => entity.Code);
+        builder.Property(entity => entity.Code).HasMaxLength(SgkOccupationCode.CodeMaxLength);
+        builder.Property(entity => entity.Description)
+            .HasMaxLength(SgkOccupationCode.DescriptionMaxLength)
+            .IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.Source).HasMaxLength(SgkOccupationCode.SourceMaxLength);
+        builder.Property(entity => entity.CatalogueVersion).HasMaxLength(SgkOccupationCode.CatalogueVersionMaxLength);
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+        builder.HasIndex(entity => entity.IsActive);
+        builder.HasIndex(entity => entity.Description);
+    }
+}
+
+file sealed class EmploymentDutyCodeConfiguration : IEntityTypeConfiguration<EmploymentDutyCode>
+{
+    public void Configure(EntityTypeBuilder<EmploymentDutyCode> builder)
+    {
+        builder.ToTable("EmploymentDutyCodes");
+        builder.HasKey(entity => entity.Code);
+        builder.Property(entity => entity.Code).HasMaxLength(EmploymentDutyCode.CodeMaxLength);
+        builder.Property(entity => entity.Description)
+            .HasMaxLength(EmploymentDutyCode.DescriptionMaxLength)
+            .IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+    }
+}
+
+file sealed class EmploymentBesSettingsConfiguration : IEntityTypeConfiguration<EmploymentBesSettings>
+{
+    public void Configure(EntityTypeBuilder<EmploymentBesSettings> builder)
+    {
+        builder.ToTable("EmploymentBesSettings");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.DeductionEnabled).IsRequired();
+        builder.Property(entity => entity.RatePercent).HasPrecision(5, 2);
+        builder.Property(entity => entity.ExtraAmount).HasPrecision(18, 2);
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => entity.EmploymentId).IsUnique();
     }
 }

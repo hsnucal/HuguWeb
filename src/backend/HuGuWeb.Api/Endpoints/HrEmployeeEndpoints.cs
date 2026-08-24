@@ -28,6 +28,10 @@ public static class HrEmployeeEndpoints
             .WithName("UpdateHrEmployee")
             .RequireAuthorization(AuthorizationPolicies.HrEmployeeManage)
             .AddEndpointFilter<ValidateAntiforgeryFilter>();
+        group.MapPut("/{id:guid}/official-profile", UpdateOfficialProfile)
+            .WithName("UpdateHrEmployeeOfficialProfile")
+            .RequireAuthorization(AuthorizationPolicies.HrEmployeeManage)
+            .AddEndpointFilter<ValidateAntiforgeryFilter>();
         group.MapPost("/{id:guid}/photo", UploadPhoto)
             .WithName("UploadHrEmployeePhoto")
             .RequireAuthorization(AuthorizationPolicies.HrEmployeeManage)
@@ -37,6 +41,16 @@ public static class HrEmployeeEndpoints
             .WithName("RemoveHrEmployeePhoto")
             .RequireAuthorization(AuthorizationPolicies.HrEmployeeManage)
             .AddEndpointFilter<ValidateAntiforgeryFilter>();
+
+        var lookups = endpoints.MapGroup("/api/hr")
+            .WithTags("HR Official Employment")
+            .RequireAuthorization(AuthorizationPolicies.HrEmployeeRead);
+        lookups.MapGet("/official-lookups", ListOfficialLookups)
+            .WithName("ListHrOfficialLookups");
+        lookups.MapGet("/occupation-codes", SearchOccupationCodes)
+            .WithName("SearchHrOccupationCodes");
+        lookups.MapGet("/sgk-workplace-registrations", ListHrSgkWorkplaces)
+            .WithName("ListHrSgkWorkplaceRegistrations");
 
         return endpoints;
     }
@@ -90,7 +104,10 @@ public static class HrEmployeeEndpoints
                 request.DepartmentId,
                 request.PositionId,
                 request.ToProfileWriteModel(),
-                canWriteSensitive),
+                canWriteSensitive,
+                request.OfficialProfile.ToWriteModel(),
+                request.WorkforceTerms.ToWriteModel(),
+                request.BesSettings.ToWriteModel()),
             cancellationToken);
         if (!hired.IsSuccess)
         {
@@ -118,7 +135,10 @@ public static class HrEmployeeEndpoints
                 request.GivenName,
                 request.FamilyName,
                 request.ToProfileWriteModel(),
-                canWriteSensitive),
+                canWriteSensitive,
+                request.OfficialProfile.ToWriteModel(),
+                request.WorkforceTerms.ToWriteModel(),
+                request.BesSettings.ToWriteModel()),
             cancellationToken);
         if (!updated.IsSuccess)
         {
@@ -127,6 +147,51 @@ public static class HrEmployeeEndpoints
 
         var card = await cardQuery.ExecuteAsync(id, canWriteSensitive, cancellationToken);
         return card.ToHttp();
+    }
+
+    private static async Task<IResult> UpdateOfficialProfile(
+        Guid id,
+        ClaimsPrincipal user,
+        [FromBody] OfficialEmploymentRequest request,
+        SaveOfficialEmploymentProfileUseCase update,
+        HrEmployeeCardQuery cardQuery,
+        CancellationToken cancellationToken)
+    {
+        var saved = await update.ExecuteAsync(
+            new SaveOfficialEmploymentProfileCommand(id, request.ToWriteModel()),
+            cancellationToken);
+        if (!saved.IsSuccess)
+        {
+            return saved.Error!.ToHttp();
+        }
+
+        var card = await cardQuery.ExecuteAsync(id, CanReadSensitive(user), cancellationToken);
+        return card.ToHttp();
+    }
+
+    private static async Task<IResult> ListOfficialLookups(
+        OfficialLookupsQuery query,
+        CancellationToken cancellationToken)
+    {
+        var result = await query.ListAsync(cancellationToken);
+        return result.ToHttp();
+    }
+
+    private static async Task<IResult> SearchOccupationCodes(
+        OfficialLookupsQuery query,
+        string? q,
+        CancellationToken cancellationToken)
+    {
+        var result = await query.SearchOccupationsAsync(q, cancellationToken);
+        return result.ToHttp();
+    }
+
+    private static async Task<IResult> ListHrSgkWorkplaces(
+        MaintainSgkWorkplaceRegistrationsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var result = await useCase.ListAsync(maskRegistration: true, cancellationToken);
+        return result.ToHttp();
     }
 
     private static async Task<IResult> UploadPhoto(
@@ -194,6 +259,16 @@ public sealed record CreateHrEmployeeRequest(
     MaritalStatus? MaritalStatus,
     BloodType? BloodType,
     EducationLevel? EducationLevel,
+    string? EducationDescription,
+    string? SchoolName,
+    DateOnly? GraduationDate,
+    ForeignLanguageSummary? ForeignLanguage,
+    string? ArgeProjectCode,
+    DrivingLicenceCategory? DrivingLicenceCategory,
+    MilitaryServiceStatus? MilitaryServiceStatus,
+    string? MilitaryExemptionReason,
+    string? MilitaryDefermentReason,
+    string? KepAddress,
     string? MobilePhone,
     string? HomePhone,
     string? Email,
@@ -202,7 +277,10 @@ public sealed record CreateHrEmployeeRequest(
     string? ResidenceDistrict,
     string? NotificationAddress,
     string? HrNotes,
-    IReadOnlyList<EmergencyContactRequest>? EmergencyContacts);
+    IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
+    OfficialEmploymentRequest? OfficialProfile,
+    EmploymentWorkforceRequest? WorkforceTerms,
+    EmploymentBesRequest? BesSettings);
 
 public sealed record UpdateHrEmployeeRequest(
     string GivenName,
@@ -217,6 +295,16 @@ public sealed record UpdateHrEmployeeRequest(
     MaritalStatus? MaritalStatus,
     BloodType? BloodType,
     EducationLevel? EducationLevel,
+    string? EducationDescription,
+    string? SchoolName,
+    DateOnly? GraduationDate,
+    ForeignLanguageSummary? ForeignLanguage,
+    string? ArgeProjectCode,
+    DrivingLicenceCategory? DrivingLicenceCategory,
+    MilitaryServiceStatus? MilitaryServiceStatus,
+    string? MilitaryExemptionReason,
+    string? MilitaryDefermentReason,
+    string? KepAddress,
     string? MobilePhone,
     string? HomePhone,
     string? Email,
@@ -225,7 +313,10 @@ public sealed record UpdateHrEmployeeRequest(
     string? ResidenceDistrict,
     string? NotificationAddress,
     string? HrNotes,
-    IReadOnlyList<EmergencyContactRequest>? EmergencyContacts);
+    IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
+    OfficialEmploymentRequest? OfficialProfile,
+    EmploymentWorkforceRequest? WorkforceTerms,
+    EmploymentBesRequest? BesSettings);
 
 public sealed record EmergencyContactRequest(
     Guid? Id,
@@ -234,8 +325,62 @@ public sealed record EmergencyContactRequest(
     string? Phone,
     bool IsPrimary);
 
+public sealed record OfficialEmploymentRequest(
+    Guid? SgkWorkplaceRegistrationId,
+    string? DocumentTypeCode,
+    string? ApplicableLawCode,
+    string? InsuranceBranchCode,
+    string? OccupationCode,
+    string? DutyCode);
+
+public sealed record EmploymentWorkforceRequest(
+    EmploymentContractType? ContractType,
+    DateOnly? ContractEndDate,
+    decimal? PartTimeMonthlyHours,
+    IskurStatus? IskurStatus,
+    DateOnly? IncentiveStartDate,
+    DateOnly? IncentiveEndDate,
+    IskurWorkforceStatus? IskurWorkforceStatus,
+    DateOnly? WorkPermitStartDate,
+    DateOnly? WorkPermitEndDate);
+
+public sealed record EmploymentBesRequest(
+    bool DeductionEnabled,
+    decimal? RatePercent,
+    decimal? ExtraAmount);
+
 internal static class HrEmployeeRequestMapping
 {
+    public static OfficialEmploymentWriteModel ToWriteModel(this OfficialEmploymentRequest? request) =>
+        request is null
+            ? OfficialEmploymentWriteModel.Empty
+            : new OfficialEmploymentWriteModel(
+                request.SgkWorkplaceRegistrationId,
+                request.DocumentTypeCode,
+                request.ApplicableLawCode,
+                request.InsuranceBranchCode,
+                request.OccupationCode,
+                request.DutyCode);
+
+    public static EmploymentWorkforceWriteModel ToWriteModel(this EmploymentWorkforceRequest? request) =>
+        request is null
+            ? EmploymentWorkforceWriteModel.Empty
+            : new EmploymentWorkforceWriteModel(
+                request.ContractType,
+                request.ContractEndDate,
+                request.PartTimeMonthlyHours,
+                request.IskurStatus,
+                request.IncentiveStartDate,
+                request.IncentiveEndDate,
+                request.IskurWorkforceStatus,
+                request.WorkPermitStartDate,
+                request.WorkPermitEndDate);
+
+    public static EmploymentBesWriteModel ToWriteModel(this EmploymentBesRequest? request) =>
+        request is null
+            ? EmploymentBesWriteModel.Empty
+            : new EmploymentBesWriteModel(request.DeductionEnabled, request.RatePercent, request.ExtraAmount);
+
     public static HrProfileWriteModel ToProfileWriteModel(this CreateHrEmployeeRequest request) =>
         ToProfileWriteModel(
             request.NationalIdentityScheme,
@@ -255,6 +400,16 @@ internal static class HrEmployeeRequestMapping
             request.ResidenceDistrict,
             request.NotificationAddress,
             request.HrNotes,
+            request.DrivingLicenceCategory,
+            request.MilitaryServiceStatus,
+            request.MilitaryExemptionReason,
+            request.MilitaryDefermentReason,
+            request.KepAddress,
+            request.EducationDescription,
+            request.SchoolName,
+            request.GraduationDate,
+            request.ForeignLanguage,
+            request.ArgeProjectCode,
             request.EmergencyContacts);
 
     public static HrProfileWriteModel ToProfileWriteModel(this UpdateHrEmployeeRequest request) =>
@@ -276,6 +431,16 @@ internal static class HrEmployeeRequestMapping
             request.ResidenceDistrict,
             request.NotificationAddress,
             request.HrNotes,
+            request.DrivingLicenceCategory,
+            request.MilitaryServiceStatus,
+            request.MilitaryExemptionReason,
+            request.MilitaryDefermentReason,
+            request.KepAddress,
+            request.EducationDescription,
+            request.SchoolName,
+            request.GraduationDate,
+            request.ForeignLanguage,
+            request.ArgeProjectCode,
             request.EmergencyContacts);
 
     private static HrProfileWriteModel ToProfileWriteModel(
@@ -296,6 +461,16 @@ internal static class HrEmployeeRequestMapping
         string? residenceDistrict,
         string? notificationAddress,
         string? hrNotes,
+        DrivingLicenceCategory? drivingLicenceCategory,
+        MilitaryServiceStatus? militaryServiceStatus,
+        string? militaryExemptionReason,
+        string? militaryDefermentReason,
+        string? kepAddress,
+        string? educationDescription,
+        string? schoolName,
+        DateOnly? graduationDate,
+        ForeignLanguageSummary? foreignLanguage,
+        string? argeProjectCode,
         IReadOnlyList<EmergencyContactRequest>? contacts) =>
         new(
             scheme,
@@ -315,6 +490,16 @@ internal static class HrEmployeeRequestMapping
             residenceDistrict,
             notificationAddress,
             hrNotes,
+            drivingLicenceCategory,
+            militaryServiceStatus,
+            militaryExemptionReason,
+            militaryDefermentReason,
+            kepAddress,
+            educationDescription,
+            schoolName,
+            graduationDate,
+            foreignLanguage,
+            argeProjectCode,
             (contacts ?? []).Select(item => new EmergencyContactDraft(
                 item.Id ?? Guid.Empty,
                 item.Name,

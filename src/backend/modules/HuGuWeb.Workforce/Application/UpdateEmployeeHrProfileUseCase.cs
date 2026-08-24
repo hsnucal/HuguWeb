@@ -44,6 +44,45 @@ public sealed class UpdateEmployeeHrProfileUseCase(
             return profile.Error!;
         }
 
+        var employments = await store.ListEmploymentsAsync(employee.Id, cancellationToken);
+        var employment = OfficialEmploymentSelection.ForEmployee(employments);
+        if (!employment.IsSuccess)
+        {
+            return employment.Error!;
+        }
+
+        var official = await OfficialEmploymentComposer.ApplyAsync(
+            store,
+            employment.Value,
+            command.OfficialProfile ?? OfficialEmploymentWriteModel.Empty,
+            clock.Today,
+            createIfEmpty: false,
+            cancellationToken);
+        if (!official.IsSuccess)
+        {
+            return official.Error!;
+        }
+
+        var workforce = EmploymentWorkforceComposer.Apply(
+            employment.Value,
+            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
+        if (!workforce.IsSuccess)
+        {
+            return workforce.Error!;
+        }
+
+        var existingBes = await store.GetEmploymentBesSettingsAsync(employment.Value.Id, cancellationToken);
+        var bes = EmploymentBesComposer.Apply(
+            store,
+            employment.Value,
+            existingBes,
+            command.BesSettings ?? EmploymentBesWriteModel.Empty,
+            createIfEmpty: false);
+        if (!bes.IsSuccess)
+        {
+            return bes.Error!;
+        }
+
         try
         {
             await store.SaveChangesAsync(cancellationToken);
@@ -66,4 +105,7 @@ public sealed record UpdateEmployeeHrProfileCommand(
     string GivenName,
     string FamilyName,
     HrProfileWriteModel Profile,
-    bool CanWriteSensitive);
+    bool CanWriteSensitive,
+    OfficialEmploymentWriteModel? OfficialProfile = null,
+    EmploymentWorkforceWriteModel? WorkforceTerms = null,
+    EmploymentBesWriteModel? BesSettings = null);

@@ -42,15 +42,13 @@ Owner: `OfficialEmploymentProfile` 1:0..1 on Employment. Current-value snapshot.
 
 ---
 
-## Görev Kodu — discovery retained, out of HR-03B
+## Görev Kodu — **IN** (PO amendment 2026-08-24)
 
-**Disposition:** DEFERRED / NEEDS DOMAIN OR LEGAL VALIDATION. **Not** on OfficialEmploymentProfile in 03B. **Not** shown on Personel Card in 03B.
+Original freeze: deferred. Product Owner now requires the field on Bildirge Kodları.
 
-| Product label (TR) | Technical (ref) | Evidence | HuGuWeb now | Later |
-|--------------------|-----------------|----------|-------------|-------|
-| Görev kodu | `gorevKodu` / DutyCode | WebİK Bildirge grid exposes the field. Source contains **six Turkish labels** and **no separate numeric code** in the UI: İşveren veya Vekili; İşçi; 657 SK (4/b) Kapsamında Çalışanlar; 657 SK (4/c) Kapsamında Çalışanlar; Çıraklar ve Stajer Öğrenciler; Diğerleri. | Not modeled. Not a 03B lookup family. | May be added if domain/legal validation shows a stable statutory catalogue required by the SGK model. |
-
-Do **not** delete this evidence. Do **not** treat the six labels as proven SGK payload identity.
+| Product label (TR) | Technical | Type | Owner | Requiredness | Lookup/free-text | Notes |
+|--------------------|-----------|------|-------|--------------|------------------|-------|
+| Görev kodu | DutyCode | string | `OfficialEmploymentProfile` | OPTIONAL | Lookup `EmploymentDutyCode` | HuGu codes, not invented SGK numbers. Not a permission. Not mapped from Position. WebİK spelling “Çıraklar ve Stajer Öğrenciler” preserved in TR label. |
 
 ---
 
@@ -62,10 +60,30 @@ Do **not** delete this evidence. Do **not** treat the six labels as proven SGK p
 | SGK İşten Çıkış Bildirildi | `sgkCikisBildirildi` | **Reject on profile** | Notification record | Same |
 | İşten Çıkış Kodu | `istenCikisKodu` | **Not this profile** | HR-02 End Employment / later SGK exit | Exit classification is a lifecycle command, not master edit |
 | İşten Çıkış Kodu (İŞKUR) | `istenCikisKoduIskur` | **Not this profile** | HR-02 / İŞKUR later | Same; source list looks incomplete (5 defaults) |
-| İŞKUR sözleşme türü / statü / kota | `sozlesmeTuru`, `iskurStatu`, … | **Not 03B UI** | Later official / HR-02 contract type | Prerequisite identification only |
-| Teşvik / 5510 / indirim oranları | `tesvikKapsaminda5510`, … | **Reject** | Payroll | Personel Master already rejected payroll law on master |
-| AGİ / BES | `agiHesapla`, `besKapsam` | **Reject** | Payroll | Same |
-| Sosyal bilgiler / eğitim detayı | ehliyet, askerlik, okul | **Reject from this tab** | Personel Master already decided | Education level is HR-01B; rest deferred |
+| İŞKUR sözleşme / statü / işgücü / teşvik dates | `sozlesmeTuru`, `iskurStatu`, … | **IN as Employment master fields** (PO amendment). Report submission remains out. | `Employment` | Early HR-02-compatible contract facts. `IskurWorkforceStatus` duplicates contract+status+disability — documented risk, still required. Incentive **dates only**; no 5510 % fields. |
+| Teşvik / 5510 / indirim oranları | `tesvikKapsaminda5510`, … | **Reject rates.** Dates IN. | Payroll later | Personel Master already rejected payroll law on master |
+| AGİ | `agiHesapla`, eş/çocuk | **Reject** | Payroll | Explicit PO exclusion |
+| BES | `besKapsam`, oran, ek tutar | **IN as configuration** | `EmploymentBesSettings` | Kesinti / Oran % / Ek Tutar only. No payroll calculation. |
+| Sosyal bilgiler | ehliyet, askerlik, KEP, çalışma izni | **IN as composition** | Profile vs Employment — see below | Anne kızlık soyadı **excluded**. Passport number reuses NationalIdentity when Scheme=Passport. WebİK Vize → Çalışma İzni. |
+| Eğitim detayı | okul, mezuniyet, dil, arge | **IN as summary** | `EmployeeHrProfile` | Reuse EducationLevel. No organizational Bölüm. `ArgeProjectCode` is stored on HR profile for UI coverage; it is **not** education-domain data. |
+
+---
+
+## Composition ownership (PO amendment 2026-08-24)
+
+Personel Card composition does **not** imply one aggregate.
+
+| Owner | Fields |
+|-------|--------|
+| `OfficialEmploymentProfile` | SGK workplace, belge, kanun, sigorta kolu, meslek kodu, görev kodu |
+| `Employment` | ContractType, ContractEndDate, PartTimeMonthlyHours, IskurStatus, IncentiveStart/End, IskurWorkforceStatus, WorkPermitStart/End. Early HR-02 prerequisite for contract type. |
+| `EmploymentBesSettings` 1:0..1 on Employment | BES deduction enabled, rate %, extra amount. Configuration only. |
+| `EmployeeHrProfile` | ISO nationality; driving licence; military + reasons; KEP; education summary extras; ArgeProjectCode (UI in Eğitim) |
+| National identity | Passport number is `NationalIdentityNumber` when Scheme=Passport. No second PassportNumber. |
+
+Conditional requiredness (ordinary save otherwise optional): Muaf → Muaf Nedeni; Tecilli → Tecil Nedeni; FixedTerm → ContractEndDate; PartTime → monthly hours. Incentive/work-permit End ≥ Start when both present. Changing military state clears stale reasons.
+
+Nationality: store ISO 3166-1 alpha-2. Development seed already used `TR`. No guessed conversion of production text such as `T.C.` / `Türkiye` / `Turkey`. Lowercase `tr` → `TR`.
 | Anne / baba adı, engellilik | `anneAdi`, `babaAdi`, disability | **Not 03B UI** | Later HR-03 official identity | FIELD_CATALOG B; hide empty sections |
 
 ---

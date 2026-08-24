@@ -25,4 +25,10 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\..\..\data\reference\sgk-occupation-codes.json"
+                      LogicalName="HuGuWeb.Workforce.Reference.sgk-occupation-codes.json"
+                      Link="Reference\sgk-occupation-codes.json" />
+  </ItemGroup>
+
 </Project>

@@ -126,3 +126,87 @@ export function WarningIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function SearchIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <circle cx="11" cy="11" r="5.5" />
+      <path d="m15.5 15.5 4 4" />
+    </svg>
+  )
+}
+
+export function PersonIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <circle cx="12" cy="8" r="2.6" />
+      <path d="M6.2 18.5v-.8C6.2 15.4 8.6 14 12 14s5.8 1.4 5.8 3.7v.8" />
+    </svg>
+  )
+}
+
+export function IdCardIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <rect x="3.5" y="6" width="17" height="12" rx="1.6" />
+      <circle cx="8.8" cy="11.2" r="1.5" />
+      <path d="M12.5 10h5M12.5 13.2h4" />
+    </svg>
+  )
+}
+
+export function BriefcaseIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <rect x="3.5" y="8" width="17" height="11" rx="1.6" />
+      <path d="M9 8V6.6A1.6 1.6 0 0 1 10.6 5h2.8A1.6 1.6 0 0 1 15 6.6V8" />
+      <path d="M3.5 12.5h17" />
+    </svg>
+  )
+}
+
+export function OfficialSealIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <circle cx="12" cy="11" r="6" />
+      <path d="M9.2 19 12 16.6 14.8 19" />
+    </svg>
+  )
+}
+
+export function HistoryClockIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 8.5V12l2.6 1.6" />
+    </svg>
+  )
+}
+
+export function BuildingIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M5 20V6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5V20" />
+      <path d="M5 20h14" />
+      <path d="M9 8.5h1.5M13.5 8.5H15M9 12h1.5M13.5 12H15M9 15.5h1.5M13.5 15.5H15" />
+    </svg>
+  )
+}
+
+export function CalendarIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <rect x="4" y="5.5" width="16" height="14" rx="1.5" />
+      <path d="M8 3.5v3M16 3.5v3M4 10h16" />
+    </svg>
+  )
+}
+
+export function RoleBadgeIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M8 17.5 12 15l4 2.5V8.2L12 6 8 8.2v9.3Z" />
+      <path d="M12 9.2v3.2" />
+    </svg>
+  )
+}

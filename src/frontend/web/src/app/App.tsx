@@ -6,6 +6,7 @@ import { OperationsCenter } from './OperationsCenter'
 import { ActiveWorkforcePage } from '../workforce/ActiveWorkforcePage'
 import { DepartmentsPage } from '../workforce/DepartmentsPage'
 import { PositionsPage } from '../workforce/PositionsPage'
+import { SgkWorkplacesPage } from '../workforce/SgkWorkplacesPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
 import { RoomOperationsPage } from '../room-operations/RoomOperationsPage'
 import { RoomDetailPage } from '../room-operations/RoomDetailPage'
@@ -35,6 +36,7 @@ export function App() {
           <Route index element={<ActiveWorkforcePage />} />
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="positions" element={<PositionsPage />} />
+          <Route path="official-settings" element={<SgkWorkplacesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/app" replace />} />

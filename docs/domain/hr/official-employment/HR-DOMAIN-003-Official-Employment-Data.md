@@ -4,7 +4,11 @@
 
 **Accepted**
 
-Accepted by Product Owner + CTO (2026-08-24). Sprint HR-03A — Resmî Bilgiler / Bildirge Kodları Discovery & Freeze. Documentation / domain design only. This record does **not** authorize HR-03B implementation.
+Accepted by Product Owner + CTO (2026-08-24). Sprint HR-03A — Resmî Bilgiler / Bildirge Kodları Discovery & Freeze.
+
+**Accepted Product Owner amendment — 2026-08-24.** Product Owner reviewed the running HR-03B implementation before commit and expanded Resmî Bilgiler. Status remains **Accepted** (not reset to Proposed). The original freeze text below is retained; the amendment **supersedes** the listed items only. Unrelated HR-01 / HR-02 / HR-03C decisions are not reopened.
+
+This record now authorizes HR-03B implementation **under the amendment**, not under a silent rewrite of the original freeze.
 
 **HR-DOMAIN-001 remains Accepted and is not superseded.**
 **HR-DOMAIN-002 remains Accepted and is not superseded.**
@@ -12,6 +16,27 @@ Accepted by Product Owner + CTO (2026-08-24). Sprint HR-03A — Resmî Bilgiler 
 This record extends Organization & Workforce Foundation and Personel Master. It does not reopen Employee ≠ User, Position ≠ Permission, PersonnelNumber ≠ PK, Employment ≠ Attendance, government-status ≠ Employment status, or operational DTO minimization.
 
 Approved product/domain direction is **not** a validated universal hotel truth. Reference-product observations are labeled as such.
+
+---
+
+## Accepted Product Owner amendment — 2026-08-24
+
+These items were **deferred or rejected in the original freeze** and are now **IN** for HR-03B. They were **not** part of the original HR-03A freeze.
+
+| Topic | Original freeze | Amendment |
+|-------|-----------------|-----------|
+| Görev Kodu | Out of 03B | **IN.** `EmploymentDutyCode` lookup. HuGu internal codes (not invented SGK numbers). Labels verified from WebİK. Not an authorization role. Not mapped from Position. |
+| Occupation catalogue | No 7,765-row C# / application-source seed; practical bootstrap OK | **Full catalogue required.** Versioned **data artifact** `data/reference/sgk-occupation-codes.json` (extracted 7,765 rows from the Product Owner WebİK snapshot). Idempotent importer. Still **forbidden:** pasting 7,765 entries into `OfficialLookupCatalog.cs` or another C# array. |
+| Occupation identity | Code on profile; name from catalogue | Unchanged and now enforced in UI: display `CODE — NAME`; search by code or name; persist code only. Position still does **not** own OccupationCode. |
+| Resmî bilgiler | Bildirge Kodları section only | **Composition tab** with five sections: Bildirge Kodları → İŞKUR Aylık İşgücü Çizelgesi → BES → Sosyal Bilgiler → Eğitim Bilgileri. Composition ≠ one god object. |
+| İŞKUR fields | Out (reports / çizelge) | **Master fields IN** on `Employment` (early HR-02-compatible contract/workforce facts). **İŞKUR report submission remains OUT.** `IskurWorkforceStatus` can duplicate Sözleşme Türü + İŞKUR Statüsü + disability; Product Owner still requires the field. |
+| BES | Out with AGİ / payroll | **Configuration only** on `EmploymentBesSettings`: Kesinti, Oran %, Ek Tutar. **AGİ remains OUT.** No payroll calculation. Future HR-09/Payroll consumes these values. |
+| Sosyal / eğitim | Out of this tab | **IN as composition.** Person-oriented social/education summary on `EmployeeHrProfile`. Work-permit dates on `Employment`. Organizational Bölüm is **not** an education field. Anne kızlık soyadı **excluded**. WebİK “Vize” labels become HuGu **Çalışma İzni**. |
+| Uyruk | HR-01B free-text / “ISO later” | **ISO 3166-1 alpha-2** stored identity (`TR`, not “Türkiye”). Complete officially assigned set (249). Localized labels via `Intl.DisplayNames`. Column remains `varchar(64)`. |
+
+**Still OUT (unchanged):** SGK/KBS/İŞKUR clients; SAVE = SUBMIT; payroll calculation; AGİ; mother’s maiden name; incentive % / 5510 flags; SGK notified checkboxes; exit codes; `hr.official.*`; operational DTO expansion; Room Operations / Technical Service changes.
+
+**SAVE ≠ SUBMIT remains unchanged.**
 
 ---
 

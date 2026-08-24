@@ -37,6 +37,9 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<EmployeeDirectoryQuery>();
         services.AddScoped<HrEmployeeDirectoryQuery>();
         services.AddScoped<HrEmployeeCardQuery>();
+        services.AddScoped<OfficialLookupsQuery>();
+        services.AddScoped<MaintainSgkWorkplaceRegistrationsUseCase>();
+        services.AddScoped<SaveOfficialEmploymentProfileUseCase>();
         return services;
     }
 }

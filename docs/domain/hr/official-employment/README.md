@@ -1,8 +1,8 @@
 # Official Employment Data
 
-> **Status:** Accepted — Product Owner + CTO approved reference baseline (Sprint HR-03A).
+> **Status:** Accepted — Product Owner + CTO approved reference baseline (Sprint HR-03A), with **Accepted Product Owner amendment — 2026-08-24** before HR-03B commit.
 >
-> This folder does **not** authorize production code, EF entities, migrations, APIs, frontend screens, government clients, credentials, notification tables, workers, or outbox/broker infrastructure.
+> HR-03B implementation is authorized **under that amendment**. SGK/KBS/İŞKUR **clients**, credentials, notification tables, workers, and outbox/broker infrastructure remain out.
 >
 > **HR-DOMAIN-001 remains Accepted and is not superseded.**
 > **HR-DOMAIN-002 remains Accepted and is not superseded.**
@@ -13,7 +13,7 @@ Official Employment Data is the stable **statutory classification layer** for Hu
 
 It answers: *how is this employment classified for Turkish official reporting, and which of this property’s SGK workplace registrations applies to that employment?*
 
-It does **not** answer SGK submission, KBS identity notification, İŞKUR monthly charts, payroll incentives, documents, or the employee portal.
+It does **not** answer SGK submission, KBS identity notification, İŞKUR monthly **report filing**, payroll calculation, documents, or the employee portal. Resmî bilgiler may **compose** İŞKUR/BES/social/education **master facts** (PO amendment) without owning those government/payroll products.
 
 **Evidence:** Accepted Workforce foundation and Personel Master (HR-01A/01B) plus **REFERENCE PRODUCT BEHAVIOR** from the Product-Owner-provided WebİK frontend snapshot (`WebİK — İnsan Kaynakları.html` / `ik.webik.com.tr.zip`). Reference behavior is not HuGuWeb domain truth and does not prove legal/server behavior.
 
@@ -33,7 +33,7 @@ Do **not** localize stored official codes (`01`, `05510`, `00`, `5120.10`). Disp
 
 ## One-sentence answer
 
-**A Property may have many SGK workplace registrations. Employment owns a current `OfficialEmploymentProfile` that may reference the applicable registration and stores employee-specific statutory codes. Saving Bildirge Kodları does not submit anything to SGK, KBS, or İŞKUR.**
+**A Property may have many SGK workplace registrations. Employment owns a current `OfficialEmploymentProfile` that may reference the applicable registration and stores employee-specific statutory codes. Resmî bilgiler is a composition tab. Saving it does not submit anything to SGK, KBS, or İŞKUR and does not calculate payroll.**
 
 ---
 
@@ -63,8 +63,6 @@ Related (do not contradict):
 
 ---
 
-## What HR-03A is
-
-Documentation freeze only. Implementation belongs to a later **HR-03B** and is **not** started by this folder.
+What HR-03A **was:** documentation freeze. HR-03B implementation proceeds under the 2026-08-24 Product Owner amendment.
 
 Do **not** modify Technical Service or Room Operations in this sprint.

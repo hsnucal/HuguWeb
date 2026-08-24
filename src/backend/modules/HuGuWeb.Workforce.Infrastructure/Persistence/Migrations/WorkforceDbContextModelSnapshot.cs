@@ -22,6 +22,30 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ApplicableLawCode", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("ApplicableLawCodes", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Assignment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -210,6 +234,10 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ArgeProjectCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
 
@@ -226,6 +254,14 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("DrivingLicenceCategory")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("EducationDescription")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("EducationLevel")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
@@ -237,9 +273,16 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ForeignLanguage")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<string>("Gender")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
+
+                    b.Property<DateOnly?>("GraduationDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("HomePhone")
                         .HasMaxLength(32)
@@ -249,7 +292,23 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<string>("KepAddress")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
                     b.Property<string>("MaritalStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("MilitaryDefermentReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("MilitaryExemptionReason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("MilitaryServiceStatus")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
@@ -291,6 +350,10 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.Property<string>("ResidenceDistrict")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SchoolName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
 
@@ -347,6 +410,13 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateOnly?>("ContractEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ContractType")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -358,6 +428,24 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date");
 
+                    b.Property<DateOnly?>("IncentiveEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("IncentiveStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("IskurStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("IskurWorkforceStatus")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<decimal?>("PartTimeMonthlyHours")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)");
+
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
@@ -365,6 +453,12 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
+
+                    b.Property<DateOnly?>("WorkPermitEndDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("WorkPermitStartDate")
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -374,8 +468,150 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("CK_Employments_EndedHasEndDate", "\"Status\" <> 'Ended' OR \"EndDate\" IS NOT NULL");
 
+                            t.HasCheckConstraint("CK_Employments_IncentiveRange", "\"IncentiveEndDate\" IS NULL OR \"IncentiveStartDate\" IS NULL OR \"IncentiveEndDate\" >= \"IncentiveStartDate\"");
+
                             t.HasCheckConstraint("CK_Employments_Period", "\"EndDate\" IS NULL OR \"EndDate\" >= \"StartDate\"");
+
+                            t.HasCheckConstraint("CK_Employments_WorkPermitRange", "\"WorkPermitEndDate\" IS NULL OR \"WorkPermitStartDate\" IS NULL OR \"WorkPermitEndDate\" >= \"WorkPermitStartDate\"");
                         });
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentBesSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("DeductionEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal?>("ExtraAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal?>("RatePercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmploymentId")
+                        .IsUnique();
+
+                    b.ToTable("EmploymentBesSettings", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentDutyCode", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("EmploymentDutyCodes", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.InsuranceBranch", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("InsuranceBranches", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.OfficialEmploymentProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApplicableLawCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("DocumentTypeCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("DutyCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InsuranceBranchCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("OccupationCode")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<Guid?>("SgkWorkplaceRegistrationId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicableLawCode");
+
+                    b.HasIndex("DocumentTypeCode");
+
+                    b.HasIndex("DutyCode");
+
+                    b.HasIndex("EmploymentId")
+                        .IsUnique();
+
+                    b.HasIndex("InsuranceBranchCode");
+
+                    b.HasIndex("OccupationCode");
+
+                    b.HasIndex("SgkWorkplaceRegistrationId");
+
+                    b.ToTable("OfficialEmploymentProfiles", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Organization", b =>
@@ -476,6 +712,99 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("Properties", (string)null);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkDocumentType", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("SgkDocumentTypes", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkOccupationCode", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<string>("CatalogueVersion")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Code");
+
+                    b.HasIndex("Description");
+
+                    b.HasIndex("IsActive");
+
+                    b.ToTable("SgkOccupationCodes", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkWorkplaceRegistration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RegistrationNumber")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("PropertyId", "IsActive");
+
+                    b.ToTable("SgkWorkplaceRegistrations", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Assignment", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Department", null)
@@ -572,6 +901,54 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentBesSettings", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.OfficialEmploymentProfile", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.ApplicableLawCode", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicableLawCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.SgkDocumentType", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentTypeCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.EmploymentDutyCode", null)
+                        .WithMany()
+                        .HasForeignKey("DutyCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.InsuranceBranch", null)
+                        .WithMany()
+                        .HasForeignKey("InsuranceBranchCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.SgkOccupationCode", null)
+                        .WithMany()
+                        .HasForeignKey("OccupationCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.SgkWorkplaceRegistration", null)
+                        .WithMany()
+                        .HasForeignKey("SgkWorkplaceRegistrationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelNumberSequence", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
@@ -595,6 +972,15 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
                         .WithMany()
                         .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkWorkplaceRegistration", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Property", null)
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

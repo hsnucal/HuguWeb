@@ -1,11 +1,17 @@
 import type {
   BloodType,
+  DrivingLicenceCategory,
   EducationLevel,
   EmergencyContactWrite,
+  EmploymentContractType,
+  ForeignLanguageSummary,
   Gender,
   HrEmployeeCard,
   HrEmployeeWrite,
+  IskurStatus,
+  IskurWorkforceStatus,
   MaritalStatus,
+  MilitaryServiceStatus,
   NationalIdentityScheme,
 } from './hrApi'
 import { normalizeMobileDigits } from './personnelInput'
@@ -18,6 +24,11 @@ export type PersonnelForm = {
   departmentId: string
   positionId: string
   educationLevel: EducationLevel | ''
+  educationDescription: string
+  schoolName: string
+  graduationDate: string
+  foreignLanguage: ForeignLanguageSummary | ''
+  argeProjectCode: string
   bloodType: BloodType | ''
   mobilePhone: string
   email: string
@@ -35,6 +46,30 @@ export type PersonnelForm = {
   residenceDistrict: string
   notificationAddress: string
   emergencyContacts: EmergencyContactWrite[]
+  sgkWorkplaceRegistrationId: string
+  documentTypeCode: string
+  applicableLawCode: string
+  insuranceBranchCode: string
+  occupationCode: string
+  occupationLabel: string
+  dutyCode: string
+  contractType: EmploymentContractType | ''
+  contractEndDate: string
+  partTimeMonthlyHours: string
+  iskurStatus: IskurStatus | ''
+  incentiveStartDate: string
+  incentiveEndDate: string
+  iskurWorkforceStatus: IskurWorkforceStatus | ''
+  besDeductionEnabled: boolean
+  besRatePercent: string
+  besExtraAmount: string
+  drivingLicenceCategory: DrivingLicenceCategory | ''
+  militaryServiceStatus: MilitaryServiceStatus | ''
+  militaryExemptionReason: string
+  militaryDefermentReason: string
+  kepAddress: string
+  workPermitStartDate: string
+  workPermitEndDate: string
 }
 
 export function emptyPersonnelForm(today: string): PersonnelForm {
@@ -46,6 +81,11 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     departmentId: '',
     positionId: '',
     educationLevel: '',
+    educationDescription: '',
+    schoolName: '',
+    graduationDate: '',
+    foreignLanguage: '',
+    argeProjectCode: '',
     bloodType: '',
     mobilePhone: '',
     email: '',
@@ -63,11 +103,37 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     residenceDistrict: '',
     notificationAddress: '',
     emergencyContacts: [],
+    sgkWorkplaceRegistrationId: '',
+    documentTypeCode: '',
+    applicableLawCode: '',
+    insuranceBranchCode: '',
+    occupationCode: '',
+    occupationLabel: '',
+    dutyCode: '',
+    contractType: '',
+    contractEndDate: '',
+    partTimeMonthlyHours: '',
+    iskurStatus: '',
+    incentiveStartDate: '',
+    incentiveEndDate: '',
+    iskurWorkforceStatus: '',
+    besDeductionEnabled: false,
+    besRatePercent: '',
+    besExtraAmount: '',
+    drivingLicenceCategory: '',
+    militaryServiceStatus: '',
+    militaryExemptionReason: '',
+    militaryDefermentReason: '',
+    kepAddress: '',
+    workPermitStartDate: '',
+    workPermitEndDate: '',
   }
 }
 
 export function formFromCard(card: HrEmployeeCard): PersonnelForm {
   const profile = card.profile
+  const terms = card.workforceTerms
+  const bes = card.besSettings
   return {
     givenName: card.givenName,
     familyName: card.familyName,
@@ -76,6 +142,11 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
     departmentId: card.currentPrimaryAssignment?.departmentId ?? '',
     positionId: card.currentPrimaryAssignment?.positionId ?? '',
     educationLevel: profile.educationLevel ?? '',
+    educationDescription: profile.educationDescription ?? '',
+    schoolName: profile.schoolName ?? '',
+    graduationDate: profile.graduationDate ?? '',
+    foreignLanguage: profile.foreignLanguage ?? '',
+    argeProjectCode: profile.argeProjectCode ?? '',
     bloodType: profile.bloodType ?? '',
     mobilePhone: normalizeMobileDigits(profile.mobilePhone ?? ''),
     email: profile.email ?? '',
@@ -99,6 +170,32 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
       phone: item.phone,
       isPrimary: item.isPrimary,
     })),
+    sgkWorkplaceRegistrationId: card.officialProfile?.sgkWorkplaceRegistrationId ?? '',
+    documentTypeCode: card.officialProfile?.documentTypeCode ?? '',
+    applicableLawCode: card.officialProfile?.applicableLawCode ?? '',
+    insuranceBranchCode: card.officialProfile?.insuranceBranchCode ?? '',
+    occupationCode: card.officialProfile?.occupationCode ?? '',
+    occupationLabel: card.officialProfile?.occupation
+      ? `${card.officialProfile.occupation.code} — ${card.officialProfile.occupation.description}`
+      : '',
+    dutyCode: card.officialProfile?.dutyCode ?? '',
+    contractType: terms?.contractType ?? '',
+    contractEndDate: terms?.contractEndDate ?? '',
+    partTimeMonthlyHours: numberToInput(terms?.partTimeMonthlyHours),
+    iskurStatus: terms?.iskurStatus ?? '',
+    incentiveStartDate: terms?.incentiveStartDate ?? '',
+    incentiveEndDate: terms?.incentiveEndDate ?? '',
+    iskurWorkforceStatus: terms?.iskurWorkforceStatus ?? '',
+    besDeductionEnabled: bes?.deductionEnabled ?? false,
+    besRatePercent: numberToInput(bes?.ratePercent),
+    besExtraAmount: numberToInput(bes?.extraAmount),
+    drivingLicenceCategory: profile.drivingLicenceCategory ?? '',
+    militaryServiceStatus: profile.militaryServiceStatus ?? '',
+    militaryExemptionReason: profile.militaryExemptionReason ?? '',
+    militaryDefermentReason: profile.militaryDefermentReason ?? '',
+    kepAddress: profile.kepAddress ?? '',
+    workPermitStartDate: terms?.workPermitStartDate ?? '',
+    workPermitEndDate: terms?.workPermitEndDate ?? '',
   }
 }
 
@@ -115,6 +212,20 @@ function emptyToNull(value: string): string | null {
   return trimmed === '' ? null : trimmed
 }
 
+function emptyToNumber(value: string): number | null {
+  const trimmed = value.trim().replace(',', '.')
+  if (trimmed === '') {
+    return null
+  }
+
+  const parsed = Number(trimmed)
+  return Number.isFinite(parsed) ? parsed : Number.NaN
+}
+
+function numberToInput(value: number | null | undefined): string {
+  return value == null ? '' : String(value)
+}
+
 export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEmployeeWrite {
   const body: HrEmployeeWrite = {
     givenName: form.givenName.trim(),
@@ -128,6 +239,18 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
     maritalStatus: form.maritalStatus === '' ? null : form.maritalStatus,
     bloodType: form.bloodType === '' ? null : form.bloodType,
     educationLevel: form.educationLevel === '' ? null : form.educationLevel,
+    educationDescription: emptyToNull(form.educationDescription),
+    schoolName: emptyToNull(form.schoolName),
+    graduationDate: emptyToNull(form.graduationDate),
+    foreignLanguage: form.foreignLanguage === '' ? null : form.foreignLanguage,
+    argeProjectCode: emptyToNull(form.argeProjectCode),
+    drivingLicenceCategory: form.drivingLicenceCategory === '' ? null : form.drivingLicenceCategory,
+    militaryServiceStatus: form.militaryServiceStatus === '' ? null : form.militaryServiceStatus,
+    militaryExemptionReason:
+      form.militaryServiceStatus === 'Exempt' ? emptyToNull(form.militaryExemptionReason) : null,
+    militaryDefermentReason:
+      form.militaryServiceStatus === 'Deferred' ? emptyToNull(form.militaryDefermentReason) : null,
+    kepAddress: emptyToNull(form.kepAddress),
     mobilePhone: emptyToNull(normalizeMobileDigits(form.mobilePhone)),
     homePhone: emptyToNull(form.homePhone),
     email: emptyToNull(form.email),
@@ -143,6 +266,30 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
       phone: item.phone,
       isPrimary: item.isPrimary,
     })),
+    officialProfile: {
+      sgkWorkplaceRegistrationId: emptyToNull(form.sgkWorkplaceRegistrationId),
+      documentTypeCode: emptyToNull(form.documentTypeCode),
+      applicableLawCode: emptyToNull(form.applicableLawCode),
+      insuranceBranchCode: emptyToNull(form.insuranceBranchCode),
+      occupationCode: emptyToNull(form.occupationCode),
+      dutyCode: emptyToNull(form.dutyCode),
+    },
+    workforceTerms: {
+      contractType: form.contractType === '' ? null : form.contractType,
+      contractEndDate: form.contractType === 'FixedTerm' ? emptyToNull(form.contractEndDate) : null,
+      partTimeMonthlyHours: form.contractType === 'PartTime' ? emptyToNumber(form.partTimeMonthlyHours) : null,
+      iskurStatus: form.iskurStatus === '' ? null : form.iskurStatus,
+      incentiveStartDate: emptyToNull(form.incentiveStartDate),
+      incentiveEndDate: emptyToNull(form.incentiveEndDate),
+      iskurWorkforceStatus: form.iskurWorkforceStatus === '' ? null : form.iskurWorkforceStatus,
+      workPermitStartDate: emptyToNull(form.workPermitStartDate),
+      workPermitEndDate: emptyToNull(form.workPermitEndDate),
+    },
+    besSettings: {
+      deductionEnabled: form.besDeductionEnabled,
+      ratePercent: form.besDeductionEnabled ? emptyToNumber(form.besRatePercent) : null,
+      extraAmount: form.besDeductionEnabled ? emptyToNumber(form.besExtraAmount) : null,
+    },
   }
 
   if (includeHireFields) {

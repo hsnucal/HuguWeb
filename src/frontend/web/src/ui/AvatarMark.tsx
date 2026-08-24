@@ -19,28 +19,26 @@ export function AvatarMark({
   src,
   alt,
   tone = 'brand',
+  className,
 }: {
   name: string
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'card'
   src?: string | null
   alt?: string
   tone?: 'brand' | 'onBrand'
+  className?: string
 }) {
-  const markClass = `${styles.mark} ${styles[size]} ${tone === 'onBrand' ? styles.onBrand : ''}`
-
-  if (src) {
-    return (
-      <img
-        className={`${markClass} ${styles.photo}`}
-        src={src}
-        alt={alt ?? ''}
-      />
-    )
-  }
+  const markClass = [styles.mark, styles[size], tone === 'onBrand' ? styles.onBrand : '', className]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <span className={markClass} aria-hidden="true">
-      {initialsFromName(name)}
+    <span className={markClass} aria-hidden={src ? undefined : true}>
+      {src ? (
+        <img className={styles.photo} src={src} alt={alt ?? ''} />
+      ) : (
+        initialsFromName(name)
+      )}
     </span>
   )
 }

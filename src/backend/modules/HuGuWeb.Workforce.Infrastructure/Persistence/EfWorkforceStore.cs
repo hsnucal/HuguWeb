@@ -245,6 +245,112 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void RemoveEmployeePhoto(EmployeePhoto photo) => dbContext.EmployeePhotos.Remove(photo);
 
+    public Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        dbContext.SgkWorkplaceRegistrations.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<SgkWorkplaceRegistration>> ListSgkWorkplaceRegistrationsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken) =>
+        await dbContext.SgkWorkplaceRegistrations
+            .Where(entity => entity.PropertyId == propertyId)
+            .ToListAsync(cancellationToken);
+
+    public void AddSgkWorkplaceRegistration(SgkWorkplaceRegistration registration) =>
+        dbContext.SgkWorkplaceRegistrations.Add(registration);
+
+    public Task<OfficialEmploymentProfile?> GetOfficialEmploymentProfileAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        dbContext.OfficialEmploymentProfiles.FirstOrDefaultAsync(
+            entity => entity.EmploymentId == employmentId,
+            cancellationToken);
+
+    public async Task<IReadOnlyList<OfficialEmploymentProfile>> ListOfficialEmploymentProfilesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.OfficialEmploymentProfiles
+            .Where(entity => employmentIds.Contains(entity.EmploymentId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddOfficialEmploymentProfile(OfficialEmploymentProfile profile) =>
+        dbContext.OfficialEmploymentProfiles.Add(profile);
+
+    public Task<SgkDocumentType?> GetSgkDocumentTypeAsync(string code, CancellationToken cancellationToken) =>
+        dbContext.SgkDocumentTypes.FirstOrDefaultAsync(entity => entity.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<SgkDocumentType>> ListSgkDocumentTypesAsync(CancellationToken cancellationToken) =>
+        await dbContext.SgkDocumentTypes.OrderBy(entity => entity.Code).ToListAsync(cancellationToken);
+
+    public Task<ApplicableLawCode?> GetApplicableLawCodeAsync(string code, CancellationToken cancellationToken) =>
+        dbContext.ApplicableLawCodes.FirstOrDefaultAsync(entity => entity.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<ApplicableLawCode>> ListApplicableLawCodesAsync(
+        CancellationToken cancellationToken) =>
+        await dbContext.ApplicableLawCodes.OrderBy(entity => entity.Code).ToListAsync(cancellationToken);
+
+    public Task<InsuranceBranch?> GetInsuranceBranchAsync(string code, CancellationToken cancellationToken) =>
+        dbContext.InsuranceBranches.FirstOrDefaultAsync(entity => entity.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<InsuranceBranch>> ListInsuranceBranchesAsync(
+        CancellationToken cancellationToken) =>
+        await dbContext.InsuranceBranches.OrderBy(entity => entity.Code).ToListAsync(cancellationToken);
+
+    public Task<SgkOccupationCode?> GetSgkOccupationCodeAsync(string code, CancellationToken cancellationToken) =>
+        dbContext.SgkOccupationCodes.FirstOrDefaultAsync(entity => entity.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<SgkOccupationCode>> SearchSgkOccupationCodesAsync(
+        string? query,
+        int take,
+        CancellationToken cancellationToken)
+    {
+        var limit = Math.Clamp(take, 1, OfficialLookupsQuery.OccupationSearchLimit);
+        var source = dbContext.SgkOccupationCodes.Where(entity => entity.IsActive);
+        var term = query?.Trim();
+        if (!string.IsNullOrEmpty(term))
+        {
+            var pattern = $"%{EscapeLike(term)}%";
+            source = source.Where(entity =>
+                EF.Functions.ILike(entity.Code, pattern)
+                || EF.Functions.ILike(entity.Description, pattern));
+        }
+
+        return await source
+            .OrderBy(entity => entity.Code)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<EmploymentDutyCode?> GetEmploymentDutyCodeAsync(string code, CancellationToken cancellationToken) =>
+        dbContext.EmploymentDutyCodes.FirstOrDefaultAsync(entity => entity.Code == code, cancellationToken);
+
+    public async Task<IReadOnlyList<EmploymentDutyCode>> ListEmploymentDutyCodesAsync(
+        CancellationToken cancellationToken) =>
+        await dbContext.EmploymentDutyCodes.OrderBy(entity => entity.Code).ToListAsync(cancellationToken);
+
+    public Task<EmploymentBesSettings?> GetEmploymentBesSettingsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        dbContext.EmploymentBesSettings.FirstOrDefaultAsync(
+            entity => entity.EmploymentId == employmentId,
+            cancellationToken);
+
+    public void AddEmploymentBesSettings(EmploymentBesSettings settings) =>
+        dbContext.EmploymentBesSettings.Add(settings);
+
+    private static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("%", "\\%", StringComparison.Ordinal)
+            .Replace("_", "\\_", StringComparison.Ordinal);
+
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         try

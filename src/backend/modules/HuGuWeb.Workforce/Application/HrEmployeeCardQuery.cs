@@ -31,6 +31,28 @@ public sealed class HrEmployeeCardQuery(
             ? await store.ListEmergencyContactsAsync(employeeId, cancellationToken)
             : [];
         var photo = await store.GetEmployeePhotoAsync(employeeId, cancellationToken);
+        var employments = await store.ListEmploymentsAsync(employeeId, cancellationToken);
+        var targetEmployment = OfficialEmploymentSelection.ForEmployee(employments);
+        OfficialEmploymentProfileReadModel? official = null;
+        EmploymentWorkforceReadModel? workforce = null;
+        EmploymentBesReadModel? bes = null;
+        if (targetEmployment.IsSuccess)
+        {
+            var profileRow = await store.GetOfficialEmploymentProfileAsync(
+                targetEmployment.Value.Id,
+                cancellationToken);
+            official = await OfficialEmploymentProfileFactory.CreateAsync(
+                store,
+                targetEmployment.Value,
+                profileRow,
+                maskWorkplace: true,
+                cancellationToken);
+            workforce = EmploymentWorkforceRead.From(targetEmployment.Value);
+            var besRow = await store.GetEmploymentBesSettingsAsync(
+                targetEmployment.Value.Id,
+                cancellationToken);
+            bes = EmploymentBesRead.From(besRow);
+        }
 
         return HrEmployeeCardFactory.Create(
             employee!,
@@ -40,7 +62,10 @@ public sealed class HrEmployeeCardQuery(
             profile,
             contacts,
             photo is not null,
-            canReadSensitive);
+            canReadSensitive,
+            official,
+            workforce,
+            bes);
     }
 }
 
@@ -54,7 +79,10 @@ public static class HrEmployeeCardFactory
         EmployeeHrProfile? profile,
         IReadOnlyList<EmergencyContact> contacts,
         bool hasPhoto,
-        bool canReadSensitive)
+        bool canReadSensitive,
+        OfficialEmploymentProfileReadModel? officialProfile = null,
+        EmploymentWorkforceReadModel? workforceTerms = null,
+        EmploymentBesReadModel? besSettings = null)
     {
         return new HrEmployeeCard(
             employee.Id,
@@ -69,6 +97,11 @@ public static class HrEmployeeCardFactory
             history.Employments,
             new HrProfileReadModel(
                 profile?.EducationLevel,
+                profile?.EducationDescription,
+                profile?.SchoolName,
+                profile?.GraduationDate,
+                profile?.ForeignLanguage,
+                profile?.ArgeProjectCode,
                 profile?.HrNotes,
                 profile?.Nationality,
                 profile?.Gender,
@@ -76,6 +109,11 @@ public static class HrEmployeeCardFactory
                 profile?.BirthPlace,
                 profile?.MaritalStatus,
                 profile?.BloodType,
+                profile?.DrivingLicenceCategory,
+                profile?.MilitaryServiceStatus,
+                profile?.MilitaryExemptionReason,
+                profile?.MilitaryDefermentReason,
+                profile?.KepAddress,
                 profile?.MobilePhone,
                 profile?.HomePhone,
                 profile?.Email,
@@ -96,7 +134,10 @@ public static class HrEmployeeCardFactory
                             item.IsPrimary))
                         .ToArray()
                     : []),
-            canReadSensitive);
+            canReadSensitive,
+            officialProfile,
+            workforceTerms,
+            besSettings);
     }
 }
 
@@ -112,10 +153,18 @@ public sealed record HrEmployeeCard(
     string PropertyName,
     IReadOnlyList<EmploymentHistoryRecord> Employments,
     HrProfileReadModel Profile,
-    bool CanReadSensitive);
+    bool CanReadSensitive,
+    OfficialEmploymentProfileReadModel? OfficialProfile,
+    EmploymentWorkforceReadModel? WorkforceTerms,
+    EmploymentBesReadModel? BesSettings);
 
 public sealed record HrProfileReadModel(
     EducationLevel? EducationLevel,
+    string? EducationDescription,
+    string? SchoolName,
+    DateOnly? GraduationDate,
+    ForeignLanguageSummary? ForeignLanguage,
+    string? ArgeProjectCode,
     string? HrNotes,
     string? Nationality,
     Gender? Gender,
@@ -123,6 +172,11 @@ public sealed record HrProfileReadModel(
     string? BirthPlace,
     MaritalStatus? MaritalStatus,
     BloodType? BloodType,
+    DrivingLicenceCategory? DrivingLicenceCategory,
+    MilitaryServiceStatus? MilitaryServiceStatus,
+    string? MilitaryExemptionReason,
+    string? MilitaryDefermentReason,
+    string? KepAddress,
     string? MobilePhone,
     string? HomePhone,
     string? Email,

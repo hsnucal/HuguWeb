@@ -6,6 +6,7 @@ namespace HuGuWeb.UnitTests.Workforce;
 internal sealed class FakeClock : IWorkforceClock
 {
     public DateOnly Today { get; set; } = new(2026, 8, 21);
+    public DateTimeOffset UtcNow { get; set; } = new(2026, 8, 21, 8, 0, 0, TimeSpan.Zero);
 }
 
 internal sealed class FixedWorkplace(Guid organizationId, Guid propertyId) : IWorkplaceContext
@@ -29,6 +30,14 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<EmployeeHrProfile> HrProfiles { get; } = [];
     public List<EmergencyContact> EmergencyContacts { get; } = [];
     public List<EmployeePhoto> Photos { get; } = [];
+    public List<SgkWorkplaceRegistration> SgkWorkplaceRegistrations { get; } = [];
+    public List<OfficialEmploymentProfile> OfficialEmploymentProfiles { get; } = [];
+    public List<SgkDocumentType> SgkDocumentTypes { get; } = [];
+    public List<ApplicableLawCode> ApplicableLawCodes { get; } = [];
+    public List<InsuranceBranch> InsuranceBranches { get; } = [];
+    public List<SgkOccupationCode> SgkOccupationCodes { get; } = [];
+    public List<EmploymentDutyCode> EmploymentDutyCodes { get; } = [];
+    public List<EmploymentBesSettings> EmploymentBesSettings { get; } = [];
 
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Organizations.FirstOrDefault(item => item.Id == id));
@@ -183,6 +192,87 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
 
     public void RemoveEmployeePhoto(EmployeePhoto photo) => Photos.Remove(photo);
 
+    public Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(SgkWorkplaceRegistrations.FirstOrDefault(item => item.Id == id));
+
+    public Task<IReadOnlyList<SgkWorkplaceRegistration>> ListSgkWorkplaceRegistrationsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<SgkWorkplaceRegistration>>(
+            SgkWorkplaceRegistrations.Where(item => item.PropertyId == propertyId).ToArray());
+
+    public void AddSgkWorkplaceRegistration(SgkWorkplaceRegistration registration) =>
+        SgkWorkplaceRegistrations.Add(registration);
+
+    public Task<OfficialEmploymentProfile?> GetOfficialEmploymentProfileAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(OfficialEmploymentProfiles.FirstOrDefault(item => item.EmploymentId == employmentId));
+
+    public Task<IReadOnlyList<OfficialEmploymentProfile>> ListOfficialEmploymentProfilesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<OfficialEmploymentProfile>>(
+            OfficialEmploymentProfiles.Where(item => employmentIds.Contains(item.EmploymentId)).ToArray());
+
+    public void AddOfficialEmploymentProfile(OfficialEmploymentProfile profile) =>
+        OfficialEmploymentProfiles.Add(profile);
+
+    public Task<SgkDocumentType?> GetSgkDocumentTypeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(SgkDocumentTypes.FirstOrDefault(item => item.Code == code));
+
+    public Task<IReadOnlyList<SgkDocumentType>> ListSgkDocumentTypesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<SgkDocumentType>>(SgkDocumentTypes.ToArray());
+
+    public Task<ApplicableLawCode?> GetApplicableLawCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(ApplicableLawCodes.FirstOrDefault(item => item.Code == code));
+
+    public Task<IReadOnlyList<ApplicableLawCode>> ListApplicableLawCodesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ApplicableLawCode>>(ApplicableLawCodes.ToArray());
+
+    public Task<InsuranceBranch?> GetInsuranceBranchAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(InsuranceBranches.FirstOrDefault(item => item.Code == code));
+
+    public Task<IReadOnlyList<InsuranceBranch>> ListInsuranceBranchesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<InsuranceBranch>>(InsuranceBranches.ToArray());
+
+    public Task<SgkOccupationCode?> GetSgkOccupationCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(SgkOccupationCodes.FirstOrDefault(item => item.Code == code));
+
+    public Task<IReadOnlyList<SgkOccupationCode>> SearchSgkOccupationCodesAsync(
+        string? query,
+        int take,
+        CancellationToken cancellationToken)
+    {
+        IEnumerable<SgkOccupationCode> rows = SgkOccupationCodes.Where(item => item.IsActive);
+        var term = query?.Trim();
+        if (!string.IsNullOrEmpty(term))
+        {
+            rows = rows.Where(item =>
+                item.Code.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || item.Description.Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return Task.FromResult<IReadOnlyList<SgkOccupationCode>>(
+            rows.OrderBy(item => item.Code).Take(Math.Clamp(take, 1, 50)).ToArray());
+    }
+
+    public Task<EmploymentDutyCode?> GetEmploymentDutyCodeAsync(string code, CancellationToken cancellationToken) =>
+        Task.FromResult(EmploymentDutyCodes.FirstOrDefault(item => item.Code == code));
+
+    public Task<IReadOnlyList<EmploymentDutyCode>> ListEmploymentDutyCodesAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<EmploymentDutyCode>>(EmploymentDutyCodes.ToArray());
+
+    public Task<EmploymentBesSettings?> GetEmploymentBesSettingsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(EmploymentBesSettings.FirstOrDefault(item => item.EmploymentId == employmentId));
+
+    public void AddEmploymentBesSettings(EmploymentBesSettings settings) =>
+        EmploymentBesSettings.Add(settings);
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
         var duplicateNumber = Employees
@@ -262,6 +352,10 @@ internal sealed class WorkforceHarness
     public HrEmployeeCardQuery HrCard { get; }
     public EmployeePhotoUseCases Photos { get; }
     public InMemoryEmployeePhotoStorage PhotoStorage { get; } = new();
+    public MaintainSgkWorkplaceRegistrationsUseCase SgkWorkplaces { get; }
+    public SaveOfficialEmploymentProfileUseCase SaveOfficial { get; }
+    public OfficialLookupsQuery OfficialLookups { get; }
+    public Guid OtherPropertyId { get; } = Guid.CreateVersion7();
 
     public WorkforceHarness()
     {
@@ -279,6 +373,39 @@ internal sealed class WorkforceHarness
         AddApplicability(OtherDepartmentId, PositionId);
         AddApplicability(OtherDepartmentId, OtherPositionId);
 
+        foreach (var (code, description) in OfficialLookupCatalog.DocumentTypes)
+        {
+            Store.SgkDocumentTypes.Add(new SgkDocumentType(code, description));
+        }
+
+        foreach (var (code, description) in OfficialLookupCatalog.ApplicableLaws)
+        {
+            Store.ApplicableLawCodes.Add(new ApplicableLawCode(code, description));
+        }
+
+        foreach (var (code, description) in OfficialLookupCatalog.InsuranceBranches)
+        {
+            Store.InsuranceBranches.Add(new InsuranceBranch(code, description));
+        }
+
+        foreach (var (code, description) in OfficialLookupCatalog.DutyCodes)
+        {
+            Store.EmploymentDutyCodes.Add(new EmploymentDutyCode(code, description));
+        }
+
+        foreach (var (code, description) in TestOccupationSeed)
+        {
+            Store.SgkOccupationCodes.Add(
+                new SgkOccupationCode(
+                    code,
+                    description,
+                    isActive: true,
+                    OfficialLookupCatalog.OccupationCatalogueSource,
+                    OfficialLookupCatalog.OccupationCatalogueVersion));
+        }
+
+        Store.Properties.Add(new Property(OtherPropertyId, OrganizationId, "Other Property"));
+
         Hire = new HireEmployeeUseCase(Store, Clock, Workplace);
         HireWithProfile = new HireEmployeeWithProfileUseCase(Store, Clock, Workplace);
         UpdateProfile = new UpdateEmployeeHrProfileUseCase(Store, Clock, Workplace);
@@ -289,6 +416,9 @@ internal sealed class WorkforceHarness
         HrDirectory = new HrEmployeeDirectoryQuery(Store, Clock, Workplace);
         HrCard = new HrEmployeeCardQuery(Store, Clock, Workplace);
         Photos = new EmployeePhotoUseCases(Store, Workplace, PhotoStorage);
+        SgkWorkplaces = new MaintainSgkWorkplaceRegistrationsUseCase(Store, Workplace, Clock);
+        SaveOfficial = new SaveOfficialEmploymentProfileUseCase(Store, Clock, Workplace);
+        OfficialLookups = new OfficialLookupsQuery(Store);
     }
 
     public HireEmployeeCommand HireCommand(
@@ -302,7 +432,10 @@ internal sealed class WorkforceHarness
         Guid? departmentId = null,
         Guid? positionId = null,
         HrProfileWriteModel? profile = null,
-        bool canWriteSensitive = true) =>
+        bool canWriteSensitive = true,
+        OfficialEmploymentWriteModel? officialProfile = null,
+        EmploymentWorkforceWriteModel? workforceTerms = null,
+        EmploymentBesWriteModel? besSettings = null) =>
         new(
             "Ayşe",
             "Yılmaz",
@@ -310,7 +443,43 @@ internal sealed class WorkforceHarness
             departmentId ?? DepartmentId,
             positionId ?? PositionId,
             profile ?? EmptyProfile(),
-            canWriteSensitive);
+            canWriteSensitive,
+            officialProfile,
+            workforceTerms,
+            besSettings);
+
+    public OfficialEmploymentWriteModel OfficialWrite(
+        Guid? workplaceId = null,
+        string? documentType = null,
+        string? law = null,
+        string? insurance = null,
+        string? occupation = null,
+        string? dutyCode = null) =>
+        new(workplaceId, documentType, law, insurance, occupation, dutyCode);
+
+    public SgkWorkplaceRegistration SeedWorkplace(
+        Guid? propertyId = null,
+        string registrationNumber = "123456789012345678901",
+        string? displayName = "Otel",
+        bool active = true)
+    {
+        Assert.True(SgkWorkplaceRegistration.TryCreate(
+            Guid.CreateVersion7(),
+            propertyId ?? PropertyId,
+            registrationNumber,
+            displayName,
+            Clock.UtcNow,
+            out var registration,
+            out _,
+            out _));
+        if (!active)
+        {
+            registration!.Deactivate();
+        }
+
+        Store.SgkWorkplaceRegistrations.Add(registration!);
+        return registration!;
+    }
 
     public Employee SeedEmployee(string personnelNumber, string givenName = "Seed", string familyName = "Person")
     {
@@ -332,7 +501,19 @@ internal sealed class WorkforceHarness
     public static HrProfileWriteModel EmptyProfile() =>
         new(
             null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, []);
+            null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, []);
+
+    private static readonly (string Code, string Description)[] TestOccupationSeed =
+    [
+        ("0110.00", "Subaylar"),
+        ("1120.10", "Genel Müdür-Eğlence, Lokanta, Otel"),
+        ("1411.02", "Ön Büro Müdürü-Otel"),
+        ("1411.08", "Otel Müdürü"),
+        ("3434.01", "Aşçıbaşı"),
+        ("4224.03", "Ön Büro Görevlisi (Otel Resepsiyoncusu)"),
+        ("5120.10", "Aşçı")
+    ];
 
     private void AddDepartment(Guid id, string name, bool active)
     {

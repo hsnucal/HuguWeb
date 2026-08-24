@@ -78,6 +78,15 @@ export type Translations = {
     departmentsIntro: string
     positions: string
     positionsIntro: string
+    officialSettings: string
+    officialSettingsIntro: string
+    sgkWorkplace: string
+    registrationNumber: string
+    displayName: string
+    createSgkWorkplace: string
+    emptySgkWorkplaces: string
+    emptySgkWorkplacesHint: string
+    sgkWorkplaceHint: string
     hireNew: string
     hireSubmit: string
     hire: string
@@ -157,6 +166,7 @@ export type Translations = {
       sameAssignment: string
       positionNotAvailable: string
       generic: string
+      invalidSgkWorkplace: string
     }
   }
   personnel: {
@@ -190,11 +200,100 @@ export type Translations = {
     tabGeneral: string
     tabIdentity: string
     tabWork: string
+    tabOfficial: string
     tabHistory: string
     sectionIdentity: string
     sectionContact: string
     sectionAddress: string
     sectionEmergency: string
+    sectionDeclarationCodes: string
+    sectionIskur: string
+    sectionBes: string
+    sectionSocial: string
+    sectionEducation: string
+    sgkWorkplace: string
+    documentType: string
+    applicableLaw: string
+    insuranceBranch: string
+    occupationCode: string
+    dutyCode: string
+    noSgkWorkplaceForProperty: string
+    occupationHint: string
+    occupationEmpty: string
+    occupationSearching: string
+    officialChipIskur: string
+    officialChipBes: string
+    universityEmpty: string
+    universityPlaceholder: string
+    universityHint: string
+    sectionLicence: string
+    sectionPassport: string
+    sectionMilitary: string
+    sectionKep: string
+    sectionWorkPermit: string
+    contractType: string
+    contractEndDate: string
+    partTimeMonthlyHours: string
+    iskurStatus: string
+    incentiveStartDate: string
+    incentiveEndDate: string
+    iskurWorkforceStatus: string
+    contractIndefinite: string
+    contractFixedTerm: string
+    contractPartTime: string
+    iskurNormal: string
+    iskurFormerConvict: string
+    iskurTerrorVictim: string
+    iskurTmy: string
+    iskurWfIndefinite: string
+    iskurWfFixedTerm: string
+    iskurWfPartTime: string
+    iskurWfDisabledIndefinite: string
+    iskurWfDisabledFixedTerm: string
+    iskurWfFormerConvict: string
+    iskurWfTerrorVictim: string
+    besDeduction: string
+    besRatePercent: string
+    besExtraAmount: string
+    drivingLicence: string
+    passportIdentity: string
+    passportReused: string
+    passportOnIdentityTab: string
+    militaryStatus: string
+    militaryExemptionReason: string
+    militaryDefermentReason: string
+    militaryCompleted: string
+    militaryExempt: string
+    militaryDeferred: string
+    militaryNotCompleted: string
+    kepAddress: string
+    workPermitStartDate: string
+    workPermitEndDate: string
+    educationDescription: string
+    schoolName: string
+    graduationDate: string
+    foreignLanguage: string
+    argeProjectCode: string
+    argeProjectHint: string
+    nationalityEmpty: string
+    langEnglish: string
+    langGerman: string
+    langFrench: string
+    langArabic: string
+    langRussian: string
+    langSpanish: string
+    langChinese: string
+    langJapanese: string
+    langKorean: string
+    langOther: string
+    dutyCodes: {
+      EmployerOrRepresentative: string
+      Worker: string
+      CivilServant4B: string
+      CivilServant4C: string
+      ApprenticeOrIntern: string
+      Other: string
+    }
     identityScheme: string
     identityNumber: string
     nationality: string
@@ -239,6 +338,18 @@ export type Translations = {
       emergencyName: string
       emergencyRelationship: string
       emergencyPhone: string
+      sgkWorkplace: string
+      documentType: string
+      applicableLaw: string
+      insuranceBranch: string
+      occupationCode: string
+      dutyCode: string
+      contractType: string
+      iskurStatus: string
+      iskurWorkforceStatus: string
+      drivingLicence: string
+      militaryStatus: string
+      foreignLanguage: string
     }
     schemeNone: string
     schemeTckn: string
@@ -281,6 +392,11 @@ export type Translations = {
       sensitiveWriteForbidden: string
       generic: string
       fixFields: string
+      sgkWorkplaceNotFound: string
+      sgkWorkplaceInactive: string
+      sgkWorkplaceNotForProperty: string
+      employmentNotFound: string
+      employmentPropertyUnresolved: string
     }
     validation: {
       tcknLength: string
@@ -312,6 +428,22 @@ export type Translations = {
       positionRequired: string
       startDateRequired: string
       positionNotAvailable: string
+      invalidDocumentType: string
+      invalidApplicableLaw: string
+      invalidInsuranceBranch: string
+      invalidOccupation: string
+      invalidDutyCode: string
+      invalidNationality: string
+      militaryExemptionRequired: string
+      militaryDefermentRequired: string
+      contractEndRequired: string
+      partTimeHoursRequired: string
+      partTimeHoursInvalid: string
+      incentiveRangeInvalid: string
+      workPermitRangeInvalid: string
+      besRateInvalid: string
+      besExtraInvalid: string
+      kepInvalid: string
     }
   }
   roomOperations: {
@@ -543,6 +675,16 @@ export const en: Translations = {
     positions: 'Positions',
     positionsIntro:
       'Job titles used when placing staff. A position belongs to the property, not to a department, and does not grant system permissions.',
+    officialSettings: 'Property official settings',
+    officialSettingsIntro:
+      'SGK workplace registrations for this property. Personnel cards select an existing registration; they do not type a new number.',
+    sgkWorkplace: 'SGK workplace',
+    registrationNumber: 'Registration number',
+    displayName: 'Label',
+    createSgkWorkplace: 'Add SGK workplace',
+    emptySgkWorkplaces: 'No SGK workplace registrations yet.',
+    emptySgkWorkplacesHint: 'Add at least one registration before selecting it on a personnel card.',
+    sgkWorkplaceHint: 'A property may have more than one active registration.',
     hireNew: 'New staff member',
     hireSubmit: 'Hire',
     hire: 'Hire employee',
@@ -624,6 +766,7 @@ export const en: Translations = {
       sameAssignment: 'This person already works in that department and position.',
       positionNotAvailable: 'The selected position cannot be used in this department.',
       generic: 'The workforce request could not be completed.',
+      invalidSgkWorkplace: 'The SGK workplace registration is invalid.',
     },
   },
   personnel: {
@@ -657,11 +800,100 @@ export const en: Translations = {
     tabGeneral: 'General',
     tabIdentity: 'Identity & contact',
     tabWork: 'Work / organization',
+    tabOfficial: 'Official information',
     tabHistory: 'History',
     sectionIdentity: 'Identity',
     sectionContact: 'Contact',
     sectionAddress: 'Address',
     sectionEmergency: 'Emergency contacts',
+    sectionDeclarationCodes: 'Declaration codes',
+    sectionIskur: 'İŞKUR monthly workforce chart',
+    sectionBes: 'Private pension (BES)',
+    sectionSocial: 'Social information',
+    sectionEducation: 'Education information',
+    sgkWorkplace: 'SGK workplace',
+    documentType: 'Document type',
+    applicableLaw: 'Applicable law',
+    insuranceBranch: 'Insurance branch',
+    occupationCode: 'SGK occupation code',
+    dutyCode: 'Duty code',
+    noSgkWorkplaceForProperty: 'No SGK workplace registration is defined for this property.',
+    occupationHint: 'Search by code or occupation name.',
+    occupationEmpty: 'No matching occupation codes.',
+    occupationSearching: 'Searching occupation codes',
+    officialChipIskur: 'İŞKUR chart',
+    officialChipBes: 'BES',
+    universityEmpty: 'No matching university.',
+    universityPlaceholder: 'Search universities',
+    universityHint: 'Search by university name.',
+    sectionLicence: 'Driving licence',
+    sectionPassport: 'Passport',
+    sectionMilitary: 'Military service',
+    sectionKep: 'KEP',
+    sectionWorkPermit: 'Work permit',
+    contractType: 'Contract type',
+    contractEndDate: 'Contract end date',
+    partTimeMonthlyHours: 'Monthly working hours',
+    iskurStatus: 'İŞKUR status',
+    incentiveStartDate: 'Incentive start',
+    incentiveEndDate: 'Incentive end',
+    iskurWorkforceStatus: 'İŞKUR workforce status',
+    contractIndefinite: 'Indefinite term',
+    contractFixedTerm: 'Fixed term',
+    contractPartTime: 'Part-time',
+    iskurNormal: 'Normal',
+    iskurFormerConvict: 'Former convict',
+    iskurTerrorVictim: 'Terror victim',
+    iskurTmy: 'TMY (injured in counter-terrorism)',
+    iskurWfIndefinite: 'Indefinite term',
+    iskurWfFixedTerm: 'Fixed term',
+    iskurWfPartTime: 'Part-time',
+    iskurWfDisabledIndefinite: 'Disabled, indefinite term',
+    iskurWfDisabledFixedTerm: 'Disabled, fixed term',
+    iskurWfFormerConvict: 'Former convict',
+    iskurWfTerrorVictim: 'Terror victim',
+    besDeduction: 'BES deduction',
+    besRatePercent: 'BES rate %',
+    besExtraAmount: 'BES extra amount',
+    drivingLicence: 'Driving licence',
+    passportIdentity: 'Passport',
+    passportReused: 'Uses the passport identity number from Identity & contact.',
+    passportOnIdentityTab: 'Set identity scheme to Passport on Identity & contact to reuse that number. No second passport field.',
+    militaryStatus: 'Military service',
+    militaryExemptionReason: 'Exemption reason',
+    militaryDefermentReason: 'Deferment reason',
+    militaryCompleted: 'Completed',
+    militaryExempt: 'Exempt',
+    militaryDeferred: 'Deferred',
+    militaryNotCompleted: 'Not completed',
+    kepAddress: 'KEP address',
+    workPermitStartDate: 'Work permit start',
+    workPermitEndDate: 'Work permit end',
+    educationDescription: 'Field of study',
+    schoolName: 'School',
+    graduationDate: 'Graduation',
+    foreignLanguage: 'Foreign language',
+    argeProjectCode: 'R&D project code',
+    argeProjectHint: 'Shown with education for reference coverage. Not an education-history record and not used for payroll here.',
+    nationalityEmpty: 'No matching nationality.',
+    langEnglish: 'English',
+    langGerman: 'German',
+    langFrench: 'French',
+    langArabic: 'Arabic',
+    langRussian: 'Russian',
+    langSpanish: 'Spanish',
+    langChinese: 'Chinese',
+    langJapanese: 'Japanese',
+    langKorean: 'Korean',
+    langOther: 'Other',
+    dutyCodes: {
+      EmployerOrRepresentative: 'Employer or representative',
+      Worker: 'Worker',
+      CivilServant4B: '657 SK (4/b) employees',
+      CivilServant4C: '657 SK (4/c) employees',
+      ApprenticeOrIntern: 'Apprentices and intern students',
+      Other: 'Others',
+    },
     identityScheme: 'Identity scheme',
     identityNumber: 'Identity number',
     nationality: 'Nationality',
@@ -693,7 +925,7 @@ export const en: Translations = {
       educationLevel: 'Select education level',
       bloodType: 'Select blood type',
       identityScheme: 'Select identity type',
-      nationality: 'Enter nationality',
+      nationality: 'Search nationality (TR, DE, US…)',
       maritalStatus: 'Select marital status',
       gender: 'Select gender',
       identityNumber: 'Enter identity number',
@@ -706,6 +938,18 @@ export const en: Translations = {
       emergencyName: 'Enter name',
       emergencyRelationship: 'Enter relationship',
       emergencyPhone: 'Enter phone',
+      sgkWorkplace: 'Select SGK workplace',
+      documentType: 'Select document type',
+      applicableLaw: 'Select applicable law',
+      insuranceBranch: 'Select insurance branch',
+      occupationCode: 'Type a code or occupation',
+      dutyCode: 'Select duty code',
+      contractType: 'Select contract type',
+      iskurStatus: 'Select İŞKUR status',
+      iskurWorkforceStatus: 'Select workforce status',
+      drivingLicence: 'Select licence class',
+      militaryStatus: 'Select military status',
+      foreignLanguage: 'Select language',
     },
     schemeNone: 'Not specified',
     schemeTckn: 'TCKN',
@@ -749,6 +993,11 @@ export const en: Translations = {
       sensitiveWriteForbidden: 'This account cannot change restricted personnel fields.',
       generic: 'The personnel request could not be completed.',
       fixFields: 'Some fields could not be saved. Check the highlighted fields.',
+      sgkWorkplaceNotFound: 'The SGK workplace registration was not found.',
+      sgkWorkplaceInactive: 'An inactive SGK workplace cannot be newly selected.',
+      sgkWorkplaceNotForProperty: 'That SGK workplace does not belong to this property.',
+      employmentNotFound: 'The employment was not found.',
+      employmentPropertyUnresolved: 'This employment does not have a clear property for SGK workplace selection.',
     },
     validation: {
       tcknLength: 'TCKN must be 11 digits.',
@@ -780,6 +1029,22 @@ export const en: Translations = {
       positionRequired: 'Select a position.',
       startDateRequired: 'Employment start date is required.',
       positionNotAvailable: 'The selected position cannot be used in this department.',
+      invalidDocumentType: 'Select a valid document type.',
+      invalidApplicableLaw: 'Select a valid applicable law.',
+      invalidInsuranceBranch: 'Select a valid insurance branch.',
+      invalidOccupation: 'Select a valid occupation code (NNNN.NN).',
+      invalidDutyCode: 'Select a valid duty code.',
+      invalidNationality: 'Select a valid ISO nationality code.',
+      militaryExemptionRequired: 'Exemption reason is required when military status is Exempt.',
+      militaryDefermentRequired: 'Deferment reason is required when military status is Deferred.',
+      contractEndRequired: 'Contract end date is required for a fixed-term contract.',
+      partTimeHoursRequired: 'Monthly hours are required for a part-time contract.',
+      partTimeHoursInvalid: 'Monthly hours must be greater than zero.',
+      incentiveRangeInvalid: 'Incentive end must be on or after incentive start.',
+      workPermitRangeInvalid: 'Work permit end must be on or after work permit start.',
+      besRateInvalid: 'BES rate must be between 0 and 100.',
+      besExtraInvalid: 'BES extra amount cannot be negative.',
+      kepInvalid: 'Check the KEP address format.',
     },
   },
   roomOperations: {

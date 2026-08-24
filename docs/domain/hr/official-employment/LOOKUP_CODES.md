@@ -1,6 +1,6 @@
 # Lookup / reference codes
 
-> **Status:** Accepted — HR-03A. Catalogues extracted from the WebİK frontend snapshot. **Not** HuGuWeb legal truth.
+> **Status:** Accepted — HR-03A, with **Accepted Product Owner amendment — 2026-08-24**.
 >
 > Principle: official code fields are controlled code systems, not arbitrary free text.
 >
@@ -23,9 +23,11 @@ Store the **stable code**, not display text, as authoritative identity. Labels/d
 | Belge türü | `SgkDocumentType` | Dropdown | **Complete in snapshot** (`SGK_BELGE_TURLERI`, 21 values) |
 | Tabi kanun | `ApplicableLawCode` | Dropdown | Default list in snapshot (`_DEF_KANUNLAR`, 25 values). Personel Card loads `pdks_kanun_kodlari` (user-editable). Treat as **maintained lookup**, not a forever-frozen enum |
 | Sigorta kolu | `InsuranceBranch` | Dropdown | **Complete in snapshot** (`SGK_SIGORTA_KOLLARI`, 8 values) |
-| Meslek kodu | `SgkOccupationCode` | Searchable picker | **Complete national-style list in snapshot** (7765 rows). HuGuWeb does **not** copy that list into docs or 03B application source seed |
+| Meslek kodu | `SgkOccupationCode` | Searchable picker | **Complete national-style list** extracted to `data/reference/sgk-occupation-codes.json` (7,765 rows). **Not** copied into a C# array. |
 
-**Görev kodu / `SgkDutyCode` is not an HR-03B lookup family.** Discovery evidence is retained below.
+**Görev kodu is an HR-03B lookup family as of the 2026-08-24 PO amendment.** Type: `EmploymentDutyCode`. HuGu internal identifiers + localized labels. **Not** `SgkDutyCode`. WebİK supplied six labels and no official numeric codes — do not invent SGK numbers.
+
+Discovery evidence for the six labels is retained below.
 
 `ValidFrom` / `ValidTo` on lookup rows are allowed conceptually so obsolete incentive laws can be deactivated without deleting history. 03B may ship `IsActive` only.
 
@@ -49,9 +51,9 @@ Source facts:
 | **B. Curated hotel-relevant subset in git** | Tens/low hundreds of hospitality codes as the only catalogue | Insufficient as system of record; official codes change |
 | **C. Maintained / importable reference catalogue** | Lookup structure filled by import, ops bootstrap, or vendor/official file | **Decided.** System of record |
 
-**Decided: C.** Employment stores OccupationCode only. HR-03B may implement the `SgkOccupationCode` reference structure and a **practical bootstrap/import** path (empty table + import, or a small non-authoritative bootstrap so the picker is not blank). Bootstrap is not the national catalogue and is not statutory completeness.
+**Decided: C, amended.** Employment stores OccupationCode only. HR-03B imports the full WebİK-extracted catalogue from a **versioned JSON artifact** via an idempotent seeder. That artifact is reference data, not application source. A competing 6-row hospitality bootstrap is **not** kept.
 
-Hotel-relevant **examples** present in the source list (not a closed HuGuWeb enum): `1411.08` Otel Müdürü, `1411.02` Ön Büro Müdürü-Otel, `4224.03` Ön Büro Görevlisi (Otel Resepsiyoncusu), `5120.10` Aşçı, `3434.01` Aşçıbaşı, `1120.10` Genel Müdür-Eğlence, Lokanta, Otel. **SOURCE DOES NOT PROVIDE a hotel-only subset product** — these are grep samples from the full list.
+Hotel-relevant **examples** present in the source list (not a closed HuGuWeb enum): `1411.08` Otel Müdürü, `1411.02` Ön Büro Müdürü-Otel, `4224.03` Ön Büro Görevlisi (Otel Resepsiyoncusu), `5120.10` Aşçı, `3434.01` Aşçıbaşı, `1120.10` Genel Müdür-Eğlence, Lokanta, Otel.
 
 ### Catalogue versioning / update (HR-03B concern)
 
@@ -160,30 +162,22 @@ Hotel-typical: `00` normal; `08` emekli SGDP; `07` çırak/stajyer. Others remai
 
 ---
 
-## Görev kodu — discovery retained, **not HR-03B**
+## Görev kodu — **IN** (PO amendment 2026-08-24)
 
-**Disposition:** **DEFERRED / NEEDS DOMAIN OR LEGAL VALIDATION.** Out of the HR-03B minimum. Not a 03B lookup family. Not stored on OfficialEmploymentProfile. Not shown on Personel Card.
+Original freeze deferred this family. Product Owner now requires it on Bildirge Kodları.
 
-**Why deferred:** WebİK exposes the field, but the snapshot does **not** establish that this is a stable official statutory code catalogue required by our SGK model. Six Turkish **labels**, no separate numeric code in the UI.
+WebİK supplied **six labels and no official numeric identifiers.** HuGu stores stable internal codes; localized labels are separate. These are **not** authorization roles and are **not** mapped from Position names.
 
-**Recorded facts (do not delete):**
+| Code | Display (TR, verified from WebİK; “Stajer” spelling preserved) |
+|------|----------------------------------------------------------------|
+| EmployerOrRepresentative | İşveren veya Vekili |
+| Worker | İşçi |
+| CivilServant4B | 657 SK (4/b) Kapsamında Çalışanlar |
+| CivilServant4C | 657 SK (4/c) Kapsamında Çalışanlar |
+| ApprenticeOrIntern | Çıraklar ve Stajer Öğrenciler |
+| Other | Diğerleri |
 
-- WebİK Personel Kartı Bildirge section exposes **Görev Kodu** (`gorevKodu`).
-- Source contains **six** labels:
-
-```text
-İşveren veya Vekili
-İşçi
-657 SK (4/b) Kapsamında Çalışanlar
-657 SK (4/c) Kapsamında Çalışanlar
-Çıraklar ve Stajer Öğrenciler
-Diğerleri
-```
-
-- HuGuWeb does **not** yet model it.
-- It can be added later if validated as a required statutory catalogue.
-
-If ever modeled, prefer stable English identifiers internally (e.g. `EmployerOrProxy`, `Worker`, `Law657B`, `Law657C`, `ApprenticeOrIntern`, `Other`) and translated labels — do not store the Turkish sentence as the code if a stable identity can be assigned. That implementation choice is **not** authorized in 03B.
+**Recorded facts:** WebİK Personel Kartı Bildirge section exposes **Görev Kodu** (`gorevKodu`) with the six labels above. HuGuWeb does **not** invent an SGK numeric duty code.
 
 ---
 

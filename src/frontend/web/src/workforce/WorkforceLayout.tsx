@@ -34,6 +34,7 @@ export function WorkforceLayout() {
           <>
             <NavLink to="/app/workforce/departments">{t('workforce.departments')}</NavLink>
             <NavLink to="/app/workforce/positions">{t('workforce.positions')}</NavLink>
+            <NavLink to="/app/workforce/official-settings">{t('workforce.officialSettings')}</NavLink>
           </>
         ) : null}
       </nav>

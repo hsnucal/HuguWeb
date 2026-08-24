@@ -89,6 +89,38 @@ public sealed class HireEmployeeWithProfileUseCase(
         store.AddEmployment(employment);
         store.AddAssignment(assignment);
 
+        var official = await OfficialEmploymentComposer.ApplyAsync(
+            store,
+            employment,
+            command.OfficialProfile ?? OfficialEmploymentWriteModel.Empty,
+            today,
+            createIfEmpty: false,
+            cancellationToken,
+            [assignment]);
+        if (!official.IsSuccess)
+        {
+            return official.Error!;
+        }
+
+        var workforce = EmploymentWorkforceComposer.Apply(
+            employment,
+            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
+        if (!workforce.IsSuccess)
+        {
+            return workforce.Error!;
+        }
+
+        var bes = EmploymentBesComposer.Apply(
+            store,
+            employment,
+            existing: null,
+            command.BesSettings ?? EmploymentBesWriteModel.Empty,
+            createIfEmpty: false);
+        if (!bes.IsSuccess)
+        {
+            return bes.Error!;
+        }
+
         try
         {
             await store.SaveChangesAsync(cancellationToken);
@@ -123,7 +155,10 @@ public sealed record HireEmployeeWithProfileCommand(
     Guid DepartmentId,
     Guid PositionId,
     HrProfileWriteModel Profile,
-    bool CanWriteSensitive);
+    bool CanWriteSensitive,
+    OfficialEmploymentWriteModel? OfficialProfile = null,
+    EmploymentWorkforceWriteModel? WorkforceTerms = null,
+    EmploymentBesWriteModel? BesSettings = null);
 
 public sealed class NationalIdentityConflictException : Exception
 {

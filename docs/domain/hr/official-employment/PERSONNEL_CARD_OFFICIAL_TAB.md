@@ -1,6 +1,6 @@
 # Personel Card — Resmî bilgiler
 
-> **Status:** Accepted — HR-03A. Information architecture only. Not visual design. Not implementation.
+> **Status:** Accepted — HR-03A IA, with **Accepted Product Owner amendment — 2026-08-24** (composition tab). Not visual design copied from WebİK.
 
 ## Visible tab order (this slice)
 
@@ -31,11 +31,21 @@ HR-03A does **not** change HR-DOMAIN-002 Accepted status and does **not** rewrit
 | Belgeler / Evraklar | Hidden (HR-04) |
 | Geçmiş | Shown (already) |
 
-Empty future official sections are **not** rendered. Do **not** add empty KBS / İŞKUR / SGK submission sections.
+Empty **submission** shells are **not** rendered. Do **not** add empty KBS / SGK submission sections. İŞKUR/BES/Sosyal/Eğitim on this tab are **master/configuration composition**, not government clients.
 
 ---
 
 ## Resmî bilgiler — sections
+
+**Visual order (PO amendment 2026-08-24):**
+
+1. Bildirge Kodları
+2. İŞKUR Aylık İşgücü Çizelgesi
+3. BES (Bireysel Emeklilik) — configuration only; **no AGİ**
+4. Sosyal Bilgiler — **no** Anne kızlık soyadı; WebİK Vize → HuGu Çalışma İzni
+5. Eğitim Bilgileri — reuse HR-01B Öğrenim Durumu; **no** organizational Bölüm
+
+Compact fieldset/legend + existing HR grids. Tab may scroll internally. Do not enlarge the modal.
 
 ### A. Bildirge Kodları — **HR-03B**
 
@@ -45,13 +55,12 @@ Fields (edit with `hr.employee.manage`; read with `hr.employee.read`):
 - Belge türü
 - Tabi olduğu kanun
 - Sigorta kolu
-- SGK meslek kodu (searchable)
-
-**Do not show Görev Kodu.**
+- SGK meslek kodu (searchable; display `CODE — NAME`; persist code)
+- **Görev Kodu** (PO amendment; six HuGu codes)
 
 Layout: existing two-column card grid, not a payroll dashboard.
 
-Do **not** include on this section: SGK notified checkboxes, exit codes, İŞKUR çizelge, teşvik, AGİ/BES, sosyal bilgiler, eğitim details.
+Do **not** include on this section: SGK notified checkboxes, exit codes.
 
 Workplace numbers are created in Property / organization configuration, not by repeating sicil entry on every card.
 
@@ -116,7 +125,7 @@ New strings: `personnel.tabOfficial`, `personnel.sectionDeclarationCodes`, field
 | Sigorta kolu | Insurance branch | Ветка страхования |
 | SGK meslek kodu | SGK occupation code | Код профессии SGK |
 
-Görev Kodu is **not** a 03B UI string. Discovery evidence remains in [LOOKUP_CODES.md](LOOKUP_CODES.md).
+Görev Kodu **is** a 03B UI string as of the PO amendment. Labels: [LOOKUP_CODES.md](LOOKUP_CODES.md).
 
 Stored codes are never translated. Lookup display names for SGK numeric families stay in official Turkish in 03B (they are statutory text).
 

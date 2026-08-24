@@ -72,6 +72,14 @@ function headingFor(pathname: string, t: (key: string) => string) {
     }
   }
 
+  if (pathname.startsWith('/app/workforce/official-settings')) {
+    return {
+      kicker: t('workforce.title'),
+      title: t('workforce.officialSettings'),
+      subtitle: t('workforce.officialSettingsIntro'),
+    }
+  }
+
   if (pathname.startsWith('/app/workforce/positions')) {
     return {
       kicker: t('workforce.title'),

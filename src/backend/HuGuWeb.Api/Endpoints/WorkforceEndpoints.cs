@@ -53,6 +53,18 @@ public static class WorkforceEndpoints
             .RequireAuthorization(AuthorizationPolicies.WorkforceManage)
             .AddEndpointFilter<ValidateAntiforgeryFilter>();
 
+        group.MapGet("/sgk-workplace-registrations", ListSgkWorkplaces)
+            .WithName("ListSgkWorkplaceRegistrations")
+            .RequireAuthorization(AuthorizationPolicies.WorkforceManage);
+        group.MapPost("/sgk-workplace-registrations", CreateSgkWorkplace)
+            .WithName("CreateSgkWorkplaceRegistration")
+            .RequireAuthorization(AuthorizationPolicies.WorkforceManage)
+            .AddEndpointFilter<ValidateAntiforgeryFilter>();
+        group.MapPatch("/sgk-workplace-registrations/{id:guid}", UpdateSgkWorkplace)
+            .WithName("UpdateSgkWorkplaceRegistration")
+            .RequireAuthorization(AuthorizationPolicies.WorkforceManage)
+            .AddEndpointFilter<ValidateAntiforgeryFilter>();
+
         return endpoints;
     }
 
@@ -196,6 +208,45 @@ public static class WorkforceEndpoints
         var result = await useCase.ExecuteAsync(new EndEmploymentCommand(id, request.EndDate), cancellationToken);
         return result.ToHttp();
     }
+
+    private static async Task<IResult> ListSgkWorkplaces(
+        MaintainSgkWorkplaceRegistrationsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var result = await useCase.ListAsync(maskRegistration: false, cancellationToken);
+        return result.ToHttp();
+    }
+
+    private static async Task<IResult> CreateSgkWorkplace(
+        [FromBody] CreateSgkWorkplaceRequest request,
+        MaintainSgkWorkplaceRegistrationsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var result = await useCase.CreateAsync(
+            new CreateSgkWorkplaceRegistrationCommand(request.RegistrationNumber, request.DisplayName),
+            cancellationToken);
+        return result.IsSuccess
+            ? Results.Created($"/api/workforce/sgk-workplace-registrations/{result.Value!.Id}", result.Value)
+            : result.Error!.ToHttp();
+    }
+
+    private static async Task<IResult> UpdateSgkWorkplace(
+        Guid id,
+        [FromBody] PatchSgkWorkplaceRequest request,
+        MaintainSgkWorkplaceRegistrationsUseCase useCase,
+        CancellationToken cancellationToken)
+    {
+        var result = await useCase.UpdateAsync(
+            new UpdateSgkWorkplaceRegistrationCommand(
+                id,
+                request.RegistrationNumber,
+                request.DisplayName,
+                request.RegistrationNumber is not null || request.DisplayName is not null,
+                request.DisplayName is not null,
+                request.IsActive),
+            cancellationToken);
+        return result.ToHttp();
+    }
 }
 
 public sealed record CreateDepartmentRequest(string Name, string? Code);
@@ -219,6 +270,10 @@ public sealed record HireEmployeeRequest(
 public sealed record TransferEmployeeRequest(Guid DepartmentId, Guid PositionId, DateOnly EffectiveDate);
 
 public sealed record EndEmploymentRequest(DateOnly EndDate);
+
+public sealed record CreateSgkWorkplaceRequest(string RegistrationNumber, string? DisplayName);
+
+public sealed record PatchSgkWorkplaceRequest(string? RegistrationNumber, string? DisplayName, bool? IsActive);
 
 internal static class WorkforceHttpResults
 {

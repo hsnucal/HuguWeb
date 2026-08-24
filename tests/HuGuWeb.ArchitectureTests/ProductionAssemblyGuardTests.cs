@@ -272,6 +272,12 @@ public class ProductionAssemblyGuardTests
 
         Assert.DoesNotContain("ISgkService", names);
         Assert.DoesNotContain("IKbsService", names);
+        Assert.DoesNotContain("IIskurService", names);
+        Assert.DoesNotContain("ISgkClient", names);
+        Assert.DoesNotContain("IKbsClient", names);
+        Assert.DoesNotContain("SgkClient", names);
+        Assert.DoesNotContain("KbsClient", names);
+        Assert.DoesNotContain("IskurClient", names);
         Assert.DoesNotContain("IGovernmentIntegrationService", names);
     }
 
@@ -367,6 +373,20 @@ public class ProductionAssemblyGuardTests
             Assert.DoesNotContain("Iban", names);
             Assert.DoesNotContain("Salary", names);
             Assert.DoesNotContain("Wage", names);
+            Assert.DoesNotContain("OccupationCode", names);
+            Assert.DoesNotContain("DutyCode", names);
+            Assert.DoesNotContain("DocumentTypeCode", names);
+            Assert.DoesNotContain("ApplicableLawCode", names);
+            Assert.DoesNotContain("InsuranceBranchCode", names);
+            Assert.DoesNotContain("SgkWorkplaceRegistrationId", names);
+            Assert.DoesNotContain("SgkWorkplaceRegistration", names);
+            Assert.DoesNotContain("Nationality", names);
+            Assert.DoesNotContain("KepAddress", names);
+            Assert.DoesNotContain("MilitaryServiceStatus", names);
+            Assert.DoesNotContain("WorkPermitStartDate", names);
+            Assert.DoesNotContain("BesRatePercent", names);
+            Assert.DoesNotContain("IskurStatus", names);
+            Assert.DoesNotContain("EducationDescription", names);
         }
 
         Assert.Equal(
@@ -400,6 +420,12 @@ public class ProductionAssemblyGuardTests
         Assert.DoesNotContain("EmployeePhoto", names);
         Assert.DoesNotContain("HrEmployeeCard", names);
         Assert.DoesNotContain("NationalIdentity", names);
+        Assert.DoesNotContain("OfficialEmploymentProfile", names);
+        Assert.DoesNotContain("SgkWorkplaceRegistration", names);
+        Assert.DoesNotContain("SgkOccupationCode", names);
+        Assert.DoesNotContain("SgkDocumentType", names);
+        Assert.DoesNotContain("ApplicableLawCode", names);
+        Assert.DoesNotContain("InsuranceBranch", names);
     }
 
     [Fact]
@@ -418,6 +444,12 @@ public class ProductionAssemblyGuardTests
         Assert.DoesNotContain("ShiftAssignment", names);
         Assert.DoesNotContain("ISgkService", names);
         Assert.DoesNotContain("IKbsService", names);
+        Assert.DoesNotContain("IIskurService", names);
+        Assert.DoesNotContain("SgkClient", names);
+        Assert.DoesNotContain("KbsClient", names);
+        Assert.DoesNotContain("GovernmentCode", names);
+        Assert.DoesNotContain("OfficialCode", names);
+        Assert.DoesNotContain("GenericLookup", names);
         Assert.DoesNotContain("Grade", names);
         Assert.DoesNotContain("WorkingGroup", names);
         Assert.DoesNotContain("IOutbox", names);
@@ -501,6 +533,96 @@ public class ProductionAssemblyGuardTests
         Assert.Equal("OrganizationId", entity.FindPrimaryKey()!.Properties.Single().Name);
         Assert.Equal(PersonnelNumberSequence.StartingValue, 1001);
         Assert.Equal("1001", PersonnelNumber.Format(PersonnelNumberSequence.StartingValue));
+    }
+
+    [Fact]
+    public void OfficialEmployment_UsesExplicitLookups_NotGenericGovernmentCode()
+    {
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.EmploymentId)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.SgkWorkplaceRegistrationId)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.DocumentTypeCode)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.ApplicableLawCode)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.InsuranceBranchCode)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.OccupationCode)));
+        Assert.NotNull(typeof(OfficialEmploymentProfile).GetProperty(nameof(OfficialEmploymentProfile.DutyCode)));
+        Assert.Null(typeof(OfficialEmploymentProfile).GetProperty("OccupationName"));
+        Assert.Null(typeof(Employee).GetProperty("OccupationCode"));
+        Assert.Null(typeof(Employee).GetProperty("BesRatePercent"));
+        Assert.Null(typeof(Position).GetProperty("OccupationCode"));
+        Assert.Null(typeof(Position).GetProperty("OccupationCodeId"));
+        Assert.Null(typeof(Position).GetProperty("DutyCode"));
+        Assert.Null(typeof(Property).GetProperty("SgkRegistrationNumber"));
+        Assert.Null(typeof(EmployeeHrProfile).GetProperty("MothersMaidenName"));
+        Assert.Null(typeof(EmployeeHrProfile).GetProperty("PassportNumber"));
+        Assert.Null(typeof(EmployeeHrProfile).GetProperty("VisaStartDate"));
+
+        var names = typeof(Employee).Assembly.GetTypes().Select(type => type.Name).ToArray();
+        Assert.Contains("SgkDocumentType", names);
+        Assert.Contains("ApplicableLawCode", names);
+        Assert.Contains("InsuranceBranch", names);
+        Assert.Contains("SgkOccupationCode", names);
+        Assert.Contains("SgkWorkplaceRegistration", names);
+        Assert.Contains("EmploymentDutyCode", names);
+        Assert.Contains("EmploymentBesSettings", names);
+        Assert.DoesNotContain("GovernmentCode", names);
+        Assert.DoesNotContain("OfficialCode", names);
+        Assert.DoesNotContain("GenericLookup", names);
+        Assert.DoesNotContain("SgkDutyCode", names);
+        Assert.DoesNotContain("AgiSettings", names);
+        Assert.DoesNotContain("PayrollRun", names);
+
+        var options = new DbContextOptionsBuilder<WorkforceDbContext>()
+            .UseNpgsql("Host=localhost;Database=huguweb_model_check;Username=huguweb;Password=unused")
+            .Options;
+        using var context = new WorkforceDbContext(options);
+
+        var profile = context.Model.FindEntityType(typeof(OfficialEmploymentProfile));
+        Assert.NotNull(profile);
+        Assert.Contains(profile.GetIndexes(), index => index.IsUnique && index.Properties.Any(property => property.Name == "EmploymentId"));
+
+        var registrations = context.Model.FindEntityType(typeof(SgkWorkplaceRegistration));
+        Assert.NotNull(registrations);
+        Assert.DoesNotContain(
+            registrations.GetIndexes(),
+            index => index.IsUnique && index.Properties.Any(property => property.Name == "IsActive"));
+        Assert.Contains(
+            registrations.GetForeignKeys(),
+            key => key.PrincipalEntityType.ClrType == typeof(Property) && key.DeleteBehavior == DeleteBehavior.Restrict);
+
+        Assert.DoesNotContain(
+            context.Model.GetEntityTypes().Select(entity => entity.ClrType.Name),
+            name => name is "IOutbox" or "OutboxMessage" or "IMessageBroker" or "NotificationJob");
+    }
+
+    [Fact]
+    public void OfficialEmployment_Authorization_IsClaimBased_NotEmail()
+    {
+        var source = string.Join(
+            '\n',
+            Directory.GetFiles(
+                    Path.Combine(FindRepoRoot(), "src", "backend", "modules", "HuGuWeb.Workforce", "Application"),
+                    "*Official*.cs")
+                .Select(File.ReadAllText));
+        Assert.DoesNotContain("@localhost", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("hr.manager@", source, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("user.Email", File.ReadAllText(
+            Path.Combine(FindRepoRoot(), "src", "backend", "HuGuWeb.Api", "Endpoints", "HrEmployeeEndpoints.cs")));
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "HuGuWeb.slnx")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new InvalidOperationException("Repository root was not found.");
     }
 
     [Fact]

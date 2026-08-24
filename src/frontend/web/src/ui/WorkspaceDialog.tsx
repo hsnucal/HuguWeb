@@ -1,5 +1,7 @@
-import { useEffect, useEffectEvent, useId, useRef, type ReactNode, type RefObject } from 'react'
+import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import styles from './Dialog.module.css'
+
+const CLOSE_FALLBACK_MS = 280
 
 export function WorkspaceDialog({
   title,
@@ -10,6 +12,10 @@ export function WorkspaceDialog({
   initialFocusRef,
   stacked = false,
   inert = false,
+  hideHeader = false,
+  closing = false,
+  onCloseAnimationComplete,
+  bodyOverflow = 'auto',
 }: {
   title: string
   onRequestClose: () => void
@@ -19,23 +25,55 @@ export function WorkspaceDialog({
   initialFocusRef?: RefObject<HTMLElement | null>
   stacked?: boolean
   inert?: boolean
+  hideHeader?: boolean
+  closing?: boolean
+  onCloseAnimationComplete?: () => void
+  bodyOverflow?: 'auto' | 'hidden'
 }) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<Element | null>(null)
+  const closeFinished = useRef(false)
   const requestClose = useEffectEvent(onRequestClose)
-
-  useEffect(() => {
-    if (inert) {
+  const finishClose = useEffectEvent(() => {
+    if (closeFinished.current) {
       return
     }
 
+    closeFinished.current = true
+    onCloseAnimationComplete?.()
+  })
+  const [entered, setEntered] = useState(false)
+
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setEntered(true)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
+  useEffect(() => {
     previouslyFocused.current = document.activeElement
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const node = dialogRef.current
     const initial = initialFocusRef?.current ?? node
     initial?.focus()
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      if (previouslyFocused.current instanceof HTMLElement) {
+        previouslyFocused.current.focus()
+      }
+    }
+  }, [initialFocusRef])
+
+  useEffect(() => {
+    if (inert || closing) {
+      return
+    }
+
+    const node = dialogRef.current
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
@@ -65,21 +103,58 @@ export function WorkspaceDialog({
     }
 
     document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-      document.body.style.overflow = previousOverflow
-      if (previouslyFocused.current instanceof HTMLElement) {
-        previouslyFocused.current.focus()
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [inert, closing])
+
+  useEffect(() => {
+    if (!closing) {
+      return
+    }
+
+    const node = dialogRef.current
+
+    function onEnd(event: Event) {
+      const transition = event as TransitionEvent
+      if (transition.target !== node) {
+        return
+      }
+
+      if (transition.propertyName === 'opacity' || transition.propertyName === 'transform') {
+        finishClose()
       }
     }
-  }, [initialFocusRef, inert])
+
+    node?.addEventListener('transitionend', onEnd)
+    const timeout = window.setTimeout(() => finishClose(), CLOSE_FALLBACK_MS)
+    return () => {
+      node?.removeEventListener('transitionend', onEnd)
+      window.clearTimeout(timeout)
+    }
+  }, [closing])
+
+  const panelClass = [
+    size === 'confirm' ? styles.confirm : styles.workspace,
+    entered ? styles.panelEntered : styles.panelEnter,
+    closing ? styles.panelClosing : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const scrimClass = [
+    styles.scrim,
+    stacked ? styles.scrimStacked : '',
+    entered ? styles.scrimEntered : styles.scrimEnter,
+    closing ? styles.scrimClosing : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div
-      className={`${styles.scrim} ${stacked ? styles.scrimStacked : ''}`}
+      className={scrimClass}
       inert={inert || undefined}
       onMouseDown={(event) => {
-        if (inert) {
+        if (inert || closing) {
           return
         }
         if (event.target === event.currentTarget) {
@@ -89,18 +164,24 @@ export function WorkspaceDialog({
     >
       <div
         ref={dialogRef}
-        className={size === 'confirm' ? styles.confirm : styles.workspace}
+        className={panelClass}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
       >
-        <div className={styles.header}>
-          <h2 id={titleId} className={styles.title}>
+        {hideHeader ? (
+          <h2 id={titleId} className={styles.visuallyHidden}>
             {title}
           </h2>
-        </div>
-        <div className={styles.body}>{children}</div>
+        ) : (
+          <div className={styles.header}>
+            <h2 id={titleId} className={styles.title}>
+              {title}
+            </h2>
+          </div>
+        )}
+        <div className={`${styles.body} ${bodyOverflow === 'hidden' ? styles.bodyContained : ''}`}>{children}</div>
         {footer ? <div className={styles.footer}>{footer}</div> : null}
       </div>
     </div>

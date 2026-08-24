@@ -74,5 +74,38 @@ public interface IWorkforceStore
     void AddEmployeePhoto(EmployeePhoto photo);
     void RemoveEmployeePhoto(EmployeePhoto photo);
 
+    Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SgkWorkplaceRegistration>> ListSgkWorkplaceRegistrationsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken);
+    void AddSgkWorkplaceRegistration(SgkWorkplaceRegistration registration);
+
+    Task<OfficialEmploymentProfile?> GetOfficialEmploymentProfileAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<OfficialEmploymentProfile>> ListOfficialEmploymentProfilesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        CancellationToken cancellationToken);
+    void AddOfficialEmploymentProfile(OfficialEmploymentProfile profile);
+
+    Task<SgkDocumentType?> GetSgkDocumentTypeAsync(string code, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SgkDocumentType>> ListSgkDocumentTypesAsync(CancellationToken cancellationToken);
+    Task<ApplicableLawCode?> GetApplicableLawCodeAsync(string code, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ApplicableLawCode>> ListApplicableLawCodesAsync(CancellationToken cancellationToken);
+    Task<InsuranceBranch?> GetInsuranceBranchAsync(string code, CancellationToken cancellationToken);
+    Task<IReadOnlyList<InsuranceBranch>> ListInsuranceBranchesAsync(CancellationToken cancellationToken);
+    Task<SgkOccupationCode?> GetSgkOccupationCodeAsync(string code, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SgkOccupationCode>> SearchSgkOccupationCodesAsync(
+        string? query,
+        int take,
+        CancellationToken cancellationToken);
+    Task<EmploymentDutyCode?> GetEmploymentDutyCodeAsync(string code, CancellationToken cancellationToken);
+    Task<IReadOnlyList<EmploymentDutyCode>> ListEmploymentDutyCodesAsync(CancellationToken cancellationToken);
+
+    Task<EmploymentBesSettings?> GetEmploymentBesSettingsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken);
+    void AddEmploymentBesSettings(EmploymentBesSettings settings);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

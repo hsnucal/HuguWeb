@@ -26,6 +26,41 @@ export type EducationLevel =
   | 'Bachelor'
   | 'Master'
   | 'Doctorate'
+export type EmploymentContractType = 'Indefinite' | 'FixedTerm' | 'PartTime'
+export type IskurStatus = 'Normal' | 'FormerConvict' | 'TerrorVictim' | 'TmyInjured'
+export type IskurWorkforceStatus =
+  | 'Indefinite'
+  | 'FixedTerm'
+  | 'PartTime'
+  | 'DisabledIndefinite'
+  | 'DisabledFixedTerm'
+  | 'FormerConvict'
+  | 'TerrorVictim'
+export type DrivingLicenceCategory =
+  | 'A'
+  | 'A1'
+  | 'A2'
+  | 'B'
+  | 'B1'
+  | 'Be'
+  | 'C'
+  | 'Ce'
+  | 'D'
+  | 'De'
+  | 'F'
+  | 'G'
+export type MilitaryServiceStatus = 'Completed' | 'Exempt' | 'Deferred' | 'NotCompleted'
+export type ForeignLanguageSummary =
+  | 'English'
+  | 'German'
+  | 'French'
+  | 'Arabic'
+  | 'Russian'
+  | 'Spanish'
+  | 'Chinese'
+  | 'Japanese'
+  | 'Korean'
+  | 'Other'
 
 export type HrEmployeeListItem = {
   employeeId: string
@@ -48,6 +83,86 @@ export type HrEmployeeListItem = {
   nationalIdentityNumber: string | null
 }
 
+export type OfficialLookupItem = {
+  code: string
+  description: string
+  isActive: boolean
+}
+
+export type OfficialLookups = {
+  documentTypes: OfficialLookupItem[]
+  applicableLaws: OfficialLookupItem[]
+  insuranceBranches: OfficialLookupItem[]
+  dutyCodes: OfficialLookupItem[]
+  nationalities: string[]
+}
+
+export type SgkWorkplaceRecord = {
+  id: string
+  propertyId: string
+  registrationNumber: string | null
+  displayName: string | null
+  pickerLabel: string
+  isActive: boolean
+}
+
+export type OfficialEmploymentProfileRead = {
+  employmentId: string
+  sgkWorkplaceRegistrationId: string | null
+  sgkWorkplace: SgkWorkplaceRecord | null
+  documentTypeCode: string | null
+  applicableLawCode: string | null
+  insuranceBranchCode: string | null
+  occupationCode: string | null
+  occupation: OfficialLookupItem | null
+  dutyCode: string | null
+}
+
+export type OfficialEmploymentWrite = {
+  sgkWorkplaceRegistrationId: string | null
+  documentTypeCode: string | null
+  applicableLawCode: string | null
+  insuranceBranchCode: string | null
+  occupationCode: string | null
+  dutyCode: string | null
+}
+
+export type EmploymentWorkforceRead = {
+  contractType: EmploymentContractType | null
+  contractEndDate: string | null
+  partTimeMonthlyHours: number | null
+  iskurStatus: IskurStatus | null
+  incentiveStartDate: string | null
+  incentiveEndDate: string | null
+  iskurWorkforceStatus: IskurWorkforceStatus | null
+  workPermitStartDate: string | null
+  workPermitEndDate: string | null
+}
+
+export type EmploymentWorkforceWrite = {
+  contractType: EmploymentContractType | null
+  contractEndDate: string | null
+  partTimeMonthlyHours: number | null
+  iskurStatus: IskurStatus | null
+  incentiveStartDate: string | null
+  incentiveEndDate: string | null
+  iskurWorkforceStatus: IskurWorkforceStatus | null
+  workPermitStartDate: string | null
+  workPermitEndDate: string | null
+}
+
+export type EmploymentBesRead = {
+  deductionEnabled: boolean
+  ratePercent: number | null
+  extraAmount: number | null
+}
+
+export type EmploymentBesWrite = {
+  deductionEnabled: boolean
+  ratePercent: number | null
+  extraAmount: number | null
+}
+
 export type EmergencyContactRead = {
   id: string
   name: string
@@ -58,6 +173,11 @@ export type EmergencyContactRead = {
 
 export type HrProfileRead = {
   educationLevel: EducationLevel | null
+  educationDescription: string | null
+  schoolName: string | null
+  graduationDate: string | null
+  foreignLanguage: ForeignLanguageSummary | null
+  argeProjectCode: string | null
   hrNotes: string | null
   nationality: string | null
   gender: Gender | null
@@ -65,6 +185,11 @@ export type HrProfileRead = {
   birthPlace: string | null
   maritalStatus: MaritalStatus | null
   bloodType: BloodType | null
+  drivingLicenceCategory: DrivingLicenceCategory | null
+  militaryServiceStatus: MilitaryServiceStatus | null
+  militaryExemptionReason: string | null
+  militaryDefermentReason: string | null
+  kepAddress: string | null
   mobilePhone: string | null
   homePhone: string | null
   email: string | null
@@ -90,6 +215,9 @@ export type HrEmployeeCard = {
   employments: EmploymentHistoryRecord[]
   profile: HrProfileRead
   canReadSensitive: boolean
+  officialProfile: OfficialEmploymentProfileRead | null
+  workforceTerms: EmploymentWorkforceRead | null
+  besSettings: EmploymentBesRead | null
 }
 
 export type EmergencyContactWrite = {
@@ -116,6 +244,16 @@ export type HrEmployeeWrite = {
   maritalStatus: MaritalStatus | null
   bloodType: BloodType | null
   educationLevel: EducationLevel | null
+  educationDescription: string | null
+  schoolName: string | null
+  graduationDate: string | null
+  foreignLanguage: ForeignLanguageSummary | null
+  argeProjectCode: string | null
+  drivingLicenceCategory: DrivingLicenceCategory | null
+  militaryServiceStatus: MilitaryServiceStatus | null
+  militaryExemptionReason: string | null
+  militaryDefermentReason: string | null
+  kepAddress: string | null
   mobilePhone: string | null
   homePhone: string | null
   email: string | null
@@ -125,6 +263,9 @@ export type HrEmployeeWrite = {
   notificationAddress: string | null
   hrNotes: string | null
   emergencyContacts: EmergencyContactWrite[]
+  officialProfile: OfficialEmploymentWrite
+  workforceTerms: EmploymentWorkforceWrite
+  besSettings: EmploymentBesWrite
 }
 
 export function hrEmployeePhotoUrl(employeeId: string) {
@@ -163,6 +304,20 @@ export async function removeHrEmployeePhoto(id: string) {
   return apiRequest<void>(`/api/hr/employees/${id}/photo`, { method: 'DELETE' })
 }
 
+export async function listOfficialLookups() {
+  return apiRequest<OfficialLookups>('/api/hr/official-lookups')
+}
+
+export async function searchOccupationCodes(query: string) {
+  const q = query.trim()
+  const path = q === '' ? '/api/hr/occupation-codes' : `/api/hr/occupation-codes?q=${encodeURIComponent(q)}`
+  return apiRequest<OfficialLookupItem[]>(path)
+}
+
+export async function listHrSgkWorkplaces() {
+  return apiRequest<SgkWorkplaceRecord[]>('/api/hr/sgk-workplace-registrations')
+}
+
 const errorKeys: Record<string, string> = {
   'personnel-number-in-use': 'workforce.errors.personnelNumberInUse',
   'department-inactive': 'workforce.errors.departmentInactive',
@@ -179,6 +334,27 @@ const errorKeys: Record<string, string> = {
   'invalid-emergency-contact': 'personnel.errors.invalidEmergencyContact',
   'invalid-photo': 'personnel.errors.invalidPhoto',
   'sensitive-write-forbidden': 'personnel.errors.sensitiveWriteForbidden',
+  'sgk-workplace-not-found': 'personnel.errors.sgkWorkplaceNotFound',
+  'sgk-workplace-inactive': 'personnel.errors.sgkWorkplaceInactive',
+  'sgk-workplace-not-for-property': 'personnel.errors.sgkWorkplaceNotForProperty',
+  'invalid-document-type-code': 'personnel.validation.invalidDocumentType',
+  'invalid-applicable-law-code': 'personnel.validation.invalidApplicableLaw',
+  'invalid-insurance-branch-code': 'personnel.validation.invalidInsuranceBranch',
+  'invalid-occupation-code': 'personnel.validation.invalidOccupation',
+  'invalid-duty-code': 'personnel.validation.invalidDutyCode',
+  'invalid-nationality': 'personnel.validation.invalidNationality',
+  'military-exemption-reason-required': 'personnel.validation.militaryExemptionRequired',
+  'military-deferment-reason-required': 'personnel.validation.militaryDefermentRequired',
+  'contract-end-date-required': 'personnel.validation.contractEndRequired',
+  'part-time-hours-required': 'personnel.validation.partTimeHoursRequired',
+  'part-time-hours-invalid': 'personnel.validation.partTimeHoursInvalid',
+  'incentive-range-invalid': 'personnel.validation.incentiveRangeInvalid',
+  'work-permit-range-invalid': 'personnel.validation.workPermitRangeInvalid',
+  'bes-rate-invalid': 'personnel.validation.besRateInvalid',
+  'bes-extra-amount-invalid': 'personnel.validation.besExtraInvalid',
+  'kep-invalid': 'personnel.validation.kepInvalid',
+  'employment-not-found': 'personnel.errors.employmentNotFound',
+  'employment-property-unresolved': 'personnel.errors.employmentPropertyUnresolved',
 }
 
 export function hrErrorKey(error: unknown): string {
