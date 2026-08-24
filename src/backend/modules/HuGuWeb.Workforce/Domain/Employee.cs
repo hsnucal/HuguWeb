@@ -41,12 +41,12 @@ public sealed class Employee
         out string? error)
     {
         employee = null;
-        if (!TryNormalizePersonName(givenName, "Given name", out var given, out error))
+        if (!TryNormalizePersonName(givenName, "given-name", out var given, out error))
         {
             return false;
         }
 
-        if (!TryNormalizePersonName(familyName, "Family name", out var family, out error))
+        if (!TryNormalizePersonName(familyName, "family-name", out var family, out error))
         {
             return false;
         }
@@ -60,23 +60,51 @@ public sealed class Employee
         return true;
     }
 
+    public bool TryRename(string? givenName, string? familyName, out string? error)
+    {
+        if (!TryNormalizePersonName(givenName, "given-name", out var given, out error))
+        {
+            return false;
+        }
+
+        if (!TryNormalizePersonName(familyName, "family-name", out var family, out error))
+        {
+            return false;
+        }
+
+        GivenName = given;
+        FamilyName = family;
+        return true;
+    }
+
+    public bool TryChangePersonnelNumber(string? personnelNumber, out string? error)
+    {
+        if (!Domain.PersonnelNumber.TryCreate(personnelNumber, out var number, out error))
+        {
+            return false;
+        }
+
+        PersonnelNumber = number.Value;
+        return true;
+    }
+
     public static bool TryNormalizePersonName(
         string? value,
-        string fieldLabel,
+        string codePrefix,
         out string normalized,
         out string? error)
     {
         normalized = string.Empty;
         if (string.IsNullOrWhiteSpace(value))
         {
-            error = $"{fieldLabel} is required.";
+            error = $"{codePrefix}-required";
             return false;
         }
 
         var trimmed = value.Trim();
         if (trimmed.Length > NameMaxLength)
         {
-            error = $"{fieldLabel} must be {NameMaxLength} characters or fewer.";
+            error = $"{codePrefix}-too-long";
             return false;
         }
 

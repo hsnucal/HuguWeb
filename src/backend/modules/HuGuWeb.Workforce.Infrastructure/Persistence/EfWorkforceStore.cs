@@ -44,6 +44,66 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
             .Where(entity => entity.PropertyId == propertyId)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<DepartmentPositionApplicability>> ListApplicabilitiesForPositionsAsync(
+        IReadOnlyCollection<Guid> positionIds,
+        CancellationToken cancellationToken)
+    {
+        if (positionIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.DepartmentPositionApplicabilities
+            .Where(entity => positionIds.Contains(entity.PositionId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<bool> IsPositionApplicableToDepartmentAsync(
+        Guid departmentId,
+        Guid positionId,
+        CancellationToken cancellationToken) =>
+        dbContext.DepartmentPositionApplicabilities.AnyAsync(
+            entity => entity.DepartmentId == departmentId && entity.PositionId == positionId,
+            cancellationToken);
+
+    public async Task<string> AllocatePersonnelNumberAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        await dbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO "PersonnelNumberSequences" ("OrganizationId", "NextValue")
+            VALUES ({organizationId}, {PersonnelNumberSequence.StartingValue})
+            ON CONFLICT ("OrganizationId") DO NOTHING
+            """,
+            cancellationToken);
+
+        while (true)
+        {
+            var reserved = await dbContext.Database
+                .SqlQuery<int>($"""
+                    UPDATE "PersonnelNumberSequences"
+                    SET "NextValue" = "NextValue" + 1
+                    WHERE "OrganizationId" = {organizationId}
+                    RETURNING "NextValue" - 1 AS "Value"
+                    """)
+                .ToListAsync(cancellationToken);
+            if (reserved.Count != 1)
+            {
+                throw new InvalidOperationException("Personnel number sequence is missing.");
+            }
+
+            var formatted = PersonnelNumber.Format(reserved[0]);
+            var taken = await dbContext.Employees.AnyAsync(
+                entity => entity.OrganizationId == organizationId && entity.PersonnelNumber == formatted,
+                cancellationToken);
+            if (!taken)
+            {
+                return formatted;
+            }
+        }
+    }
+
     public async Task<IReadOnlyList<Employee>> ListEmployeesAsync(
         Guid organizationId,
         CancellationToken cancellationToken) =>
@@ -97,11 +157,93 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void AddPosition(Position position) => dbContext.Positions.Add(position);
 
+    public void AddApplicability(DepartmentPositionApplicability applicability) =>
+        dbContext.DepartmentPositionApplicabilities.Add(applicability);
+
+    public void RemoveApplicability(DepartmentPositionApplicability applicability) =>
+        dbContext.DepartmentPositionApplicabilities.Remove(applicability);
+
     public void AddEmployee(Employee employee) => dbContext.Employees.Add(employee);
 
     public void AddEmployment(Employment employment) => dbContext.Employments.Add(employment);
 
     public void AddAssignment(Assignment assignment) => dbContext.Assignments.Add(assignment);
+
+    public Task<EmployeeHrProfile?> GetHrProfileAsync(Guid employeeId, CancellationToken cancellationToken) =>
+        dbContext.EmployeeHrProfiles.FirstOrDefaultAsync(entity => entity.EmployeeId == employeeId, cancellationToken);
+
+    public async Task<IReadOnlyList<EmployeeHrProfile>> ListHrProfilesForEmployeesAsync(
+        IReadOnlyCollection<Guid> employeeIds,
+        CancellationToken cancellationToken)
+    {
+        if (employeeIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.EmployeeHrProfiles
+            .Where(entity => employeeIds.Contains(entity.EmployeeId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<EmployeeHrProfile?> FindHrProfileByNationalIdentityAsync(
+        Guid organizationId,
+        NationalIdentityScheme scheme,
+        string normalizedNationalIdentityNumber,
+        CancellationToken cancellationToken) =>
+        dbContext.EmployeeHrProfiles.FirstOrDefaultAsync(
+            entity => entity.OrganizationId == organizationId
+                && entity.NationalIdentityScheme == scheme
+                && entity.NormalizedNationalIdentityNumber == normalizedNationalIdentityNumber,
+            cancellationToken);
+
+    public async Task<IReadOnlyList<EmergencyContact>> ListEmergencyContactsAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken) =>
+        await dbContext.EmergencyContacts
+            .Where(entity => entity.EmployeeId == employeeId)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<EmergencyContact>> ListEmergencyContactsForEmployeesAsync(
+        IReadOnlyCollection<Guid> employeeIds,
+        CancellationToken cancellationToken)
+    {
+        if (employeeIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.EmergencyContacts
+            .Where(entity => employeeIds.Contains(entity.EmployeeId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public Task<EmployeePhoto?> GetEmployeePhotoAsync(Guid employeeId, CancellationToken cancellationToken) =>
+        dbContext.EmployeePhotos.FirstOrDefaultAsync(entity => entity.EmployeeId == employeeId, cancellationToken);
+
+    public async Task<IReadOnlyList<EmployeePhoto>> ListEmployeePhotosForEmployeesAsync(
+        IReadOnlyCollection<Guid> employeeIds,
+        CancellationToken cancellationToken)
+    {
+        if (employeeIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.EmployeePhotos
+            .Where(entity => employeeIds.Contains(entity.EmployeeId))
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddHrProfile(EmployeeHrProfile profile) => dbContext.EmployeeHrProfiles.Add(profile);
+
+    public void AddEmergencyContact(EmergencyContact contact) => dbContext.EmergencyContacts.Add(contact);
+
+    public void RemoveEmergencyContact(EmergencyContact contact) => dbContext.EmergencyContacts.Remove(contact);
+
+    public void AddEmployeePhoto(EmployeePhoto photo) => dbContext.EmployeePhotos.Add(photo);
+
+    public void RemoveEmployeePhoto(EmployeePhoto photo) => dbContext.EmployeePhotos.Remove(photo);
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
@@ -113,18 +255,25 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
         {
             throw new PersonnelNumberConflictException();
         }
+        catch (DbUpdateException exception) when (IsNationalIdentityConflict(exception))
+        {
+            throw new NationalIdentityConflictException();
+        }
     }
 
-    private static bool IsPersonnelNumberConflict(DbUpdateException exception)
+    private static bool IsPersonnelNumberConflict(DbUpdateException exception) =>
+        IsUniqueViolation(exception, WorkforceDbContext.PersonnelNumberIndexName);
+
+    private static bool IsNationalIdentityConflict(DbUpdateException exception) =>
+        IsUniqueViolation(exception, WorkforceDbContext.NationalIdentityIndexName);
+
+    private static bool IsUniqueViolation(DbUpdateException exception, string constraintName)
     {
         for (var current = exception.InnerException; current is not null; current = current.InnerException)
         {
             if (current is PostgresException postgres
                 && postgres.SqlState == PostgresErrorCodes.UniqueViolation
-                && string.Equals(
-                    postgres.ConstraintName,
-                    WorkforceDbContext.PersonnelNumberIndexName,
-                    StringComparison.Ordinal))
+                && string.Equals(postgres.ConstraintName, constraintName, StringComparison.Ordinal))
             {
                 return true;
             }

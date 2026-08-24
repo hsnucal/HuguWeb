@@ -64,3 +64,35 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
   return payload as T
 }
+
+export async function apiUpload<T>(path: string, body: FormData): Promise<T> {
+  const headers = new Headers()
+  headers.set('Accept', 'application/json')
+  if (csrfToken) {
+    headers.set('X-XSRF-TOKEN', csrfToken)
+  }
+
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'POST',
+    headers,
+    body,
+    credentials: 'include',
+  })
+
+  const contentType = response.headers.get('content-type') ?? ''
+  const isJson =
+    contentType.includes('application/json') ||
+    contentType.includes('application/problem+json')
+  const payload = isJson ? await response.json() : undefined
+
+  if (!response.ok) {
+    const problem = payload as ProblemDetails | undefined
+    throw new ApiError(
+      problem?.detail ?? problem?.title ?? 'Request failed',
+      response.status,
+      problem,
+    )
+  }
+
+  return payload as T
+}

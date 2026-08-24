@@ -112,6 +112,22 @@ public static class SecurityExtensions
             options.AddPolicy(
                 AuthorizationPolicies.MaintenanceResolve,
                 policy => policy.RequireClaim(MaintenancePermissions.ClaimType, MaintenancePermissions.Resolve));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrEmployeeRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.Read)
+                    || context.User.HasClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrEmployeeManage,
+                policy => policy.RequireClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrEmployeeHire,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.Manage)
+                    && context.User.HasClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage)));
         });
 
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -131,7 +147,7 @@ public static class SecurityExtensions
 
                 policy
                     .WithHeaders("Content-Type", "X-XSRF-TOKEN", "X-Correlation-ID")
-                    .WithMethods("GET", "POST", "PATCH", "HEAD", "OPTIONS");
+                    .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS");
             });
         });
 

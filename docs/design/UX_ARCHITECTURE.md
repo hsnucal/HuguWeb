@@ -68,8 +68,8 @@ Exact sidebar behavior and exact top-bar composition are **candidates** (see [Op
 
 Requirements:
 
-- expanded state may show the HuGuWeb wordmark
-- collapsed state may later show a compact HG mark ([Brand Direction](BRAND_DIRECTION.md))
+- expanded state shows the HG mark + HuGu
+- collapsed state shows the HG mark alone (when that rail exists)
 - current selection clearly visible (brand accent + label, not color alone)
 - no excessive nested menus
 - bottom area may contain help, settings, and user context

@@ -5,6 +5,7 @@ import { AvatarMark } from '../ui/AvatarMark'
 import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
+import { canReadHrEmployees } from '../workforce/hrAccess'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import { canReadRoomOperations } from '../room-operations/roomOperationsAccess'
 import { canReadMaintenance } from '../technical-service/maintenanceAccess'
@@ -34,15 +35,15 @@ export function Sidebar({
 }) {
   const { t } = useTranslation()
   const { user, preferenceError, updatePreferredLanguage } = useAuthSession()
-  const showWorkforce = canReadWorkforce(user)
+  const showWorkforce = canReadHrEmployees(user) || canReadWorkforce(user)
   const showRoomOperations = canReadRoomOperations(user)
   const showTechnicalService = canReadMaintenance(user)
 
   return (
     <aside className={styles.sidebar} aria-label={t('navigation.application')}>
       <div className={styles.brand}>
-        <BrandMark />
-        <span className={styles.wordmark}>HuGuWeb</span>
+        <BrandMark tone="inverse" />
+        <span className={styles.wordmark}>HuGu</span>
       </div>
 
       <nav className={styles.nav} aria-label={t('navigation.primary')}>
@@ -83,7 +84,7 @@ export function Sidebar({
 
         {showWorkforce ? (
           <NavLink
-            to="/app/workforce"
+            to={canReadHrEmployees(user) ? '/app/workforce' : '/app/workforce/departments'}
             className={({ isActive }) => (isActive ? styles.current : styles.item)}
           >
             <span className={styles.icon}>
@@ -125,7 +126,7 @@ export function Sidebar({
         </span>
 
         <div className={styles.account}>
-          <AvatarMark name={userLabel} size="sm" />
+          <AvatarMark name={userLabel} size="sm" tone="onBrand" />
           <div className={styles.accountCopy}>
             <span className={styles.accountName}>{userLabel}</span>
             <span className={styles.accountHint}>{t('auth.signedIn')}</span>
@@ -135,6 +136,7 @@ export function Sidebar({
         <LanguageSelect
           id="app-language"
           className={styles.language}
+          tone="onBrand"
           onChange={(language) => void updatePreferredLanguage(language)}
         />
 

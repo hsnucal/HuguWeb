@@ -6,11 +6,13 @@ export function LanguageSelect({
   id,
   disabled,
   className,
+  tone = 'default',
   onChange,
 }: {
   id: string
   disabled?: boolean
   className?: string
+  tone?: 'default' | 'onBrand'
   onChange: (language: AppLanguage) => void
 }) {
   const { t, i18n } = useTranslation()
@@ -23,7 +25,7 @@ export function LanguageSelect({
       </label>
       <select
         id={id}
-        className={styles.select}
+        className={[styles.select, tone === 'onBrand' ? styles.onBrand : ''].filter(Boolean).join(' ')}
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value as AppLanguage)}

@@ -106,7 +106,7 @@ public static class WorkforceEndpoints
         CancellationToken cancellationToken)
     {
         var result = await useCase.CreateAsync(
-            new CreatePositionCommand(request.Name, request.Code),
+            new CreatePositionCommand(request.Name, request.Code, request.DepartmentIds),
             cancellationToken);
         return result.IsSuccess
             ? Results.Created($"/api/workforce/positions/{result.Value!.Id}", result.Value)
@@ -125,7 +125,8 @@ public static class WorkforceEndpoints
                 request.Name,
                 request.Code,
                 request.Name is not null || request.Code is not null,
-                request.IsActive),
+                request.IsActive,
+                request.DepartmentIds),
             cancellationToken);
         return result.ToHttp();
     }
@@ -164,7 +165,6 @@ public static class WorkforceEndpoints
             new HireEmployeeCommand(
                 request.GivenName,
                 request.FamilyName,
-                request.PersonnelNumber,
                 request.EmploymentStartDate,
                 request.DepartmentId,
                 request.PositionId),
@@ -200,14 +200,18 @@ public static class WorkforceEndpoints
 
 public sealed record CreateDepartmentRequest(string Name, string? Code);
 
-public sealed record CreatePositionRequest(string Name, string? Code);
+public sealed record CreatePositionRequest(string Name, string? Code, IReadOnlyList<Guid>? DepartmentIds);
 
-public sealed record PatchNamedRecordRequest(string? Name, string? Code, bool? IsActive);
+public sealed record PatchNamedRecordRequest(
+    string? Name,
+    string? Code,
+    bool? IsActive,
+    IReadOnlyList<Guid>? DepartmentIds);
 
 public sealed record HireEmployeeRequest(
     string GivenName,
     string FamilyName,
-    string PersonnelNumber,
+    string? PersonnelNumber,
     DateOnly EmploymentStartDate,
     Guid DepartmentId,
     Guid PositionId);
@@ -221,10 +225,18 @@ internal static class WorkforceHttpResults
     public static IResult ToHttp<T>(this WorkforceResult<T> result) =>
         result.IsSuccess ? Results.Ok(result.Value) : result.Error!.ToHttp();
 
-    public static IResult ToHttp(this WorkforceError error) =>
-        Results.Problem(
+    public static IResult ToHttp(this WorkforceError error)
+    {
+        var extensions = new Dictionary<string, object?> { ["code"] = error.Code };
+        if (error.Errors is { Count: > 0 })
+        {
+            extensions["errors"] = error.Errors;
+        }
+
+        return Results.Problem(
             title: error.Title,
             detail: error.Detail,
             statusCode: error.StatusCode,
-            extensions: new Dictionary<string, object?> { ["code"] = error.Code });
+            extensions: extensions);
+    }
 }

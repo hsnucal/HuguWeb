@@ -4,7 +4,7 @@ namespace HuGuWeb.Workforce.Application;
 
 public static class AssignmentDestination
 {
-    public static WorkforceResult<Position> Ensure(Department department, Position position)
+    public static WorkforceResult<Position> Ensure(Department department, Position position, bool isApplicable)
     {
         if (!department.IsActive)
         {
@@ -14,6 +14,11 @@ public static class AssignmentDestination
         if (!position.IsActive)
         {
             return WorkforceError.PositionInactive();
+        }
+
+        if (!isApplicable)
+        {
+            return WorkforceError.PositionNotAvailableForDepartment();
         }
 
         return position;
@@ -27,6 +32,7 @@ public static class TransferPlanner
         IReadOnlyList<Assignment> primaryAssignments,
         Department department,
         Position position,
+        bool isApplicable,
         DateOnly effectiveDate)
     {
         if (employment.IsEnded)
@@ -34,7 +40,7 @@ public static class TransferPlanner
             return WorkforceError.EmploymentEnded();
         }
 
-        var destination = AssignmentDestination.Ensure(department, position);
+        var destination = AssignmentDestination.Ensure(department, position, isApplicable);
         if (!destination.IsSuccess)
         {
             return destination.Error!;

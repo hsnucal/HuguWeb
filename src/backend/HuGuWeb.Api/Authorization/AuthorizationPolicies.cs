@@ -11,4 +11,7 @@ public static class AuthorizationPolicies
     public const string MaintenanceRead = "MaintenanceRead";
     public const string MaintenanceManage = "MaintenanceManage";
     public const string MaintenanceResolve = "MaintenanceResolve";
+    public const string HrEmployeeRead = "HrEmployeeRead";
+    public const string HrEmployeeManage = "HrEmployeeManage";
+    public const string HrEmployeeHire = "HrEmployeeHire";
 }

@@ -28,8 +28,8 @@ If those secrets are missing, Development startup skips the affected accounts an
 
 | Email | Purpose | Permissions | Sidebar | Can | Cannot |
 | --- | --- | --- | --- | --- | --- |
-| `dev@localhost` | Broad regression | `workforce.read`, `workforce.manage`, `room-operations.read`, `room-operations.manage`, `room-operations.inspect`, `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Oda Operasyonları, Personel, Teknik Servis | Current Workforce + Room Operations + Technical Service | — |
-| `hr.manager@localhost` | İnsan Kaynakları manager | `workforce.read`, `workforce.manage` | Ana Sayfa, Personel | Workforce management | Room Operations; Technical Service (menus hidden; API 403) |
+| `dev@localhost` | Broad regression | `workforce.read`, `workforce.manage`, `hr.employee.read`, `hr.employee.manage`, `hr.employee.sensitive.read`, `room-operations.read`, `room-operations.manage`, `room-operations.inspect`, `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Oda Operasyonları, Personel, Teknik Servis | Current Workforce + Personel Master + Room Operations + Technical Service | — |
+| `hr.manager@localhost` | İnsan Kaynakları manager | `workforce.read`, `workforce.manage`, `hr.employee.read`, `hr.employee.manage`, `hr.employee.sensitive.read` | Ana Sayfa, Personel | Workforce management and Personel Master, including sensitive HR fields | Room Operations; Technical Service (menus hidden; API 403) |
 | `roomops.attendant@localhost` | Cleaning work | `room-operations.read`, `room-operations.manage` | Ana Sayfa, Oda Operasyonları | View rooms; needs-cleaning; complete cleaning | Inspect / approve / reject; Workforce; Technical Service |
 | `roomops.inspector@localhost` | Inspection | `room-operations.read`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | View rooms; accept / reject when Clean | Cleaning manage actions; Workforce; Technical Service |
 | `roomops.manager@localhost` | Room Operations regression | `room-operations.read`, `room-operations.manage`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | Current Room Operations | Workforce; Technical Service |
@@ -42,7 +42,7 @@ If those secrets are missing, Development startup skips the affected accounts an
 
 | Menu | Required claim |
 | --- | --- |
-| Personel | `workforce.read` |
+| Personel | `hr.employee.read` (directory and Personel Card). Departments / Positions remain available with `workforce.read`. |
 | Oda Operasyonları | `room-operations.read` |
 | Teknik Servis | `maintenance.read` |
 

@@ -20,15 +20,26 @@ public class DevelopmentPersonaTests
         Assert.Contains(MaintenancePermissions.Read, persona.Permissions);
         Assert.Contains(MaintenancePermissions.Manage, persona.Permissions);
         Assert.Contains(MaintenancePermissions.Resolve, persona.Permissions);
+        Assert.Contains(HrEmployeePermissions.Read, persona.Permissions);
+        Assert.Contains(HrEmployeePermissions.Manage, persona.Permissions);
+        Assert.Contains(HrEmployeePermissions.SensitiveRead, persona.Permissions);
     }
 
     [Fact]
-    public void HumanResourcesManager_HasWorkforceOnly()
+    public void HumanResourcesManager_HasWorkforceAndHrEmployeePermissions()
     {
         var persona = DevelopmentPersonaCatalog.HumanResourcesManager;
 
         Assert.Equal("hr.manager@localhost", persona.Email);
-        Assert.Equal([WorkforcePermissions.Read, WorkforcePermissions.Manage], persona.Permissions);
+        Assert.Equal(
+            [
+                WorkforcePermissions.Read,
+                WorkforcePermissions.Manage,
+                HrEmployeePermissions.Read,
+                HrEmployeePermissions.Manage,
+                HrEmployeePermissions.SensitiveRead
+            ],
+            persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
     }
@@ -42,6 +53,7 @@ public class DevelopmentPersonaTests
         Assert.Equal([RoomOperationsPermissions.Read, RoomOperationsPermissions.Manage], persona.Permissions);
         Assert.DoesNotContain(RoomOperationsPermissions.Inspect, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
     }
 
@@ -54,6 +66,7 @@ public class DevelopmentPersonaTests
         Assert.Equal([RoomOperationsPermissions.Read, RoomOperationsPermissions.Inspect], persona.Permissions);
         Assert.DoesNotContain(RoomOperationsPermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
     }
 
@@ -67,6 +80,7 @@ public class DevelopmentPersonaTests
             [RoomOperationsPermissions.Read, RoomOperationsPermissions.Manage, RoomOperationsPermissions.Inspect],
             persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
     }
 
@@ -79,6 +93,7 @@ public class DevelopmentPersonaTests
         Assert.Equal([MaintenancePermissions.Read, MaintenancePermissions.Resolve], persona.Permissions);
         Assert.DoesNotContain(MaintenancePermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
     }
 
@@ -92,6 +107,7 @@ public class DevelopmentPersonaTests
             [MaintenancePermissions.Read, MaintenancePermissions.Manage, MaintenancePermissions.Resolve],
             persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
     }
 
@@ -117,7 +133,14 @@ public class DevelopmentPersonaTests
             current,
             DevelopmentPersonaCatalog.HumanResourcesManager.Permissions);
 
-        Assert.Equal([WorkforcePermissions.Manage], add);
+        Assert.Equal(
+            [
+                HrEmployeePermissions.Manage,
+                HrEmployeePermissions.Read,
+                HrEmployeePermissions.SensitiveRead,
+                WorkforcePermissions.Manage
+            ],
+            add);
         Assert.Equal([RoomOperationsPermissions.Inspect], remove);
     }
 

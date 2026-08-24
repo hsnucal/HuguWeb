@@ -106,6 +106,7 @@ export type Translations = {
     deactivate: string
     createDepartment: string
     createPosition: string
+    applicableDepartments: string
     rename: string
     save: string
     cancel: string
@@ -140,6 +141,7 @@ export type Translations = {
     newPosition: string
     selectDepartment: string
     selectPosition: string
+    selectDepartmentFirst: string
     confirmEnd: string
     backToDirectory: string
     noAccess: string
@@ -153,7 +155,163 @@ export type Translations = {
       overlappingPrimaryAssignment: string
       invalidEmploymentPeriod: string
       sameAssignment: string
+      positionNotAvailable: string
       generic: string
+    }
+  }
+  personnel: {
+    newPersonnel: string
+    cardTitle: string
+    cardTitleCreate: string
+    close: string
+    closeCard: string
+    cancel: string
+    save: string
+    saving: string
+    createSuccess: string
+    saveSuccess: string
+    photo: string
+    photoHint: string
+    uploadPhoto: string
+    replacePhoto: string
+    removePhoto: string
+    organization: string
+    property: string
+    notes: string
+    columns: string
+    columnPicker: string
+    columnFixed: string
+    columnOptional: string
+    allPositions: string
+    allStatuses: string
+    startFrom: string
+    startTo: string
+    filters: string
+    tabGeneral: string
+    tabIdentity: string
+    tabWork: string
+    tabHistory: string
+    sectionIdentity: string
+    sectionContact: string
+    sectionAddress: string
+    sectionEmergency: string
+    identityScheme: string
+    identityNumber: string
+    nationality: string
+    gender: string
+    birthDate: string
+    birthPlace: string
+    maritalStatus: string
+    bloodType: string
+    educationLevel: string
+    mobilePhone: string
+    homePhone: string
+    email: string
+    residenceAddress: string
+    city: string
+    district: string
+    notificationAddress: string
+    emergencyName: string
+    emergencyRelationship: string
+    emergencyPhone: string
+    emergencyPrimary: string
+    addEmergency: string
+    removeEmergency: string
+    noEmergency: string
+    placeholders: {
+      givenName: string
+      familyName: string
+      email: string
+      birthPlace: string
+      educationLevel: string
+      bloodType: string
+      identityScheme: string
+      nationality: string
+      maritalStatus: string
+      gender: string
+      identityNumber: string
+      homePhone: string
+      city: string
+      district: string
+      residenceAddress: string
+      notificationAddress: string
+      notes: string
+      emergencyName: string
+      emergencyRelationship: string
+      emergencyPhone: string
+    }
+    schemeNone: string
+    schemeTckn: string
+    schemeYkn: string
+    schemePassport: string
+    schemeOther: string
+    unspecified: string
+    genderFemale: string
+    genderMale: string
+    maritalSingle: string
+    maritalMarried: string
+    maritalDivorced: string
+    maritalWidowed: string
+    educationPrimary: string
+    educationSecondary: string
+    educationHighSchool: string
+    educationAssociate: string
+    educationBachelor: string
+    educationMaster: string
+    educationDoctorate: string
+    dirtyTitle: string
+    dirtyBody: string
+    dirtyContinue: string
+    dirtyDiscard: string
+    personnelNumberAuto: string
+    personnelNumberReadOnly: string
+    noPositionsForDepartment: string
+    createNeedsStructure: string
+    historyEmptyCreate: string
+    employmentPeriod: string
+    assignmentPeriod: string
+    transferAction: string
+    noHrAccess: string
+    sensitiveHidden: string
+    errors: {
+      nationalIdentityInUse: string
+      invalidHrProfile: string
+      invalidEmergencyContact: string
+      invalidPhoto: string
+      sensitiveWriteForbidden: string
+      generic: string
+      fixFields: string
+    }
+    validation: {
+      tcknLength: string
+      tcknInvalid: string
+      yknFormat: string
+      passportFormat: string
+      identitySchemeRequired: string
+      identityTooLong: string
+      identityInvalid: string
+      phoneInvalid: string
+      homePhoneInvalid: string
+      emergencyPhoneInvalid: string
+      phoneRequired: string
+      mobilePhoneLength: string
+      emailInvalid: string
+      emailTooLong: string
+      birthDateInvalid: string
+      textTooLong: string
+      givenNameRequired: string
+      givenNameTooLong: string
+      familyNameRequired: string
+      familyNameTooLong: string
+      personnelNumberRequired: string
+      personnelNumberTooLong: string
+      emergencyNameRequired: string
+      emergencyNameTooLong: string
+      emergencyPrimaryMultiple: string
+      departmentRequired: string
+      positionRequired: string
+      startDateRequired: string
+      positionNotAvailable: string
     }
   }
   roomOperations: {
@@ -414,6 +572,7 @@ export const en: Translations = {
     deactivate: 'Deactivate',
     createDepartment: 'Add department',
     createPosition: 'Add position',
+    applicableDepartments: 'Departments where this position can be used',
     rename: 'Rename',
     save: 'Save',
     cancel: 'Cancel',
@@ -448,6 +607,7 @@ export const en: Translations = {
     newPosition: 'New position',
     selectDepartment: 'Select a department',
     selectPosition: 'Select a position',
+    selectDepartmentFirst: 'Select a department first',
     confirmEnd:
       'This ends employment. The staff record is not deleted, history is kept, and the person leaves the active staff list.',
     backToDirectory: 'Back to staff list',
@@ -462,7 +622,164 @@ export const en: Translations = {
       overlappingPrimaryAssignment: 'Primary assignments cannot overlap.',
       invalidEmploymentPeriod: 'The end date must be on or after the employment start date.',
       sameAssignment: 'This person already works in that department and position.',
+      positionNotAvailable: 'The selected position cannot be used in this department.',
       generic: 'The workforce request could not be completed.',
+    },
+  },
+  personnel: {
+    newPersonnel: 'New personnel',
+    cardTitle: 'Personnel card',
+    cardTitleCreate: 'New personnel',
+    close: 'Close',
+    closeCard: 'Close personnel card',
+    cancel: 'Cancel',
+    save: 'Save',
+    saving: 'Saving…',
+    createSuccess: 'Personnel record created.',
+    saveSuccess: 'Personnel record saved.',
+    photo: 'Photo',
+    photoHint: 'JPEG, PNG or WebP. Maximum 2 MB.',
+    uploadPhoto: 'Add photo',
+    replacePhoto: 'Replace photo',
+    removePhoto: 'Remove photo',
+    organization: 'Organization',
+    property: 'Property',
+    notes: 'Notes',
+    columns: 'Columns',
+    columnPicker: 'Visible columns',
+    columnFixed: 'Fixed columns',
+    columnOptional: 'Optional columns',
+    allPositions: 'All positions',
+    allStatuses: 'All statuses',
+    startFrom: 'Start from',
+    startTo: 'Start to',
+    filters: 'Filters',
+    tabGeneral: 'General',
+    tabIdentity: 'Identity & contact',
+    tabWork: 'Work / organization',
+    tabHistory: 'History',
+    sectionIdentity: 'Identity',
+    sectionContact: 'Contact',
+    sectionAddress: 'Address',
+    sectionEmergency: 'Emergency contacts',
+    identityScheme: 'Identity scheme',
+    identityNumber: 'Identity number',
+    nationality: 'Nationality',
+    gender: 'Gender',
+    birthDate: 'Date of birth',
+    birthPlace: 'Place of birth',
+    maritalStatus: 'Marital status',
+    bloodType: 'Blood type',
+    educationLevel: 'Education level',
+    mobilePhone: 'Mobile phone',
+    homePhone: 'Home phone',
+    email: 'Email',
+    residenceAddress: 'Residence address',
+    city: 'City',
+    district: 'District',
+    notificationAddress: 'Notification / stay address',
+    emergencyName: 'Name',
+    emergencyRelationship: 'Relationship',
+    emergencyPhone: 'Phone',
+    emergencyPrimary: 'Primary contact',
+    addEmergency: 'Add emergency contact',
+    removeEmergency: 'Remove',
+    noEmergency: 'No emergency contacts yet.',
+    placeholders: {
+      givenName: 'Enter given name',
+      familyName: 'Enter family name',
+      email: 'Enter email address',
+      birthPlace: 'Enter place of birth',
+      educationLevel: 'Select education level',
+      bloodType: 'Select blood type',
+      identityScheme: 'Select identity type',
+      nationality: 'Enter nationality',
+      maritalStatus: 'Select marital status',
+      gender: 'Select gender',
+      identityNumber: 'Enter identity number',
+      homePhone: 'Enter home phone',
+      city: 'Enter city',
+      district: 'Enter district',
+      residenceAddress: 'Enter residence address',
+      notificationAddress: 'Enter notification address',
+      notes: 'Enter notes',
+      emergencyName: 'Enter name',
+      emergencyRelationship: 'Enter relationship',
+      emergencyPhone: 'Enter phone',
+    },
+    schemeNone: 'Not specified',
+    schemeTckn: 'TCKN',
+    schemeYkn: 'YKN',
+    schemePassport: 'Passport',
+    schemeOther: 'Other',
+    unspecified: 'Not specified',
+    genderFemale: 'Female',
+    genderMale: 'Male',
+    maritalSingle: 'Single',
+    maritalMarried: 'Married',
+    maritalDivorced: 'Divorced',
+    maritalWidowed: 'Widowed',
+    educationPrimary: 'Primary',
+    educationSecondary: 'Secondary',
+    educationHighSchool: 'High school',
+    educationAssociate: 'Associate degree',
+    educationBachelor: 'Bachelor’s degree',
+    educationMaster: 'Master’s degree',
+    educationDoctorate: 'Doctorate',
+    dirtyTitle: 'Unsaved changes',
+    dirtyBody:
+      'Your changes have not been saved.\nIf you leave without saving, these changes will be lost.',
+    dirtyContinue: 'Continue editing',
+    dirtyDiscard: 'Leave without saving',
+    personnelNumberAuto: 'Generated automatically when saved',
+    personnelNumberReadOnly: 'Personnel number cannot be changed here.',
+    noPositionsForDepartment: 'No positions are available for this department.',
+    createNeedsStructure: 'Add at least one active department and one active position before creating personnel.',
+    historyEmptyCreate: 'History appears after the person is hired.',
+    employmentPeriod: 'Employment',
+    assignmentPeriod: 'Assignment',
+    transferAction: 'Change of duties',
+    noHrAccess: 'You do not have access to personnel administration.',
+    sensitiveHidden: 'Restricted fields are hidden for this account.',
+    errors: {
+      nationalIdentityInUse: 'This national identity already belongs to someone in the organization.',
+      invalidHrProfile: 'Check the personnel profile fields and try again.',
+      invalidEmergencyContact: 'Each emergency contact needs a name and phone. Only one can be primary.',
+      invalidPhoto: 'Use a JPEG, PNG or WebP image up to 2 MB.',
+      sensitiveWriteForbidden: 'This account cannot change restricted personnel fields.',
+      generic: 'The personnel request could not be completed.',
+      fixFields: 'Some fields could not be saved. Check the highlighted fields.',
+    },
+    validation: {
+      tcknLength: 'TCKN must be 11 digits.',
+      tcknInvalid: 'Check the TCKN format.',
+      yknFormat: 'Check the foreign identity number format.',
+      passportFormat: 'Check the passport number.',
+      identitySchemeRequired: 'Select an identity scheme when a number is entered.',
+      identityTooLong: 'The identity number is too long.',
+      identityInvalid: 'Check the identity number.',
+      phoneInvalid: 'Check the mobile phone format.',
+      homePhoneInvalid: 'Check the home phone format.',
+      emergencyPhoneInvalid: 'Check the emergency contact phone number.',
+      phoneRequired: 'A phone number is required.',
+      mobilePhoneLength: 'Mobile phone must be 10 digits.',
+      emailInvalid: 'Check the email address format.',
+      emailTooLong: 'The email address is too long.',
+      birthDateInvalid: 'Birth date is outside a reasonable range.',
+      textTooLong: 'This field is too long.',
+      givenNameRequired: 'Given name is required.',
+      givenNameTooLong: 'Given name is too long.',
+      familyNameRequired: 'Family name is required.',
+      familyNameTooLong: 'Family name is too long.',
+      personnelNumberRequired: 'Personnel number is required.',
+      personnelNumberTooLong: 'Personnel number is too long.',
+      emergencyNameRequired: 'Emergency contact name is required.',
+      emergencyNameTooLong: 'Emergency contact name is too long.',
+      emergencyPrimaryMultiple: 'Only one emergency contact can be primary.',
+      departmentRequired: 'Select a department.',
+      positionRequired: 'Select a position.',
+      startDateRequired: 'Employment start date is required.',
+      positionNotAvailable: 'The selected position cannot be used in this department.',
     },
   },
   roomOperations: {

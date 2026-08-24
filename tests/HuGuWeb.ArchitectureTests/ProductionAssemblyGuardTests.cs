@@ -6,6 +6,7 @@ using HuGuWeb.RoomOperations.Infrastructure.Persistence;
 using HuGuWeb.TechnicalService.Domain;
 using HuGuWeb.TechnicalService.Infrastructure;
 using HuGuWeb.TechnicalService.Infrastructure.Persistence;
+using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
 using HuGuWeb.Workforce.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -318,6 +319,118 @@ public class ProductionAssemblyGuardTests
     }
 
     [Fact]
+    public void Employee_CoreRemainsMinimal()
+    {
+        var propertyNames = typeof(Employee).GetProperties().Select(property => property.Name).OrderBy(name => name).ToArray();
+        Assert.Equal(["FamilyName", "GivenName", "Id", "OrganizationId", "PersonnelNumber"], propertyNames);
+    }
+
+    [Fact]
+    public void NationalIdentity_IsUniqueWhenPresent_InEfModel()
+    {
+        var options = new DbContextOptionsBuilder<WorkforceDbContext>()
+            .UseNpgsql("Host=localhost;Database=huguweb_model_check;Username=huguweb;Password=unused")
+            .Options;
+
+        using var context = new WorkforceDbContext(options);
+        var entity = context.Model.FindEntityType(typeof(EmployeeHrProfile));
+        Assert.NotNull(entity);
+
+        var unique = entity.GetIndexes().Single(index =>
+            index.IsUnique
+            && index.GetDatabaseName() == WorkforceDbContext.NationalIdentityIndexName);
+
+        var properties = unique.Properties.Select(property => property.Name).ToArray();
+        Assert.Equal(["OrganizationId", "NationalIdentityScheme", "NormalizedNationalIdentityNumber"], properties);
+        Assert.Contains("NormalizedNationalIdentityNumber", unique.GetFilter(), StringComparison.Ordinal);
+        Assert.Contains("IS NOT NULL", unique.GetFilter(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void OperationalEmployeeReference_ContainsNoSensitiveHrFields()
+    {
+        foreach (var type in new[]
+                 {
+                     typeof(HuGuWeb.RoomOperations.Application.AssignableEmployee),
+                     typeof(HuGuWeb.TechnicalService.Application.AssignableEmployee),
+                     typeof(EmployeeDirectoryItem),
+                     typeof(ActiveWorkforceMember)
+                 })
+        {
+            var names = type.GetProperties().Select(property => property.Name).ToArray();
+            Assert.Contains("EmployeeId", names);
+            Assert.DoesNotContain("NationalIdentityNumber", names);
+            Assert.DoesNotContain("BirthDate", names);
+            Assert.DoesNotContain("ResidenceAddress", names);
+            Assert.DoesNotContain("EmergencyContacts", names);
+            Assert.DoesNotContain("BloodType", names);
+            Assert.DoesNotContain("Iban", names);
+            Assert.DoesNotContain("Salary", names);
+            Assert.DoesNotContain("Wage", names);
+        }
+
+        Assert.Equal(
+            ["EmployeeId", "FamilyName", "GivenName", "PersonnelNumber"],
+            typeof(HuGuWeb.RoomOperations.Application.AssignableEmployee)
+                .GetProperties()
+                .Select(property => property.Name)
+                .OrderBy(name => name)
+                .ToArray());
+        Assert.Equal(
+            ["EmployeeId", "FamilyName", "GivenName", "PersonnelNumber"],
+            typeof(HuGuWeb.TechnicalService.Application.AssignableEmployee)
+                .GetProperties()
+                .Select(property => property.Name)
+                .OrderBy(name => name)
+                .ToArray());
+    }
+
+    [Fact]
+    public void RoomOperationsAndTechnicalService_DoNotReferenceHrProfileImplementation()
+    {
+        var names = typeof(Room).Assembly.GetTypes()
+            .Concat(typeof(RoomOperationsDbContext).Assembly.GetTypes())
+            .Concat(typeof(MaintenanceIssue).Assembly.GetTypes())
+            .Concat(typeof(TechnicalServiceDbContext).Assembly.GetTypes())
+            .Select(type => type.Name)
+            .ToArray();
+
+        Assert.DoesNotContain("EmployeeHrProfile", names);
+        Assert.DoesNotContain("EmergencyContact", names);
+        Assert.DoesNotContain("EmployeePhoto", names);
+        Assert.DoesNotContain("HrEmployeeCard", names);
+        Assert.DoesNotContain("NationalIdentity", names);
+    }
+
+    [Fact]
+    public void Hr01B_DoesNotIntroduceDeferredHrPlatformTypes()
+    {
+        var names = typeof(Employee).Assembly.GetTypes()
+            .Concat(typeof(WorkforceDbContext).Assembly.GetTypes())
+            .Concat(typeof(AppIdentityDbContext).Assembly.GetTypes())
+            .Select(type => type.Name)
+            .ToArray();
+
+        Assert.DoesNotContain("EmployeePaymentProfile", names);
+        Assert.DoesNotContain("PayrollRun", names);
+        Assert.DoesNotContain("LeaveBalance", names);
+        Assert.DoesNotContain("LeaveRequest", names);
+        Assert.DoesNotContain("ShiftAssignment", names);
+        Assert.DoesNotContain("ISgkService", names);
+        Assert.DoesNotContain("IKbsService", names);
+        Assert.DoesNotContain("Grade", names);
+        Assert.DoesNotContain("WorkingGroup", names);
+        Assert.DoesNotContain("IOutbox", names);
+        Assert.DoesNotContain("OutboxMessage", names);
+        Assert.DoesNotContain("IMessageBroker", names);
+        Assert.DoesNotContain("IRepository", names);
+        Assert.DoesNotContain("IGenericRepository", names);
+        Assert.Null(typeof(Employee).GetProperty("UserId"));
+        Assert.Null(typeof(Position).GetProperty("Permission"));
+        Assert.Null(typeof(Department).GetProperty("Permission"));
+    }
+
+    [Fact]
     public void Position_IsPropertyScoped_NotDepartmentOwned()
     {
         Assert.NotNull(typeof(Position).GetProperty(nameof(Position.PropertyId)));
@@ -342,6 +455,52 @@ public class ProductionAssemblyGuardTests
             .ToArray();
         Assert.Single(propertyForeignKeys);
         Assert.Equal("PropertyId", propertyForeignKeys[0].Properties.Single().Name);
+    }
+
+    [Fact]
+    public void DepartmentPositionApplicability_IsAssignabilityOnly_NotOwnershipOrAuthorization()
+    {
+        Assert.Null(typeof(Position).GetProperty("DepartmentId"));
+        Assert.Equal(
+            ["DepartmentId", "PositionId"],
+            typeof(DepartmentPositionApplicability).GetProperties().Select(property => property.Name).OrderBy(name => name).ToArray());
+        Assert.Null(typeof(DepartmentPositionApplicability).GetProperty("Permission"));
+        Assert.Null(typeof(DepartmentPositionApplicability).GetProperty("Role"));
+
+        var options = new DbContextOptionsBuilder<WorkforceDbContext>()
+            .UseNpgsql("Host=localhost;Database=huguweb_model_check;Username=huguweb;Password=unused")
+            .Options;
+
+        using var context = new WorkforceDbContext(options);
+        var position = context.Model.FindEntityType(typeof(Position));
+        var applicability = context.Model.FindEntityType(typeof(DepartmentPositionApplicability));
+        Assert.NotNull(position);
+        Assert.NotNull(applicability);
+        Assert.Null(position.FindProperty("DepartmentId"));
+        Assert.Equal(
+            ["DepartmentId", "PositionId"],
+            applicability.FindPrimaryKey()!.Properties.Select(property => property.Name).OrderBy(name => name).ToArray());
+        Assert.Contains(
+            applicability.GetForeignKeys(),
+            key => key.PrincipalEntityType.ClrType == typeof(Department));
+        Assert.Contains(
+            applicability.GetForeignKeys(),
+            key => key.PrincipalEntityType.ClrType == typeof(Position));
+    }
+
+    [Fact]
+    public void PersonnelNumberSequence_IsOrganizationScoped()
+    {
+        var options = new DbContextOptionsBuilder<WorkforceDbContext>()
+            .UseNpgsql("Host=localhost;Database=huguweb_model_check;Username=huguweb;Password=unused")
+            .Options;
+
+        using var context = new WorkforceDbContext(options);
+        var entity = context.Model.FindEntityType(typeof(PersonnelNumberSequence));
+        Assert.NotNull(entity);
+        Assert.Equal("OrganizationId", entity.FindPrimaryKey()!.Properties.Single().Name);
+        Assert.Equal(PersonnelNumberSequence.StartingValue, 1001);
+        Assert.Equal("1001", PersonnelNumber.Format(PersonnelNumberSequence.StartingValue));
     }
 
     [Fact]

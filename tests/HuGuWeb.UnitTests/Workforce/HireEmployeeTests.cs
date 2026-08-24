@@ -36,16 +36,44 @@ public class HireEmployeeTests
     }
 
     [Fact]
-    public async Task Hire_DuplicatePersonnelNumber_IsRejected()
+    public async Task Hire_AssignsGeneratedPersonnelNumber()
     {
         var harness = new WorkforceHarness();
-        Assert.True((await harness.Hire.ExecuteAsync(harness.HireCommand("P-1"), CancellationToken.None)).IsSuccess);
 
-        var result = await harness.Hire.ExecuteAsync(harness.HireCommand("P-1"), CancellationToken.None);
+        var result = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
 
-        Assert.False(result.IsSuccess);
-        Assert.Equal("personnel-number-in-use", result.Error!.Code);
-        Assert.Single(harness.Store.Employees);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(PersonnelNumber.Format(PersonnelNumberSequence.StartingValue), result.Value!.PersonnelNumber);
+        Assert.Equal(result.Value.PersonnelNumber, harness.Store.Employees[0].PersonnelNumber);
+        Assert.NotEqual(result.Value.EmployeeId.ToString(), result.Value.PersonnelNumber);
+    }
+
+    [Fact]
+    public async Task Hire_SubsequentHire_GetsNextPersonnelNumber()
+    {
+        var harness = new WorkforceHarness();
+        var first = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
+        var second = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
+
+        Assert.True(first.IsSuccess);
+        Assert.True(second.IsSuccess);
+        Assert.Equal("1001", first.Value!.PersonnelNumber);
+        Assert.Equal("1002", second.Value!.PersonnelNumber);
+        Assert.NotEqual(first.Value.PersonnelNumber, second.Value.PersonnelNumber);
+    }
+
+    [Fact]
+    public async Task Hire_IgnoresCallerSuppliedPersonnelNumber_WhenPresentOnLegacyShape()
+    {
+        var harness = new WorkforceHarness();
+        harness.SeedEmployee("P-1");
+
+        var result = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.Equal("1001", result.Value!.PersonnelNumber);
+        Assert.Contains(harness.Store.Employees, item => item.PersonnelNumber == "P-1");
+        Assert.Equal(2, harness.Store.Employees.Select(item => item.PersonnelNumber).Distinct().Count());
     }
 
     [Fact]
@@ -59,6 +87,7 @@ public class HireEmployeeTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("department-inactive", result.Error!.Code);
+        Assert.Equal(["department-inactive"], result.Error.Errors![HrValidation.Fields.DepartmentId]);
         Assert.Empty(harness.Store.Employees);
     }
 
@@ -73,6 +102,7 @@ public class HireEmployeeTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("position-inactive", result.Error!.Code);
+        Assert.Equal(["position-inactive"], result.Error.Errors![HrValidation.Fields.PositionId]);
         Assert.Empty(harness.Store.Employees);
     }
 
@@ -99,6 +129,7 @@ public class HireEmployeeTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("department-not-found", result.Error!.Code);
+        Assert.Equal(["department-not-found"], result.Error.Errors![HrValidation.Fields.DepartmentId]);
         Assert.Empty(harness.Store.Employees);
     }
 
@@ -113,11 +144,12 @@ public class HireEmployeeTests
 
         Assert.False(result.IsSuccess);
         Assert.Equal("position-not-found", result.Error!.Code);
+        Assert.Equal(["position-not-found"], result.Error.Errors![HrValidation.Fields.PositionId]);
         Assert.Empty(harness.Store.Employees);
     }
 
     [Fact]
-    public async Task Hire_CanUseSamePositionInAnyActiveDepartment()
+    public async Task Hire_CanUseSamePositionInAnyActiveDepartment_WhenApplicable()
     {
         var harness = new WorkforceHarness();
 
@@ -130,5 +162,22 @@ public class HireEmployeeTests
         Assert.Equal(harness.PositionId, result.Value.PositionId);
         Assert.Equal(harness.OtherDepartmentId, harness.Store.Assignments[0].DepartmentId);
         Assert.Equal(harness.PositionId, harness.Store.Assignments[0].PositionId);
+    }
+
+    [Fact]
+    public async Task Hire_PositionNotApplicableToDepartment_IsRejected()
+    {
+        var harness = new WorkforceHarness();
+
+        var result = await harness.Hire.ExecuteAsync(
+            harness.HireCommand(departmentId: harness.DepartmentId, positionId: harness.OtherPositionId),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("position-not-available-for-department", result.Error!.Code);
+        Assert.Equal(
+            ["position-not-available-for-department"],
+            result.Error.Errors![HrValidation.Fields.PositionId]);
+        Assert.Empty(harness.Store.Employees);
     }
 }

@@ -1,0 +1,134 @@
+using HuGuWeb.Workforce.Domain;
+
+namespace HuGuWeb.Workforce.Application;
+
+public sealed class HireEmployeeWithProfileUseCase(
+    IWorkforceStore store,
+    IWorkforceClock clock,
+    IWorkplaceContext workplaceContext)
+{
+    public async Task<WorkforceResult<HiredEmployee>> ExecuteAsync(
+        HireEmployeeWithProfileCommand command,
+        CancellationToken cancellationToken)
+    {
+        var workplace = await WorkplaceGuard.GetAsync(store, workplaceContext, cancellationToken);
+        if (!workplace.IsSuccess)
+        {
+            return workplace.Error!;
+        }
+
+        var department = await store.GetDepartmentAsync(command.DepartmentId, cancellationToken);
+        if (department is null || department.PropertyId != workplace.Value.Property.Id)
+        {
+            return WorkforceError.DepartmentNotFound();
+        }
+
+        var position = await store.GetPositionAsync(command.PositionId, cancellationToken);
+        if (position is null || position.PropertyId != workplace.Value.Property.Id)
+        {
+            return WorkforceError.PositionNotFound();
+        }
+
+        var applicable = await store.IsPositionApplicableToDepartmentAsync(
+            department.Id,
+            position.Id,
+            cancellationToken);
+        var destination = AssignmentDestination.Ensure(department, position, applicable);
+        if (!destination.IsSuccess)
+        {
+            return destination.Error!;
+        }
+
+        var personnelNumber = await store.AllocatePersonnelNumberAsync(
+            workplace.Value.Organization.Id,
+            cancellationToken);
+        if (!Employee.TryCreate(
+                Guid.CreateVersion7(),
+                workplace.Value.Organization.Id,
+                command.GivenName,
+                command.FamilyName,
+                personnelNumber,
+                out var employee,
+                out var employeeError)
+            || employee is null)
+        {
+            return WorkforceError.InvalidFields(
+                "invalid-employee",
+                employeeError ?? "Employee is invalid.",
+                WorkforceError.FieldForEmployeeCode(employeeError),
+                employeeError ?? "invalid-employee");
+        }
+
+        var today = clock.Today;
+        var employment = Employment.Open(Guid.CreateVersion7(), employee.Id, command.EmploymentStartDate, today);
+        var assignment = Assignment.StartPrimary(
+            Guid.CreateVersion7(),
+            employment.Id,
+            department.Id,
+            position.Id,
+            command.EmploymentStartDate);
+
+        if (!employment.TryEnsureAssignmentFits(assignment.Period, out _))
+        {
+            return WorkforceError.AssignmentOutsideEmployment();
+        }
+
+        var profile = await HrProfileComposer.ApplyAsync(
+            store,
+            employee,
+            command.Profile,
+            today,
+            command.CanWriteSensitive,
+            cancellationToken);
+        if (!profile.IsSuccess)
+        {
+            return profile.Error!;
+        }
+
+        store.AddEmployee(employee);
+        store.AddEmployment(employment);
+        store.AddAssignment(assignment);
+
+        try
+        {
+            await store.SaveChangesAsync(cancellationToken);
+        }
+        catch (PersonnelNumberConflictException)
+        {
+            return WorkforceError.PersonnelNumberInUse();
+        }
+        catch (NationalIdentityConflictException)
+        {
+            return WorkforceError.NationalIdentityInUse();
+        }
+
+        return new HiredEmployee(
+            employee.Id,
+            employee.PersonnelNumber,
+            employee.GivenName,
+            employee.FamilyName,
+            employment.Id,
+            employment.StartDate,
+            employment.Status,
+            assignment.Id,
+            department.Id,
+            position.Id);
+    }
+}
+
+public sealed record HireEmployeeWithProfileCommand(
+    string GivenName,
+    string FamilyName,
+    DateOnly EmploymentStartDate,
+    Guid DepartmentId,
+    Guid PositionId,
+    HrProfileWriteModel Profile,
+    bool CanWriteSensitive);
+
+public sealed class NationalIdentityConflictException : Exception
+{
+    public NationalIdentityConflictException()
+        : base("National identity is already in use.")
+    {
+    }
+}

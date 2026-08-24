@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="#5c2a6e" role="img" aria-label="HG">
+  <rect x="6" y="6" width="10" height="52" rx="2"/>
+  <rect x="26" y="6" width="10" height="52" rx="2"/>
+  <rect x="6" y="27" width="44" height="10" rx="2"/>
+  <path d="M35 6h11a12 12 0 0 1 12 12v4H48V16H35z"/>
+  <path d="M35 48h13V42h10v4a12 12 0 0 1-12 12H35z"/>
+</svg>

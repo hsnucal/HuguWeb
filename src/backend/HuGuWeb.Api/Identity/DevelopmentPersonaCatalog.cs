@@ -15,6 +15,9 @@ public static class DevelopmentPersonaCatalog
     [
         WorkforcePermissions.Read,
         WorkforcePermissions.Manage,
+        HrEmployeePermissions.Read,
+        HrEmployeePermissions.Manage,
+        HrEmployeePermissions.SensitiveRead,
         RoomOperationsPermissions.Read,
         RoomOperationsPermissions.Manage,
         RoomOperationsPermissions.Inspect,
@@ -27,7 +30,13 @@ public static class DevelopmentPersonaCatalog
 
     public static readonly DevelopmentPersonaDefinition HumanResourcesManager = new(
         "hr.manager@localhost",
-        [WorkforcePermissions.Read, WorkforcePermissions.Manage]);
+        [
+            WorkforcePermissions.Read,
+            WorkforcePermissions.Manage,
+            HrEmployeePermissions.Read,
+            HrEmployeePermissions.Manage,
+            HrEmployeePermissions.SensitiveRead
+        ]);
 
     public static readonly DevelopmentPersonaDefinition RoomOperationsAttendant = new(
         "roomops.attendant@localhost",

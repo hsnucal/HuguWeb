@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
-import { formatDateOnly, todayIsoDate } from '../i18n/format'
-import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
+import { formatDateOnly } from '../i18n/format'
+import { DEFAULT_LANGUAGE, toAppLanguage, type AppLanguage } from '../i18n/languages'
 import { Button } from '../ui/Button'
 import { EmptyState } from '../ui/EmptyState'
 import { Notice } from '../ui/Notice'
@@ -14,49 +13,86 @@ import { TextField } from '../ui/TextField'
 import { AvatarMark } from '../ui/AvatarMark'
 import styles from './Workforce.module.css'
 import { canManageWorkforce } from './workforceAccess'
+import { canManageHrEmployees, canReadHrSensitive } from './hrAccess'
 import {
-  type DepartmentRecord,
-  type EmployeeDirectoryItem,
-  type PositionRecord,
-  hireEmployee,
-  listDepartments,
-  listEmployees,
-  listPositions,
-  workforceErrorKey,
-} from './workforceApi'
+  hrEmployeePhotoUrl,
+  hrErrorKey,
+  listHrEmployees,
+  type HrEmployeeListItem,
+} from './hrApi'
+import { listDepartments, listPositions, type DepartmentRecord, type PositionRecord } from './workforceApi'
+import { employmentStatusTone, type WorkforceView } from './workforceStatus'
 import {
-  employmentStatusTone,
-  inWorkforceView,
-  matchesWorkforceSearch,
-  type WorkforceView,
-} from './workforceStatus'
+  availablePersonnelColumns,
+  loadPersonnelColumns,
+  requiredPersonnelColumns,
+  savePersonnelColumns,
+  type PersonnelColumnId,
+} from './personnelColumns'
+import { PersonnelCard } from './PersonnelCard'
+import { formatMobileForDisplay } from './personnelInput'
 
 async function fetchDirectory() {
-  return Promise.all([listEmployees(), listDepartments(), listPositions()])
+  return Promise.all([listHrEmployees(), listDepartments(), listPositions()])
+}
+
+function matchesSearch(person: HrEmployeeListItem, query: string): boolean {
+  const needle = query.trim().toLocaleLowerCase()
+  if (needle === '') {
+    return true
+  }
+
+  const haystack = `${person.givenName} ${person.familyName} ${person.personnelNumber}`.toLocaleLowerCase()
+  return haystack.includes(needle)
 }
 
 export function ActiveWorkforcePage() {
   const { t, i18n } = useTranslation()
   const { user } = useAuthSession()
-  const canManage = canManageWorkforce(user)
+  const canManage = canManageHrEmployees(user)
+  const canWorkforceManage = canManageWorkforce(user)
+  const canReadSensitive = canReadHrSensitive(user)
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
-  const [directory, setDirectory] = useState<EmployeeDirectoryItem[] | null>(null)
+  const [directory, setDirectory] = useState<HrEmployeeListItem[] | null>(null)
   const [departments, setDepartments] = useState<DepartmentRecord[]>([])
   const [positions, setPositions] = useState<PositionRecord[]>([])
   const [view, setView] = useState<WorkforceView>('active')
   const [query, setQuery] = useState('')
   const [departmentFilter, setDepartmentFilter] = useState('')
-  const [hiring, setHiring] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [positionFilter, setPositionFilter] = useState('')
+  const [startFrom, setStartFrom] = useState('')
+  const [startTo, setStartTo] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [form, setForm] = useState({
-    givenName: '',
-    familyName: '',
-    personnelNumber: '',
-    employmentStartDate: todayIsoDate(),
-    departmentId: '',
-    positionId: '',
-  })
+  const [card, setCard] = useState<{ type: 'create' } | { type: 'edit'; employeeId: string } | null>(null)
+  const [feedback, setFeedback] = useState<string | null>(null)
+  const [columns, setColumns] = useState<PersonnelColumnId[]>(() => loadPersonnelColumns(canReadSensitive))
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const pickerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pickerOpen) {
+      return
+    }
+
+    function onPointerDown(event: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setPickerOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setPickerOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [pickerOpen])
 
   useEffect(() => {
     let cancelled = false
@@ -73,7 +109,7 @@ export function ActiveWorkforcePage() {
         setPositions(positionRows)
       } catch (reason) {
         if (!cancelled) {
-          setError(t(workforceErrorKey(reason)))
+          setError(t(hrErrorKey(reason)))
           setDirectory([])
         }
       }
@@ -85,61 +121,57 @@ export function ActiveWorkforcePage() {
     }
   }, [t])
 
-  const activeDepartments = useMemo(
-    () => departments.filter((item) => item.isActive),
-    [departments],
-  )
-  const activePositions = useMemo(
-    () => positions.filter((item) => item.isActive),
-    [positions],
-  )
   const people = directory ?? []
   const activeCount = people.filter((item) => item.employmentStatus === 'Active').length
   const scheduledCount = people.filter((item) => item.employmentStatus === 'Scheduled').length
   const formerCount = people.filter((item) => item.employmentStatus === 'Ended').length
+  const visibleColumns = columns.filter((id) => availablePersonnelColumns(canReadSensitive).includes(id))
+  const canHire = canManage && departments.some((item) => item.isActive) && positions.some((item) => item.isActive)
 
   const visible = people.filter((person) => {
-    if (!inWorkforceView(person, view)) {
+    if (view === 'active' && person.employmentStatus !== 'Active') {
       return false
     }
-
-    if (!matchesWorkforceSearch(person, query)) {
+    if (view === 'scheduled' && person.employmentStatus !== 'Scheduled') {
       return false
     }
-
-    if (departmentFilter !== '' && person.departmentName !== departmentFilter) {
+    if (view === 'former' && person.employmentStatus !== 'Ended') {
       return false
     }
-
+    if (!matchesSearch(person, query)) {
+      return false
+    }
+    if (departmentFilter !== '' && person.departmentId !== departmentFilter) {
+      return false
+    }
+    if (positionFilter !== '' && person.positionId !== positionFilter) {
+      return false
+    }
+    if (startFrom !== '' && person.employmentStartDate < startFrom) {
+      return false
+    }
+    if (startTo !== '' && person.employmentStartDate > startTo) {
+      return false
+    }
     return true
   })
 
-  const canHire = canManage && activeDepartments.length > 0 && activePositions.length > 0
+  async function reload() {
+    const [staff, departmentRows, positionRows] = await fetchDirectory()
+    setDirectory(staff)
+    setDepartments(departmentRows)
+    setPositions(positionRows)
+  }
 
-  async function onHire() {
-    setError(null)
-    setSaving(true)
-    try {
-      await hireEmployee(form)
-      setHiring(false)
-      setForm({
-        givenName: '',
-        familyName: '',
-        personnelNumber: '',
-        employmentStartDate: todayIsoDate(),
-        departmentId: '',
-        positionId: '',
-      })
-      const [staff, departmentRows, positionRows] = await fetchDirectory()
-      setDirectory(staff)
-      setDepartments(departmentRows)
-      setPositions(positionRows)
-      setView(form.employmentStartDate > todayIsoDate() ? 'scheduled' : 'active')
-    } catch (reason) {
-      setError(t(workforceErrorKey(reason)))
-    } finally {
-      setSaving(false)
+  function toggleColumn(id: PersonnelColumnId) {
+    if (requiredPersonnelColumns().includes(id)) {
+      return
     }
+
+    const next = columns.includes(id) ? columns.filter((item) => item !== id) : [...columns, id]
+    const allowed = next.filter((item) => availablePersonnelColumns(canReadSensitive).includes(item))
+    setColumns(allowed)
+    savePersonnelColumns(allowed)
   }
 
   if (directory === null && error === null) {
@@ -157,115 +189,16 @@ export function ActiveWorkforcePage() {
               : t('workforce.formerIntro')}
         </p>
         {canManage ? (
-          <Button layout="inline" onClick={() => setHiring((value) => !value)}>
-            {t('workforce.hireNew')}
+          <Button layout="inline" onClick={() => {
+            setFeedback(null)
+            setCard({ type: 'create' })
+          }}>
+            {t('personnel.newPersonnel')}
           </Button>
         ) : null}
       </div>
 
-      {hiring && canManage ? (
-        <form
-          className={styles.panel}
-          onSubmit={(event) => {
-            event.preventDefault()
-            void onHire()
-          }}
-        >
-          {canHire ? (
-            <>
-              <fieldset className={styles.formSection}>
-                <legend className={styles.formLegend}>{t('workforce.personalSection')}</legend>
-                <div className={styles.formGrid}>
-                  <TextField
-                    id="hire-given"
-                    label={t('workforce.givenName')}
-                    value={form.givenName}
-                    onChange={(givenName) => setForm((current) => ({ ...current, givenName }))}
-                    autoComplete="given-name"
-                    required
-                  />
-                  <TextField
-                    id="hire-family"
-                    label={t('workforce.familyName')}
-                    value={form.familyName}
-                    onChange={(familyName) => setForm((current) => ({ ...current, familyName }))}
-                    autoComplete="family-name"
-                    required
-                  />
-                  <TextField
-                    id="hire-number"
-                    label={t('workforce.personnelNumber')}
-                    value={form.personnelNumber}
-                    onChange={(personnelNumber) =>
-                      setForm((current) => ({ ...current, personnelNumber }))
-                    }
-                    autoComplete="off"
-                    required
-                  />
-                </div>
-              </fieldset>
-              <fieldset className={styles.formSection}>
-                <legend className={styles.formLegend}>{t('workforce.startSection')}</legend>
-                <div className={styles.formGrid}>
-                  <DateField
-                    id="hire-start"
-                    label={t('workforce.startDate')}
-                    value={form.employmentStartDate}
-                    onChange={(employmentStartDate) =>
-                      setForm((current) => ({ ...current, employmentStartDate }))
-                    }
-                    required
-                  />
-                </div>
-              </fieldset>
-              <fieldset className={styles.formSection}>
-                <legend className={styles.formLegend}>{t('workforce.placementSection')}</legend>
-                <div className={styles.formGrid}>
-                  <SelectField
-                    id="hire-department"
-                    label={t('workforce.department')}
-                    value={form.departmentId}
-                    onChange={(departmentId) => setForm((current) => ({ ...current, departmentId }))}
-                    required
-                  >
-                    <option value="">{t('workforce.selectDepartment')}</option>
-                    {activeDepartments.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </SelectField>
-                  <SelectField
-                    id="hire-position"
-                    label={t('workforce.position')}
-                    value={form.positionId}
-                    onChange={(positionId) => setForm((current) => ({ ...current, positionId }))}
-                    required
-                  >
-                    <option value="">{t('workforce.selectPosition')}</option>
-                    {activePositions.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </SelectField>
-                </div>
-              </fieldset>
-              <div className={styles.formFooter}>
-                <Button type="submit" layout="inline" loading={saving}>
-                  {t('workforce.hireSubmit')}
-                </Button>
-                <Button variant="ghost" onClick={() => setHiring(false)}>
-                  {t('workforce.cancel')}
-                </Button>
-              </div>
-            </>
-          ) : (
-            <p className={styles.muted}>{t('workforce.hireNeedsStructure')}</p>
-          )}
-        </form>
-      ) : null}
-
+      {feedback ? <Notice tone="success">{feedback}</Notice> : null}
       {error ? <Notice tone="danger">{error}</Notice> : null}
 
       <div className={styles.segments} role="tablist" aria-label={t('workforce.directory')}>
@@ -286,7 +219,7 @@ export function ActiveWorkforcePage() {
         />
       </div>
 
-      <div className={styles.filters}>
+      <div className={styles.hrFilters}>
         <TextField
           id="workforce-search"
           label={t('workforce.search')}
@@ -303,96 +236,239 @@ export function ActiveWorkforcePage() {
         >
           <option value="">{t('workforce.allDepartments')}</option>
           {departments.map((item) => (
-            <option key={item.id} value={item.name}>
+            <option key={item.id} value={item.id}>
               {item.name}
             </option>
           ))}
         </SelectField>
+        <SelectField
+          id="workforce-position-filter"
+          label={t('workforce.position')}
+          value={positionFilter}
+          onChange={setPositionFilter}
+        >
+          <option value="">{t('personnel.allPositions')}</option>
+          {positions.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </SelectField>
+        <DateField id="workforce-start-from" label={t('personnel.startFrom')} value={startFrom} onChange={setStartFrom} />
+        <DateField id="workforce-start-to" label={t('personnel.startTo')} value={startTo} onChange={setStartTo} />
+        <div className={styles.columnPicker} ref={pickerRef}>
+          <Button
+            variant="secondary"
+            onClick={() => setPickerOpen((value) => !value)}
+            aria-expanded={pickerOpen}
+            aria-haspopup="dialog"
+            aria-controls="personnel-column-picker"
+          >
+            {t('personnel.columns')}
+          </Button>
+          {pickerOpen ? (
+            <fieldset
+              id="personnel-column-picker"
+              className={styles.columnMenu}
+              aria-label={t('personnel.columnPicker')}
+            >
+              <legend className={styles.columnLegend}>{t('personnel.columnPicker')}</legend>
+              <p className={styles.columnGroup}>{t('personnel.columnFixed')}</p>
+              {requiredPersonnelColumns()
+                .filter((id) => availablePersonnelColumns(canReadSensitive).includes(id))
+                .map((id) => (
+                  <label key={id} className={`${styles.columnOption} ${styles.columnOptionFixed}`}>
+                    <input type="checkbox" checked disabled />
+                    {columnLabel(id, t)}
+                  </label>
+                ))}
+              <p className={styles.columnGroup}>{t('personnel.columnOptional')}</p>
+              {availablePersonnelColumns(canReadSensitive)
+                .filter((id) => !requiredPersonnelColumns().includes(id))
+                .map((id) => (
+                  <label key={id} className={styles.columnOption}>
+                    <input
+                      type="checkbox"
+                      checked={visibleColumns.includes(id)}
+                      onChange={() => toggleColumn(id)}
+                    />
+                    {columnLabel(id, t)}
+                  </label>
+                ))}
+            </fieldset>
+          ) : null}
+        </div>
       </div>
 
       <section className={styles.list} aria-label={t('workforce.directory')}>
-        <div className={`${styles.row} ${styles.head} ${styles.directoryRow}`}>
-          <span>{t('workforce.fullName')}</span>
-          <span>{t('workforce.department')}</span>
-          <span>{t('workforce.position')}</span>
-          <span>{t('workforce.startDate')}</span>
-          <span>{t('workforce.status')}</span>
+        <div
+          className={`${styles.row} ${styles.head} ${styles.hrRow}`}
+          style={{ gridTemplateColumns: gridFor(visibleColumns) }}
+        >
+          {visibleColumns.map((id) => (
+            <span key={id}>{columnLabel(id, t)}</span>
+          ))}
         </div>
         {visible.length === 0 ? (
           <EmptyState
-            title={
-              query.trim() !== '' || departmentFilter !== ''
-                ? t('workforce.emptySearch')
-                : view === 'active'
-                  ? t('workforce.emptyActive')
-                  : view === 'scheduled'
-                    ? t('workforce.emptyScheduled')
-                    : t('workforce.emptyFormer')
-            }
-            description={
-              query.trim() !== '' || departmentFilter !== ''
-                ? t('workforce.emptySearchHint')
-                : view === 'active'
-                  ? t('workforce.emptyActiveHint')
-                  : view === 'scheduled'
-                    ? t('workforce.emptyScheduledHint')
-                    : t('workforce.emptyFormerHint')
-            }
+            title={t('workforce.emptySearch')}
+            description={t('workforce.emptySearchHint')}
             action={
-              view === 'active' && canManage && query.trim() === '' && departmentFilter === '' ? (
-                <Button layout="inline" onClick={() => setHiring(true)}>
-                  {t('workforce.hireNew')}
+              view === 'active' && canManage ? (
+                <Button layout="inline" onClick={() => {
+                  setFeedback(null)
+                  setCard({ type: 'create' })
+                }}>
+                  {t('personnel.newPersonnel')}
                 </Button>
               ) : undefined
             }
           />
         ) : (
           visible.map((person) => (
-            <Link
+            <button
               key={person.employeeId}
-              className={`${styles.row} ${styles.rowLink} ${styles.directoryRow}`}
-              to={`/app/workforce/employees/${person.employeeId}`}
+              type="button"
+              className={`${styles.row} ${styles.rowLink} ${styles.hrRow}`}
+              style={{ gridTemplateColumns: gridFor(visibleColumns) }}
+              onClick={() => {
+                setFeedback(null)
+                setCard({ type: 'edit', employeeId: person.employeeId })
+              }}
             >
-              <span>
-                <span className={styles.cellLabel}>{t('workforce.fullName')}</span>
-                <span className={styles.identityCell}>
-                  <AvatarMark name={`${person.givenName} ${person.familyName}`} />
-                  <span className={styles.identityCopy}>
-                    <span className={styles.personName}>
-                      {person.givenName} {person.familyName}
-                    </span>
-                    <span className={styles.personMeta}>{person.personnelNumber}</span>
-                  </span>
+              {visibleColumns.map((id) => (
+                <span key={id}>
+                  <span className={styles.cellLabel}>{columnLabel(id, t)}</span>
+                  {cellValue(id, person, language, t)}
                 </span>
-              </span>
-              <span>
-                <span className={styles.cellLabel}>{t('workforce.department')}</span>
-                {person.departmentName ?? '—'}
-              </span>
-              <span>
-                <span className={styles.cellLabel}>{t('workforce.position')}</span>
-                {person.positionName ?? '—'}
-              </span>
-              <span>
-                <span className={styles.cellLabel}>{t('workforce.startDate')}</span>
-                {formatDateOnly(person.employmentStartDate, language)}
-              </span>
-              <span>
-                <span className={styles.cellLabel}>{t('workforce.status')}</span>
-                <StatusBadge tone={employmentStatusTone(person.employmentStatus)}>
-                  {person.employmentStatus === 'Active'
-                    ? t('workforce.activeStatus')
-                    : person.employmentStatus === 'Scheduled'
-                      ? t('workforce.scheduledStatus')
-                      : t('workforce.endedStatus')}
-                </StatusBadge>
-              </span>
-            </Link>
+              ))}
+            </button>
           ))
         )}
       </section>
+
+      {card ? (
+        <PersonnelCard
+          mode={card}
+          departments={departments}
+          positions={positions}
+          canManage={canManage}
+          canManageWorkforce={canWorkforceManage}
+          canReadSensitive={canReadSensitive}
+          onClose={() => setCard(null)}
+          onSaved={async (employeeId) => {
+            await reload()
+            if (employeeId) {
+              setCard({ type: 'edit', employeeId })
+              return
+            }
+            if (card?.type === 'create') {
+              setFeedback(t('personnel.createSuccess'))
+            }
+          }}
+        />
+      ) : null}
+
+      {canManage && !canHire ? <Notice tone="info">{t('personnel.createNeedsStructure')}</Notice> : null}
     </div>
   )
+}
+
+function columnLabel(id: PersonnelColumnId, t: (key: string) => string): string {
+  const labels: Record<PersonnelColumnId, string> = {
+    photo: t('personnel.photo'),
+    name: t('workforce.fullName'),
+    personnelNumber: t('workforce.personnelNumber'),
+    department: t('workforce.department'),
+    position: t('workforce.position'),
+    startDate: t('workforce.startDate'),
+    status: t('workforce.status'),
+    educationLevel: t('personnel.educationLevel'),
+    mobilePhone: t('personnel.mobilePhone'),
+    email: t('personnel.email'),
+    bloodType: t('personnel.bloodType'),
+    nationalIdentity: t('personnel.identityNumber'),
+  }
+  return labels[id]
+}
+
+function gridFor(columns: PersonnelColumnId[]): string {
+  return columns
+    .map((id) => {
+      if (id === 'name') {
+        return 'minmax(12rem, 1.5fr)'
+      }
+      if (id === 'photo') {
+        return 'auto'
+      }
+      return 'minmax(6rem, 1fr)'
+    })
+    .join(' ')
+}
+
+function cellValue(
+  id: PersonnelColumnId,
+  person: HrEmployeeListItem,
+  language: AppLanguage,
+  t: (key: string) => string,
+) {
+  if (id === 'photo' || id === 'name') {
+    if (id === 'photo') {
+      return (
+        <AvatarMark
+          name={`${person.givenName} ${person.familyName}`}
+          src={person.hasPhoto ? hrEmployeePhotoUrl(person.employeeId) : null}
+        />
+      )
+    }
+
+    return (
+      <span className={styles.identityCell}>
+        <span className={styles.identityCopy}>
+          <span className={styles.personName}>
+            {person.givenName} {person.familyName}
+          </span>
+        </span>
+      </span>
+    )
+  }
+
+  if (id === 'personnelNumber') {
+    return person.personnelNumber
+  }
+  if (id === 'department') {
+    return person.departmentName ?? '—'
+  }
+  if (id === 'position') {
+    return person.positionName ?? '—'
+  }
+  if (id === 'startDate') {
+    return formatDateOnly(person.employmentStartDate, language)
+  }
+  if (id === 'status') {
+    return (
+      <StatusBadge tone={employmentStatusTone(person.employmentStatus)}>
+        {person.employmentStatus === 'Active'
+          ? t('workforce.activeStatus')
+          : person.employmentStatus === 'Scheduled'
+            ? t('workforce.scheduledStatus')
+            : t('workforce.endedStatus')}
+      </StatusBadge>
+    )
+  }
+  if (id === 'educationLevel') {
+    return person.educationLevel ?? '—'
+  }
+  if (id === 'mobilePhone') {
+    return formatMobileForDisplay(person.mobilePhone) ?? '—'
+  }
+  if (id === 'email') {
+    return person.email ?? '—'
+  }
+  if (id === 'bloodType') {
+    return person.bloodType ?? '—'
+  }
+  return person.nationalIdentityNumber ?? '—'
 }
 
 function ViewTab({

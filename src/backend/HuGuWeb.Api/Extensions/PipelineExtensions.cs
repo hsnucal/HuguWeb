@@ -38,6 +38,7 @@ public static class PipelineExtensions
 
         app.MapAuthEndpoints();
         app.MapWorkforceEndpoints();
+        app.MapHrEmployeeEndpoints();
         app.MapRoomOperationsEndpoints();
         app.MapMaintenanceEndpoints();
 

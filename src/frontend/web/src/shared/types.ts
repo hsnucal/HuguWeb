@@ -6,6 +6,7 @@ export type ProblemDetails = {
   instance?: string
   correlationId?: string
   code?: string
+  errors?: Record<string, string[]>
 }
 
 export type CurrentUser = {

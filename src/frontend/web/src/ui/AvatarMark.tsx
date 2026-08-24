@@ -16,12 +16,30 @@ function initialsFromName(name: string): string {
 export function AvatarMark({
   name,
   size = 'md',
+  src,
+  alt,
+  tone = 'brand',
 }: {
   name: string
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  src?: string | null
+  alt?: string
+  tone?: 'brand' | 'onBrand'
 }) {
+  const markClass = `${styles.mark} ${styles[size]} ${tone === 'onBrand' ? styles.onBrand : ''}`
+
+  if (src) {
+    return (
+      <img
+        className={`${markClass} ${styles.photo}`}
+        src={src}
+        alt={alt ?? ''}
+      />
+    )
+  }
+
   return (
-    <span className={`${styles.mark} ${styles[size]}`} aria-hidden="true">
+    <span className={markClass} aria-hidden="true">
       {initialsFromName(name)}
     </span>
   )

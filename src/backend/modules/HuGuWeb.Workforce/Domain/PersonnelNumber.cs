@@ -1,8 +1,16 @@
+using System.Globalization;
+
 namespace HuGuWeb.Workforce.Domain;
 
 public readonly record struct PersonnelNumber
 {
     public const int MaxLength = 32;
+
+    public static string Format(int value)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(value, 1);
+        return value.ToString(CultureInfo.InvariantCulture);
+    }
 
     public string Value { get; }
 
@@ -13,14 +21,14 @@ public readonly record struct PersonnelNumber
         personnelNumber = default;
         if (string.IsNullOrWhiteSpace(value))
         {
-            error = "Personnel number is required.";
+            error = HrValidation.Codes.PersonnelNumberRequired;
             return false;
         }
 
         var trimmed = value.Trim();
         if (trimmed.Length > MaxLength)
         {
-            error = $"Personnel number must be {PersonnelNumber.MaxLength} characters or fewer.";
+            error = HrValidation.Codes.PersonnelNumberTooLong;
             return false;
         }
 

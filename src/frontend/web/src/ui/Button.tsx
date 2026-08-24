@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, Ref } from 'react'
 import styles from './Button.module.css'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -6,6 +6,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   layout?: 'block' | 'inline'
   size?: 'md' | 'sm'
   loading?: boolean
+  ref?: Ref<HTMLButtonElement>
 }
 
 export function Button({
@@ -17,6 +18,7 @@ export function Button({
   className,
   disabled,
   children,
+  ref,
   ...props
 }: ButtonProps) {
   const classes = [styles.button, styles[variant], styles[layout], styles[size], className]
@@ -25,6 +27,7 @@ export function Button({
 
   return (
     <button
+      ref={ref}
       type={type}
       className={classes}
       disabled={disabled || loading}

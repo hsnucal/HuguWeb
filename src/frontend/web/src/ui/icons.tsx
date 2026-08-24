@@ -108,3 +108,21 @@ export function ChevronLeftIcon({ className }: IconProps) {
     </svg>
   )
 }
+
+export function CloseIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" />
+    </svg>
+  )
+}
+
+export function WarningIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M12 4.8 20.2 19H3.8L12 4.8Z" />
+      <path d="M12 10v4.2" />
+      <circle cx="12" cy="16.85" r="0.35" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}

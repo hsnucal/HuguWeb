@@ -1,7 +1,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--space-field);
 }
 
 .label {
@@ -10,14 +10,22 @@
   color: var(--color-text-secondary);
 }
 
+.requiredMark {
+  margin-inline-start: 0.25em;
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}
+
 .input {
   width: 100%;
+  height: var(--size-control);
   min-height: var(--size-control);
-  padding: 0 0.85rem;
+  padding: 0 var(--control-pad-x);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-s);
   background: var(--color-surface-input);
   color: var(--color-text-primary);
+  line-height: 1.25;
   transition:
     border-color var(--motion-duration-fast) var(--motion-easing-standard),
     box-shadow var(--motion-duration-fast) var(--motion-easing-standard),
@@ -25,14 +33,25 @@
 }
 
 .textarea {
-  min-height: 5.25rem;
-  padding: 0.6rem 0.75rem;
+  height: auto;
+  min-height: var(--size-textarea);
+  padding: 0.55rem var(--control-pad-x);
   resize: vertical;
   line-height: var(--line-height-body);
 }
 
 .input::placeholder {
   color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.placeholderValue {
+  color: var(--color-text-muted);
+}
+
+.input option {
+  color: var(--color-text-primary);
+  background: var(--color-surface-input);
 }
 
 .input:hover:not(:disabled) {

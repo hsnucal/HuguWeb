@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import type { ChangeEvent, InputHTMLAttributes, Ref, TextareaHTMLAttributes } from 'react'
 import styles from './TextField.module.css'
 
 type FieldChrome = {
@@ -6,12 +6,27 @@ type FieldChrome = {
   label: string
   hint?: string
   error?: string
+  required?: boolean
+}
+
+export function FieldLabel({ id, label, required }: { id: string; label: string; required?: boolean }) {
+  return (
+    <label className={styles.label} htmlFor={id}>
+      {label}
+      {required ? (
+        <span className={styles.requiredMark} aria-hidden="true">
+          *
+        </span>
+      ) : null}
+    </label>
+  )
 }
 
 type TextFieldProps = FieldChrome & {
   value: string
-  onChange: (value: string) => void
-} & Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange' | 'size'>
+  onChange: (value: string, event: ChangeEvent<HTMLInputElement>) => void
+  ref?: Ref<HTMLInputElement>
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange' | 'size' | 'ref'>
 
 export function TextField({
   id,
@@ -21,6 +36,8 @@ export function TextField({
   type = 'text',
   hint,
   error,
+  required,
+  ref,
   ...inputProps
 }: TextFieldProps) {
   const hintId = hint ? `${id}-hint` : undefined
@@ -29,16 +46,17 @@ export function TextField({
 
   return (
     <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
-        {label}
-      </label>
+      <FieldLabel id={id} label={label} required={required} />
       <input
         {...inputProps}
+        ref={ref}
         id={id}
         className={`${styles.input} ${error ? styles.invalid : ''}`}
         type={type}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        required={required}
+        aria-required={required || undefined}
+        onChange={(event) => onChange(event.target.value, event)}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
       />
@@ -68,6 +86,7 @@ export function TextArea({
   onChange,
   hint,
   error,
+  required,
   rows = 3,
   ...textAreaProps
 }: TextAreaProps) {
@@ -77,15 +96,15 @@ export function TextArea({
 
   return (
     <div className={styles.field}>
-      <label className={styles.label} htmlFor={id}>
-        {label}
-      </label>
+      <FieldLabel id={id} label={label} required={required} />
       <textarea
         {...textAreaProps}
         id={id}
         className={`${styles.input} ${styles.textarea} ${error ? styles.invalid : ''}`}
         value={value}
         rows={rows}
+        required={required}
+        aria-required={required || undefined}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}

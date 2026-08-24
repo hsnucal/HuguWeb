@@ -17,6 +17,7 @@ Sprint 0.10B implemented a structural visual redesign in the React ERP. See [Vis
 | [Design Tokens](DESIGN_TOKENS.md) | Token categories and naming philosophy |
 | [Responsive Strategy](RESPONSIVE_STRATEGY.md) | Desktop-first web ERP vs future mobile products |
 | [Brand Direction](BRAND_DIRECTION.md) | Personality, purple direction, logo direction, candidate color families |
+| [HG Mark](HG_MARK.md) | Official HG monogram assets, construction, and usage rules |
 | [Visual Foundation 2026](VISUAL_FOUNDATION_2026.md) | Implemented product visual language: structural composition, tokens, surfaces, lists, motion, charts, anti-patterns |
 
 Cross-reference these documents instead of copying long sections.
@@ -54,7 +55,7 @@ Statuses are the Sprint 0.4 freeze for review. They do **not** authorize UI impl
 | Chart philosophy | No chart without a decision purpose; prefer numbers when faster | **Accepted** |
 | Generic admin-template avoidance | Explicitly rejected as the visual/UX model | **Accepted** |
 | Typography family | Inter / IBM Plex Sans / Source Sans 3 as comparison candidates | **Candidate** |
-| Logo design | HG monogram + wordmark direction; no artwork in repo | **Candidate** |
+| Logo design | Official HG monogram in repo; Product Owner visual approval remaining | **Implemented** |
 | Icon system | Semantic placeholders only | **Candidate** |
 | Component library | None selected | **Deferred** |
 | Exact sidebar behavior | Expanded wordmark, collapse later, bottom utility area | **Candidate** |
@@ -75,7 +76,7 @@ Product Owner + CTO still need to decide:
 
 1. Exact purple family / palette (Families A–C in [Brand Direction](BRAND_DIRECTION.md))
 2. Typography family
-3. Final logo design (separate review; not to be drawn in this repo now)
+3. Final logo visual approval (HG mark is implemented; Product Owner review remaining)
 4. Icon system
 5. Component library strategy
 6. Exact sidebar behavior (default expanded vs collapsed, collapse interaction)
@@ -95,7 +96,7 @@ The React ERP now uses the accepted Sprint 0.10 visual foundation:
 - Tokens: `src/frontend/web/src/styles/tokens.css`
 - Primitives: `src/frontend/web/src/ui/`
 - Applied surfaces: Login, shell, Operations Center, Workforce, Room Operations
-- Temporary HG identity is in use; final monogram / favicon refinement is deferred
+- Official HG monogram is in use (`BrandMark`, brand SVGs, favicon); Product Owner visual approval remaining
 
 Authentication, authorization, and domain behavior are unchanged. Do not add fake dashboard charts or a UI framework. Future screens should use these primitives. Visual evolution is allowed without breaking product workflows.
 

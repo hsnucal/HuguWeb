@@ -28,7 +28,7 @@ After a successful sign-in, staff land in the [Operations Center](OPERATIONS_CEN
 
 ## Include
 
-- HuGuWeb brand area (wordmark; compact HG mark optional later)
+- HuGu brand area (HG monogram + HuGu wordmark)
 - email
 - password
 - primary Sign in action
@@ -62,7 +62,7 @@ Low-fidelity wireframe:
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│                      HuGuWeb                                │
+│                      HuGu                                   │
 │              Hotel operations                               │
 │                                                             │
 │              ┌───────────────────────────┐                  │

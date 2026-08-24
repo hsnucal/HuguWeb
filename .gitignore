@@ -24,6 +24,9 @@ obj/
 *.userosscache
 *.sln.docstates
 
+# Local development photo storage
+src/backend/HuGuWeb.Api/App_Data/
+
 # Test / coverage
 TestResults/
 coverage/

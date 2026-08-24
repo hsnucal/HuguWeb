@@ -17,11 +17,17 @@ public static class WorkforceServiceCollectionExtensions
             ?? throw new InvalidOperationException("Connection string 'IdentityDatabase' is not configured.");
 
         services.Configure<WorkplaceOptions>(configuration.GetSection(WorkplaceOptions.SectionName));
+        services.Configure<EmployeePhotoStorageOptions>(
+            configuration.GetSection(EmployeePhotoStorageOptions.SectionName));
         services.AddDbContext<WorkforceDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<IWorkforceClock, SystemWorkforceClock>();
         services.AddSingleton<IWorkplaceContext, ConfiguredWorkplaceContext>();
+        services.AddSingleton<IEmployeePhotoStorage, FileSystemEmployeePhotoStorage>();
         services.AddScoped<IWorkforceStore, EfWorkforceStore>();
         services.AddScoped<HireEmployeeUseCase>();
+        services.AddScoped<HireEmployeeWithProfileUseCase>();
+        services.AddScoped<UpdateEmployeeHrProfileUseCase>();
+        services.AddScoped<EmployeePhotoUseCases>();
         services.AddScoped<TransferEmployeeUseCase>();
         services.AddScoped<EndEmploymentUseCase>();
         services.AddScoped<MaintainDepartmentsUseCase>();
@@ -29,6 +35,8 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<ActiveWorkforceQuery>();
         services.AddScoped<EmployeeHistoryQuery>();
         services.AddScoped<EmployeeDirectoryQuery>();
+        services.AddScoped<HrEmployeeDirectoryQuery>();
+        services.AddScoped<HrEmployeeCardQuery>();
         return services;
     }
 }

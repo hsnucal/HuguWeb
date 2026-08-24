@@ -15,9 +15,20 @@ public sealed class MaintainPositionsUseCase(
         }
 
         var positions = await store.ListPositionsAsync(workplace.Value.Property.Id, cancellationToken);
+        var applicabilities = await store.ListApplicabilitiesForPositionsAsync(
+            positions.Select(item => item.Id).ToArray(),
+            cancellationToken);
+        var departmentsByPosition = applicabilities
+            .GroupBy(item => item.PositionId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<Guid>)group.Select(item => item.DepartmentId).Distinct().ToArray());
+
         return positions
             .OrderBy(item => item.Name)
-            .Select(ToRecord)
+            .Select(item => ToRecord(
+                item,
+                departmentsByPosition.GetValueOrDefault(item.Id, [])))
             .ToArray();
     }
 
@@ -42,9 +53,24 @@ public sealed class MaintainPositionsUseCase(
             return WorkforceError.InvalidRequest("invalid-position", error!);
         }
 
+        var departments = await ResolveDepartmentsAsync(
+            store,
+            workplace.Value.Property.Id,
+            command.DepartmentIds,
+            cancellationToken);
+        if (!departments.IsSuccess)
+        {
+            return departments.Error!;
+        }
+
         store.AddPosition(position!);
+        foreach (var department in departments.Value!)
+        {
+            store.AddApplicability(new DepartmentPositionApplicability(department.Id, position!.Id));
+        }
+
         await store.SaveChangesAsync(cancellationToken);
-        return ToRecord(position!);
+        return ToRecord(position!, departments.Value.Select(item => item.Id).ToArray());
     }
 
     public async Task<WorkforceResult<PositionRecord>> UpdateAsync(
@@ -82,16 +108,94 @@ public sealed class MaintainPositionsUseCase(
             position.Deactivate();
         }
 
+        var current = await store.ListApplicabilitiesForPositionsAsync([position.Id], cancellationToken);
+        IReadOnlyList<Guid> departmentIds;
+        if (command.DepartmentIds is null)
+        {
+            departmentIds = current.Select(item => item.DepartmentId).ToArray();
+        }
+        else
+        {
+            var departments = await ResolveDepartmentsAsync(
+                store,
+                workplace.Value.Property.Id,
+                command.DepartmentIds,
+                cancellationToken);
+            if (!departments.IsSuccess)
+            {
+                return departments.Error!;
+            }
+
+            var nextIds = departments.Value!.Select(item => item.Id).ToHashSet();
+            foreach (var row in current)
+            {
+                if (!nextIds.Contains(row.DepartmentId))
+                {
+                    store.RemoveApplicability(row);
+                }
+            }
+
+            var existingIds = current.Select(item => item.DepartmentId).ToHashSet();
+            foreach (var department in departments.Value)
+            {
+                if (!existingIds.Contains(department.Id))
+                {
+                    store.AddApplicability(new DepartmentPositionApplicability(department.Id, position.Id));
+                }
+            }
+
+            departmentIds = nextIds.ToArray();
+        }
+
         await store.SaveChangesAsync(cancellationToken);
-        return ToRecord(position);
+        return ToRecord(position, departmentIds);
     }
 
-    private static PositionRecord ToRecord(Position position) =>
-        new(position.Id, position.PropertyId, position.Name, position.Code, position.IsActive);
+    private static async Task<WorkforceResult<IReadOnlyList<Department>>> ResolveDepartmentsAsync(
+        IWorkforceStore store,
+        Guid propertyId,
+        IReadOnlyList<Guid>? departmentIds,
+        CancellationToken cancellationToken)
+    {
+        if (departmentIds is null || departmentIds.Count == 0)
+        {
+            return Array.Empty<Department>();
+        }
+
+        var unique = departmentIds.Distinct().ToArray();
+        var resolved = new List<Department>(unique.Length);
+        foreach (var departmentId in unique)
+        {
+            var department = await store.GetDepartmentAsync(departmentId, cancellationToken);
+            if (department is null || department.PropertyId != propertyId)
+            {
+                return WorkforceError.DepartmentNotFound();
+            }
+
+            resolved.Add(department);
+        }
+
+        return resolved;
+    }
+
+    private static PositionRecord ToRecord(Position position, IReadOnlyList<Guid> departmentIds) =>
+        new(position.Id, position.PropertyId, position.Name, position.Code, position.IsActive, departmentIds);
 }
 
-public sealed record CreatePositionCommand(string Name, string? Code);
+public sealed record CreatePositionCommand(string Name, string? Code, IReadOnlyList<Guid>? DepartmentIds);
 
-public sealed record UpdatePositionCommand(Guid Id, string? Name, string? Code, bool CodeProvided, bool? IsActive);
+public sealed record UpdatePositionCommand(
+    Guid Id,
+    string? Name,
+    string? Code,
+    bool CodeProvided,
+    bool? IsActive,
+    IReadOnlyList<Guid>? DepartmentIds);
 
-public sealed record PositionRecord(Guid Id, Guid PropertyId, string Name, string? Code, bool IsActive);
+public sealed record PositionRecord(
+    Guid Id,
+    Guid PropertyId,
+    string Name,
+    string? Code,
+    bool IsActive,
+    IReadOnlyList<Guid> ApplicableDepartmentIds);

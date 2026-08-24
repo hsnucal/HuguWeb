@@ -44,3 +44,23 @@
 .select option {
   color: var(--color-text-primary);
 }
+
+.onBrand {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: var(--color-on-brand);
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-on-brand) 50%),
+    linear-gradient(135deg, var(--color-on-brand) 50%, transparent 50%);
+}
+
+.onBrand:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: var(--color-on-brand);
+}
+
+.onBrand:focus-visible {
+  outline: 2px solid var(--color-on-brand-focus);
+  outline-offset: 2px;
+  border-color: var(--color-on-brand);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.28);
+}

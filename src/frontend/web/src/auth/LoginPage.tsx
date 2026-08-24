@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate } from 'react-router'
-import { useAuthSession } from './AuthContext'
 import { selectLanguageLocal } from '../i18n/preference'
-import { AmbientBrandMark } from './AmbientBrandMark'
-import { LoginBrandMark } from './LoginBrandMark'
+import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { Notice } from '../ui/Notice'
 import { SessionNotice } from '../ui/SessionNotice'
 import { Surface } from '../ui/Surface'
 import { TextField } from '../ui/TextField'
+import { AmbientBrandMark } from './AmbientBrandMark'
+import { useAuthSession } from './AuthContext'
 import styles from './LoginPage.module.css'
 
 export function LoginPage() {
@@ -72,9 +72,9 @@ export function LoginPage() {
       </div>
 
       <div className={styles.stage}>
-        <section className={styles.identity} aria-label="HuGuWeb">
-          <LoginBrandMark />
-          <p className={styles.wordmark}>HuGuWeb</p>
+        <section className={styles.identity} aria-label="HuGu">
+          <BrandMark size="lg" />
+          <p className={styles.wordmark}>HuGu</p>
           <p className={styles.statement}>{t('auth.hotelOperations')}</p>
         </section>
 

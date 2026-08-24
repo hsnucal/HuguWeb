@@ -14,6 +14,7 @@ export type PositionRecord = {
   name: string
   code: string | null
   isActive: boolean
+  applicableDepartmentIds: string[]
 }
 
 export type ActiveWorkforceMember = {
@@ -95,19 +96,20 @@ export async function listPositions() {
   return apiRequest<PositionRecord[]>('/api/workforce/positions')
 }
 
-export async function createPosition(name: string, code: string) {
+export async function createPosition(name: string, code: string, departmentIds: string[]) {
   return apiRequest<PositionRecord>('/api/workforce/positions', {
     method: 'POST',
     body: JSON.stringify({
       name,
       code: code.trim() === '' ? null : code,
+      departmentIds,
     }),
   })
 }
 
 export async function updatePosition(
   id: string,
-  body: { name?: string; code?: string | null; isActive?: boolean },
+  body: { name?: string; code?: string | null; isActive?: boolean; departmentIds?: string[] },
 ) {
   return apiRequest<PositionRecord>(`/api/workforce/positions/${id}`, {
     method: 'PATCH',
@@ -168,6 +170,7 @@ const errorKeys: Record<string, string> = {
   'overlapping-primary-assignment': 'workforce.errors.overlappingPrimaryAssignment',
   'invalid-employment-period': 'workforce.errors.invalidEmploymentPeriod',
   'same-assignment': 'workforce.errors.sameAssignment',
+  'position-not-available-for-department': 'personnel.validation.positionNotAvailable',
 }
 
 export function workforceErrorKey(error: unknown): string {

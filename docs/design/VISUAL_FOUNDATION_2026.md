@@ -10,7 +10,7 @@ The Product Owner accepted this implementation as the HuGuWeb visual foundation 
 
 - Future screens should reuse these tokens and primitives rather than inventing a parallel look.
 - Visual evolution is allowed later; it must not change product workflows, authorization, or domain rules.
-- The current compact HG marks (static login foreground letterform, shell mark, and favicon) are a temporary identity. Final HuGuWeb monogram / favicon refinement remains a future branding task.
+- The official HG monogram is in `src/frontend/web/src/assets/brand/` and `BrandMark`. See [HG Mark](HG_MARK.md). Product Owner visual approval remaining.
 
 ---
 

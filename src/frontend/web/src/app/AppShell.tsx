@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
+import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { Sidebar } from './Sidebar'
@@ -28,14 +29,18 @@ export function AppShell() {
 
       <div className={styles.workspace}>
         <div className={styles.mobileBar}>
-          <span className={styles.mobileBrand}>HuGuWeb</span>
+          <span className={styles.mobileBrand}>
+            <BrandMark size="sm" tone="inverse" />
+            HuGu
+          </span>
           <span className={styles.mobileUser}>{userLabel}</span>
           <LanguageSelect
             id="mobile-language"
             className={styles.mobileLanguage}
+            tone="onBrand"
             onChange={(language) => void updatePreferredLanguage(language)}
           />
-          <Button variant="ghost" onClick={() => void onLogout()}>
+          <Button className={styles.mobileSignOut} variant="ghost" onClick={() => void onLogout()}>
             {t('auth.signOut')}
           </Button>
         </div>
@@ -73,10 +78,6 @@ function headingFor(pathname: string, t: (key: string) => string) {
       title: t('workforce.positions'),
       subtitle: t('workforce.positionsIntro'),
     }
-  }
-
-  if (pathname.startsWith('/app/workforce/employees/')) {
-    return { kicker: t('workforce.title'), title: t('workforce.title'), subtitle: t('workforce.intro') }
   }
 
   if (pathname.startsWith('/app/workforce')) {

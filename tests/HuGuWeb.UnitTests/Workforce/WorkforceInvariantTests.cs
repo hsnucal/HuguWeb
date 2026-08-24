@@ -16,12 +16,15 @@ public class WorkforceInvariantTests
     public async Task PersonnelNumber_IsUniqueWithinOrganization()
     {
         var harness = new WorkforceHarness();
-        Assert.True((await harness.Hire.ExecuteAsync(harness.HireCommand("SICIL-1"), CancellationToken.None)).IsSuccess);
+        var first = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
+        var second = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
 
-        var duplicate = await harness.Hire.ExecuteAsync(harness.HireCommand("SICIL-1"), CancellationToken.None);
-
-        Assert.False(duplicate.IsSuccess);
-        Assert.Equal("personnel-number-in-use", duplicate.Error!.Code);
+        Assert.True(first.IsSuccess);
+        Assert.True(second.IsSuccess);
+        Assert.NotEqual(first.Value!.PersonnelNumber, second.Value!.PersonnelNumber);
+        Assert.Equal(
+            2,
+            harness.Store.Employees.Select(item => item.PersonnelNumber).Distinct().Count());
     }
 
     [Fact]
@@ -128,11 +131,11 @@ public class WorkforceInvariantTests
     public async Task ActiveWorkforce_ReturnsOnlyPeopleWorkingToday()
     {
         var harness = new WorkforceHarness();
-        var active = await harness.Hire.ExecuteAsync(harness.HireCommand("A-1"), CancellationToken.None);
+        var active = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         await harness.Hire.ExecuteAsync(
-            harness.HireCommand("S-1", startDate: harness.Clock.Today.AddDays(3)),
+            harness.HireCommand(startDate: harness.Clock.Today.AddDays(3)),
             CancellationToken.None);
-        var leaving = await harness.Hire.ExecuteAsync(harness.HireCommand("E-1"), CancellationToken.None);
+        var leaving = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         await harness.EndEmployment.ExecuteAsync(
             new EndEmploymentCommand(leaving.Value!.EmployeeId, harness.Clock.Today),
             CancellationToken.None);
@@ -165,10 +168,10 @@ public class WorkforceInvariantTests
     {
         var harness = new WorkforceHarness();
         var first = await harness.Hire.ExecuteAsync(
-            harness.HireCommand("P-A", departmentId: harness.DepartmentId, positionId: harness.PositionId),
+            harness.HireCommand(departmentId: harness.DepartmentId, positionId: harness.PositionId),
             CancellationToken.None);
         var second = await harness.Hire.ExecuteAsync(
-            harness.HireCommand("P-B", departmentId: harness.OtherDepartmentId, positionId: harness.PositionId),
+            harness.HireCommand(departmentId: harness.OtherDepartmentId, positionId: harness.PositionId),
             CancellationToken.None);
 
         Assert.True(first.IsSuccess, first.Error?.Detail);

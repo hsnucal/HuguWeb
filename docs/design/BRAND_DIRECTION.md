@@ -1,6 +1,6 @@
 # Brand Direction
 
-> **Status:** Sprint 0.4 design freeze — proposed for Product Owner + CTO review. Personality and logo *direction* only. No final logo artwork. No exact palette freeze.
+> **Status:** Personality and purple direction remain from Sprint 0.4. The official HG monogram is now in the product, pending Product Owner visual approval. See [HG Mark](HG_MARK.md).
 
 This is the source of truth for **brand personality, primary color direction, and logo direction**.
 
@@ -98,19 +98,13 @@ No dark-green palette is specified in this sprint.
 
 ## Logo Direction
 
-**Do not create final logo artwork in this repository.** No SVG, PNG, or favicon design is authorized here.
+Official mark: **HG monogram**. Meaning: HuGu. Artwork lives in [HG Mark](HG_MARK.md).
 
-Desired direction:
-
-- minimal
-- memorable
-- **HG monogram** as a compact-mark candidate
-- **HuGuWeb wordmark** for expanded sidebar and login
-- works in the sidebar (expanded wordmark; collapsed compact mark later)
-- works on the login screen
-- works at small sizes
-- purple-first
-- potentially adaptable to dark green later (mark should not depend on purple-specific illustration)
+- minimal geometric HG, not typed letters and not a hotel pictogram
+- H cross-stroke continues into G; they share one stem
+- UI lockup is **HG + HuGu**; the SVG itself is HG only
+- primary color is `--color-brand-primary`; reverse is `--color-brand-on-primary`
+- mark must not depend on purple-specific illustration (a later dark-green rebrand stays a token change)
 
 ### Avoid in the mark
 
@@ -121,17 +115,16 @@ Desired direction:
 - generic roof / house symbols
 - photographic or illustrated scenes
 - gradients inside the letterforms
+- product names inside the SVG
 
-Final logo design will be reviewed separately.
-
-### Usage hypothesis (not production assets)
+### Usage
 
 | Context | Treatment |
 |---------|-----------|
-| Login | Wordmark + short calm supporting line |
-| Sidebar expanded | Wordmark |
-| Sidebar collapsed | Compact HG mark (later) |
-| Browser tab | Compact mark (later; not designed now) |
+| Login | HG mark + HuGu + short calm supporting line |
+| Sidebar expanded | HG mark + HuGu |
+| Sidebar collapsed | HG mark alone (when that rail exists) |
+| Browser tab | `favicon.svg` from the same geometry |
 
 ---
 
@@ -151,6 +144,7 @@ Marketing copy, slogans, and testimonials do not belong in the product shell or 
 
 ## Related Documents
 
+- [HG Mark](HG_MARK.md)
 - [Design Principles](DESIGN_PRINCIPLES.md)
 - [Design Tokens](DESIGN_TOKENS.md)
 - [Login Experience](LOGIN_EXPERIENCE.md)

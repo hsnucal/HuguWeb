@@ -35,6 +35,11 @@ public sealed class TransferEmployeeUseCase(
             return WorkforceError.PositionNotFound();
         }
 
+        var applicable = await store.IsPositionApplicableToDepartmentAsync(
+            department.Id,
+            position.Id,
+            cancellationToken);
+
         var employments = await store.ListEmploymentsAsync(employee.Id, cancellationToken);
         var currentEmployment = CurrentEmployment.Find(employments);
         if (!currentEmployment.IsSuccess)
@@ -50,6 +55,7 @@ public sealed class TransferEmployeeUseCase(
             assignments,
             department,
             position,
+            applicable,
             command.EffectiveDate);
         if (!plan.IsSuccess)
         {

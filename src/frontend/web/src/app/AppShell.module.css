@@ -87,19 +87,24 @@
     flex-wrap: wrap;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-border-subtle);
-    background: var(--color-surface-sidebar);
+    border-bottom: 1px solid var(--color-on-brand-border);
+    background: var(--color-brand-primary);
+    color: var(--color-on-brand);
   }
 
   .mobileBrand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-weight: var(--font-weight-semibold);
     letter-spacing: -0.02em;
+    color: var(--color-on-brand);
   }
 
   .mobileUser {
     min-width: 0;
     overflow: hidden;
-    color: var(--color-text-muted);
+    color: var(--color-on-brand-muted);
     font-size: var(--font-size-xs);
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -107,6 +112,20 @@
 
   .mobileLanguage {
     width: 8.5rem;
+  }
+
+  button.mobileSignOut {
+    color: var(--color-on-brand);
+  }
+
+  button.mobileSignOut:hover:not(:disabled) {
+    background: var(--color-on-brand-hover);
+    color: var(--color-on-brand);
+  }
+
+  .mobileSignOut:focus-visible {
+    outline: 2px solid var(--color-on-brand-focus);
+    outline-offset: 2px;
   }
 
   .mobilePreferenceError {

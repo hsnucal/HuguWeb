@@ -1,19 +1,31 @@
 /*
   HuGuWeb Visual Language 2026 — Sprint 0.10B
 
-  Deep plum / amethyst identity on warm linen, sand, and stone.
+  Wine / hospitality burgundy identity on warm linen, sand, and stone.
   Tokens stay role-based so a later dark-green rebrand (and dark theme)
   can swap families without rewriting components.
 */
 
 :root {
   /* Brand — reserved for primary actions, active nav, focus, selection. */
-  --color-brand-primary: #5c2a6e;
-  --color-brand-primary-hover: #4d235c;
-  --color-brand-primary-pressed: #3e1c4b;
-  --color-brand-soft: #f0e6f4;
-  --color-brand-mist: #f7f0f8;
+  --color-brand-primary: #862A51;
+  --color-brand-primary-hover: color-mix(in srgb, var(--color-brand-primary) 86%, black);
+  --color-brand-primary-pressed: color-mix(in srgb, var(--color-brand-primary) 72%, black);
+  --color-brand-soft: color-mix(in srgb, var(--color-brand-primary) 11%, #fffdf9);
+  --color-brand-mist: color-mix(in srgb, var(--color-brand-primary) 5.5%, #fffdf9);
+  --color-brand-border: color-mix(in srgb, var(--color-brand-primary) 22%, #ddd3c6);
+  --color-brand-focus: var(--color-brand-primary);
   --color-brand-on-primary: #fbf7f4;
+  accent-color: var(--color-brand-primary);
+
+  /* On-brand chrome (sidebar) — white hierarchy on --color-brand-primary. */
+  --color-on-brand: #ffffff;
+  --color-on-brand-secondary: rgba(255, 255, 255, 0.82);
+  --color-on-brand-muted: rgba(255, 255, 255, 0.68);
+  --color-on-brand-hover: rgba(255, 255, 255, 0.12);
+  --color-on-brand-selected: rgba(255, 255, 255, 0.16);
+  --color-on-brand-border: rgba(255, 255, 255, 0.24);
+  --color-on-brand-focus: #ffffff;
 
   /* Amethyst accent — Inspected / transition states, not generic chrome. */
   --color-accent: #6e3f82;
@@ -44,16 +56,16 @@
   --color-border-subtle: #ddd3c6;
   --color-border-default: #cfc3b4;
   --color-border-strong: #b7aa9b;
-  --color-border-focus: var(--color-brand-primary);
+  --color-border-focus: var(--color-brand-focus);
 
   /* Interaction */
   --color-interaction-hover: rgba(36, 28, 32, 0.05);
   --color-interaction-pressed: rgba(36, 28, 32, 0.08);
   --color-interaction-disabled: var(--color-text-disabled);
-  --color-interaction-focus-ring: var(--color-brand-primary);
+  --color-interaction-focus-ring: var(--color-brand-focus);
 
   /* Focus */
-  --color-focus-ring: var(--color-brand-primary);
+  --color-focus-ring: var(--color-brand-focus);
   --color-focus-ring-soft: color-mix(in srgb, var(--color-brand-primary) 22%, transparent);
 
   /* Overlay */
@@ -84,7 +96,7 @@
   --color-readiness-ready-soft: var(--color-success-soft);
 
   /* Charts — reserved for future decision-purpose charts only */
-  --color-chart-1: #5c2a6e;
+  --color-chart-1: var(--color-brand-primary);
   --color-chart-2: #2f5a44;
   --color-chart-3: #8a5a22;
   --color-chart-4: #3b5568;
@@ -102,16 +114,24 @@
   --space-8: 2rem;
   --space-10: 2.5rem;
 
-  /* Density — Standard is the product default */
+  /* Density — Standard is the product default; compact is ERP / Personnel forms */
   --space-page-gutter: 2rem;
   --space-section: 1.75rem;
   --space-surface: 1.35rem;
   --space-form: 1.05rem;
+  --space-form-compact: 0.72rem;
   --space-inline: var(--space-3);
   --space-row-y: 0.72rem;
+  --space-field: 0.35rem;
+  --space-field-compact: 0.2rem;
   --size-control: 2.45rem;
+  --size-control-compact: 2.25rem;
   --size-control-sm: 2rem;
   --size-row: 3.05rem;
+  --size-textarea: 5.25rem;
+  --size-textarea-compact: 4.1rem;
+  --control-pad-x: 0.85rem;
+  --control-pad-x-compact: 0.65rem;
 
   --radius-s: 8px;
   --radius-m: 12px;

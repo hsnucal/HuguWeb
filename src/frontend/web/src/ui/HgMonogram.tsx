@@ -1,11 +1,11 @@
 /**
- * HuGuWeb compact monogram.
+ * Official HuGu HG monogram.
  *
- * One geometric system: H’s crossbar continues into G, and G wraps the
- * shared right stem. Keep this outline in sync with public/favicon.svg.
+ * Geometry matches src/assets/brand/hg-mark.svg.
+ * H crossbar continues into G as the G spur; G’s left wall is H’s right stem.
  */
 const glyph = {
-  viewBox: '0 0 32 32',
+  viewBox: '0 0 64 64',
   fill: 'currentColor',
   'aria-hidden': true as const,
   focusable: false as const,
@@ -14,22 +14,11 @@ const glyph = {
 export function HgMonogram({ className }: { className?: string }) {
   return (
     <svg className={className} {...glyph}>
-      <HgMonogramShapes />
+      <rect x="6" y="6" width="10" height="52" rx="2" />
+      <rect x="26" y="6" width="10" height="52" rx="2" />
+      <rect x="6" y="27" width="44" height="10" rx="2" />
+      <path d="M35 6h11a12 12 0 0 1 12 12v4H48V16H35z" />
+      <path d="M35 48h13V42h10v4a12 12 0 0 1-12 12H35z" />
     </svg>
-  )
-}
-
-function HgMonogramShapes() {
-  return (
-    <>
-      {/* H left stem */}
-      <rect x="2.25" y="4" width="6.25" height="24" rx="1.15" />
-      {/* H right stem — shared spine that G wraps */}
-      <rect x="12.75" y="4" width="6.25" height="24" rx="1.15" />
-      {/* H crossbar continuing into G as the tongue */}
-      <rect x="2.25" y="12.875" width="19.5" height="6.25" rx="1.15" />
-      {/* G bowl: architectural C that receives the H stroke */}
-      <path d="M16 4h8.15A6.25 6.25 0 0 1 30.4 10.25v11.5A6.25 6.25 0 0 1 24.15 28H16v-6.25h8.15V10.25H16V4z" />
-    </>
   )
 }
