@@ -223,6 +223,8 @@ export function maintenanceErrorKey(reason: unknown): string {
         return 'maintenance.errors.roomInactive'
       case 'preparation-impact-failed':
         return 'maintenance.errors.preparationFailed'
+      case 'property-context-required':
+        return 'common.propertySelectionRequired'
       default:
         break
     }

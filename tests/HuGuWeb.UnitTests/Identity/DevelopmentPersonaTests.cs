@@ -1,5 +1,6 @@
 using HuGuWeb.Api.Authorization;
 using HuGuWeb.Api.Identity;
+using HuGuWeb.Workforce.Infrastructure.Seeding;
 
 namespace HuGuWeb.UnitTests.Identity;
 
@@ -23,6 +24,10 @@ public class DevelopmentPersonaTests
         Assert.Contains(HrEmployeePermissions.Read, persona.Permissions);
         Assert.Contains(HrEmployeePermissions.Manage, persona.Permissions);
         Assert.Contains(HrEmployeePermissions.SensitiveRead, persona.Permissions);
+        Assert.Contains(AuthorizationPermissions.UsersManage, persona.Permissions);
+        Assert.Contains(AuthorizationPermissions.RolesManage, persona.Permissions);
+        Assert.Equal(SystemRoleTemplates.DevelopmentSuperuser, persona.RoleCode);
+        Assert.Null(persona.PropertyId);
     }
 
     [Fact]
@@ -31,6 +36,7 @@ public class DevelopmentPersonaTests
         var persona = DevelopmentPersonaCatalog.HumanResourcesManager;
 
         Assert.Equal("hr.manager@localhost", persona.Email);
+        Assert.Equal(SystemRoleTemplates.HrManager, persona.RoleCode);
         Assert.Equal(
             [
                 WorkforcePermissions.Read,
@@ -43,6 +49,7 @@ public class DevelopmentPersonaTests
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));
+        Assert.Equal(DevelopmentWorkforceSeeder.AnkaraPropertyId, persona.PropertyId);
     }
 
     [Fact]
@@ -143,28 +150,16 @@ public class DevelopmentPersonaTests
     }
 
     [Fact]
-    public void Convergence_AddsMissingAndRemovesStaleDevelopmentPermissionsOnly()
+    public void Personas_MapToDatabaseRoleCodes_NotRuntimeEmailChecks()
     {
-        var current = new[]
-        {
-            WorkforcePermissions.Read,
-            RoomOperationsPermissions.Inspect,
-            "custom.unrelated"
-        };
-
-        var (add, remove) = DevelopmentPermissionConvergence.Diff(
-            current,
-            DevelopmentPersonaCatalog.HumanResourcesManager.Permissions);
-
+        Assert.Equal(SystemRoleTemplates.RoomAttendant, DevelopmentPersonaCatalog.RoomOperationsAttendant.RoleCode);
+        Assert.Equal(SystemRoleTemplates.RoomInspector, DevelopmentPersonaCatalog.RoomOperationsInspector.RoleCode);
+        Assert.Equal(SystemRoleTemplates.RoomOperationsManager, DevelopmentPersonaCatalog.RoomOperationsManager.RoleCode);
+        Assert.Equal(SystemRoleTemplates.MaintenanceTechnician, DevelopmentPersonaCatalog.MaintenanceTechnician.RoleCode);
+        Assert.Equal(SystemRoleTemplates.MaintenanceManager, DevelopmentPersonaCatalog.MaintenanceManager.RoleCode);
         Assert.Equal(
-            [
-                HrEmployeePermissions.Manage,
-                HrEmployeePermissions.Read,
-                HrEmployeePermissions.SensitiveRead,
-                WorkforcePermissions.Manage
-            ],
-            add);
-        Assert.Equal([RoomOperationsPermissions.Inspect], remove);
+            SystemRoleTemplates.ByCode(DevelopmentPersonaCatalog.HumanResourcesManager.RoleCode)!.Permissions,
+            DevelopmentPersonaCatalog.HumanResourcesManager.Permissions);
     }
 
     [Fact]
@@ -174,5 +169,17 @@ public class DevelopmentPersonaTests
         Assert.DoesNotContain("Kat", emails, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Supervisor", emails, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Housekeeping", emails, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void MultiPropertyPersonas_UseExplicitPropertyOrOrganizationScope()
+    {
+        Assert.Equal(
+            DevelopmentWorkforceSeeder.AntalyaPropertyId,
+            DevelopmentPersonaCatalog.HotelBHumanResourcesManager.PropertyId);
+        Assert.Equal("hr.antalya@localhost", DevelopmentPersonaCatalog.HotelBHumanResourcesManager.Email);
+        Assert.Null(DevelopmentPersonaCatalog.CorporateHumanResources.PropertyId);
+        Assert.Equal("hr.corporate@localhost", DevelopmentPersonaCatalog.CorporateHumanResources.Email);
+        Assert.Equal(SystemRoleTemplates.CorporateHr, DevelopmentPersonaCatalog.CorporateHumanResources.RoleCode);
     }
 }

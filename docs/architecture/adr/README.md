@@ -79,6 +79,7 @@ Sprint 0.3A Architecture Freeze: the following ADRs are **Accepted**. Open decis
 | [ADR-007](ADR-007-Authentication-Strategy.md) | Authentication Strategy | Accepted |
 | [ADR-008](ADR-008-Authorization-Strategy.md) | Authorization Strategy | Accepted |
 | [ADR-009](ADR-009-Cloud-Strategy.md) | Cloud Strategy | Accepted |
+| [ADR-010](ADR-010-Database-Managed-Authorization.md) | Database-Managed Membership Authorization | Accepted |
 
 Summary matrix: [Technology Decisions](../TECHNOLOGY_DECISIONS.md).
 

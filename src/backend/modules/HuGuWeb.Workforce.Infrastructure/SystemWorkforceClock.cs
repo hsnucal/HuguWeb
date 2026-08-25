@@ -2,8 +2,8 @@ using HuGuWeb.Workforce.Domain;
 
 namespace HuGuWeb.Workforce.Infrastructure;
 
-public sealed class SystemWorkforceClock : IWorkforceClock
+public sealed class SystemWorkforceClock(TimeProvider time) : IWorkforceClock
 {
-    public DateOnly Today => DateOnly.FromDateTime(DateTime.Now);
-    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+    public DateOnly Today => DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
+    public DateTimeOffset UtcNow => time.GetUtcNow();
 }

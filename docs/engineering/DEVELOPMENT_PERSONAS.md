@@ -4,7 +4,7 @@ Development/test accounts only. They are **not** hotel Positions, **not** produc
 
 Authorization remains **permission claims**. Persona emails exist so developers can sign in to a known permission set. `Employee` is still not `ApplicationUser`. Position names are never checked.
 
-After permission claims change, **sign out and sign in again**. The authentication cookie captures claims.
+After permission claims change, **sign out and sign in again**, or wait for the next request: the security stamp is refreshed so the cookie is reissued. AUTH-01 sources claims from database memberships and roles. Persona emails are seed data only — see [security/authorization/DEVELOPMENT_PERSONAS.md](../security/authorization/DEVELOPMENT_PERSONAS.md).
 
 ## Credential configuration
 
@@ -28,8 +28,10 @@ If those secrets are missing, Development startup skips the affected accounts an
 
 | Email | Purpose | Permissions | Sidebar | Can | Cannot |
 | --- | --- | --- | --- | --- | --- |
-| `dev@localhost` | Broad regression | `workforce.read`, `workforce.manage`, `hr.employee.read`, `hr.employee.manage`, `hr.employee.sensitive.read`, `room-operations.read`, `room-operations.manage`, `room-operations.inspect`, `maintenance.read`, `maintenance.manage`, `maintenance.resolve` | Ana Sayfa, Oda Operasyonları, Personel, Teknik Servis | Current Workforce + Personel Master + Room Operations + Technical Service | — |
-| `hr.manager@localhost` | İnsan Kaynakları manager | `workforce.read`, `workforce.manage`, `hr.employee.read`, `hr.employee.manage`, `hr.employee.sensitive.read` | Ana Sayfa, Personel | Workforce management and Personel Master, including sensitive HR fields | Room Operations; Technical Service (menus hidden; API 403) |
+| `dev@localhost` | Broad regression (org-wide) | all current ERP permissions | All current menus | Current Workforce + Personel + Room Ops + Technical Service | Must select Property for Room Ops / Technical Service |
+| `hr.manager@localhost` | Ankara HR | HR + workforce | Ana Sayfa, Personel | Ankara Personel Master | Other properties’ employees; Room Ops; Technical Service |
+| `hr.antalya@localhost` | Antalya HR | HR + workforce | Ana Sayfa, Personel | Antalya Personel Master | Ankara employees; Room Ops; Technical Service |
+| `hr.corporate@localhost` | Organization-wide HR | HR + workforce | Ana Sayfa, Personel | All organization employees | Room Ops / Technical Service until a Property is selected |
 | `roomops.attendant@localhost` | Cleaning work | `room-operations.read`, `room-operations.manage` | Ana Sayfa, Oda Operasyonları | View rooms; needs-cleaning; complete cleaning | Inspect / approve / reject; Workforce; Technical Service |
 | `roomops.inspector@localhost` | Inspection | `room-operations.read`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | View rooms; accept / reject when Clean | Cleaning manage actions; Workforce; Technical Service |
 | `roomops.manager@localhost` | Room Operations regression | `room-operations.read`, `room-operations.manage`, `room-operations.inspect` | Ana Sayfa, Oda Operasyonları | Current Room Operations | Workforce; Technical Service |

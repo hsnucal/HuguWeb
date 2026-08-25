@@ -595,6 +595,53 @@ public class ProductionAssemblyGuardTests
     }
 
     [Fact]
+    public void ProductionAuthorization_DoesNotSpecialCaseDevelopmentEmails()
+    {
+        var root = FindRepoRoot();
+        var apiFiles = Directory.GetFiles(
+                Path.Combine(root, "src", "backend", "HuGuWeb.Api"),
+                "*.cs",
+                SearchOption.AllDirectories)
+            .Where(path =>
+            {
+                var name = Path.GetFileName(path);
+                return !name.Contains("Development", StringComparison.OrdinalIgnoreCase);
+            })
+            .ToArray();
+
+        foreach (var path in apiFiles)
+        {
+            var source = File.ReadAllText(path);
+            Assert.DoesNotContain("hr.manager@localhost", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("roomops.manager@localhost", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("maintenance.manager@localhost", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("roomops.attendant@localhost", source, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("if (role.Name", source, StringComparison.Ordinal);
+        }
+
+        var sidebar = File.ReadAllText(Path.Combine(root, "src", "frontend", "web", "src", "app", "Sidebar.tsx"));
+        Assert.DoesNotContain("@localhost", sidebar, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("canReadHrEmployees", sidebar);
+        Assert.Contains("canReadRoomOperations", sidebar);
+        Assert.Contains("canReadMaintenance", sidebar);
+    }
+
+    [Fact]
+    public void AuthorizationEntities_LiveOnIdentityContext_NotWorkforceEmployee()
+    {
+        Assert.NotNull(typeof(AppIdentityDbContext).GetProperty("UserMemberships"));
+        Assert.NotNull(typeof(AppIdentityDbContext).GetProperty("AuthorizationRoles"));
+        Assert.Null(typeof(Employee).GetProperty("UserId"));
+        Assert.Null(typeof(Employee).GetProperty("ApplicationUserId"));
+        Assert.Null(typeof(Position).GetProperty("Permission"));
+        Assert.Null(typeof(Department).GetProperty("Permission"));
+
+        var workforceRefs = GetReferencedAssemblyNames(typeof(Employee).Assembly);
+        Assert.DoesNotContain("Microsoft.AspNetCore.Identity.EntityFrameworkCore", workforceRefs);
+        Assert.DoesNotContain("HuGuWeb.Api", workforceRefs);
+    }
+
+    [Fact]
     public void OfficialEmployment_Authorization_IsClaimBased_NotEmail()
     {
         var source = string.Join(

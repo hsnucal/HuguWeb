@@ -58,27 +58,60 @@ public static class HrEmployeeEndpoints
     private static async Task<IResult> ListEmployees(
         ClaimsPrincipal user,
         HrEmployeeDirectoryQuery query,
+        EmployeeTenantGuard tenant,
         CancellationToken cancellationToken)
     {
         var result = await query.ExecuteAsync(CanReadSensitive(user), cancellationToken);
-        return result.ToHttp();
+        if (!result.IsSuccess)
+        {
+            return result.ToHttp();
+        }
+
+        if (tenant.IsOrganizationWide(user))
+        {
+            return Results.Ok(result.Value);
+        }
+
+        var scoped = new List<HrEmployeeListItem>();
+        foreach (var item in result.Value!)
+        {
+            if (await tenant.AllowsEmployeeAsync(user, item.EmployeeId, cancellationToken))
+            {
+                scoped.Add(item);
+            }
+        }
+
+        return Results.Ok(scoped);
     }
 
     private static async Task<IResult> GetEmployee(
         Guid id,
         ClaimsPrincipal user,
         HrEmployeeCardQuery query,
+        EmployeeTenantGuard tenant,
         CancellationToken cancellationToken)
     {
+        if (!await tenant.AllowsEmployeeAsync(user, id, cancellationToken))
+        {
+            return WorkforceError.EmployeeNotFound().ToHttp();
+        }
+
         var result = await query.ExecuteAsync(id, CanReadSensitive(user), cancellationToken);
         return result.ToHttp();
     }
 
     private static async Task<IResult> GetPhoto(
         Guid id,
+        ClaimsPrincipal user,
         EmployeePhotoUseCases useCases,
+        EmployeeTenantGuard tenant,
         CancellationToken cancellationToken)
     {
+        if (!await tenant.AllowsEmployeeAsync(user, id, cancellationToken))
+        {
+            return WorkforceError.EmployeeNotFound().ToHttp();
+        }
+
         var result = await useCases.OpenAsync(id, cancellationToken);
         if (!result.IsSuccess)
         {
@@ -126,8 +159,14 @@ public static class HrEmployeeEndpoints
         [FromBody] UpdateHrEmployeeRequest request,
         UpdateEmployeeHrProfileUseCase update,
         HrEmployeeCardQuery cardQuery,
+        EmployeeTenantGuard tenant,
         CancellationToken cancellationToken)
     {
+        if (!await tenant.AllowsEmployeeAsync(user, id, cancellationToken))
+        {
+            return WorkforceError.EmployeeNotFound().ToHttp();
+        }
+
         var canWriteSensitive = CanReadSensitive(user);
         var updated = await update.ExecuteAsync(
             new UpdateEmployeeHrProfileCommand(

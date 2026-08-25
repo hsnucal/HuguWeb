@@ -24,8 +24,8 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const method = (options.method ?? 'GET').toUpperCase()
   const headers = new Headers(options.headers)
 
-  if (!headers.has('Accept')) {
-    headers.set('Accept', 'application/json')
+  if (!headers.has('Accept-Language')) {
+    headers.set('Accept-Language', document.documentElement.lang || 'tr')
   }
 
   if (options.body && !headers.has('Content-Type')) {
@@ -68,6 +68,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 export async function apiUpload<T>(path: string, body: FormData): Promise<T> {
   const headers = new Headers()
   headers.set('Accept', 'application/json')
+  headers.set('Accept-Language', document.documentElement.lang || 'tr')
   if (csrfToken) {
     headers.set('X-XSRF-TOKEN', csrfToken)
   }

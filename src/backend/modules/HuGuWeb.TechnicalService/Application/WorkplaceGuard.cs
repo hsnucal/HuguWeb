@@ -4,7 +4,12 @@ internal static class WorkplaceGuard
 {
     public static TechnicalServiceResult<ITechnicalServiceWorkplace> Get(ITechnicalServiceWorkplace workplace)
     {
-        if (!workplace.IsConfigured || workplace.PropertyId == Guid.Empty)
+        if (workplace.PropertyId == Guid.Empty)
+        {
+            return TechnicalServiceError.PropertyContextRequired();
+        }
+
+        if (!workplace.IsConfigured)
         {
             return TechnicalServiceError.WorkplaceNotConfigured();
         }

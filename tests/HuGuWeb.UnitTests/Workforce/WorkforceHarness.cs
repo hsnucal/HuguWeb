@@ -13,7 +13,9 @@ internal sealed class FixedWorkplace(Guid organizationId, Guid propertyId) : IWo
 {
     public Guid OrganizationId { get; } = organizationId;
     public Guid PropertyId { get; } = propertyId;
-    public bool IsConfigured => true;
+    public bool HasOrganization => OrganizationId != Guid.Empty;
+    public bool HasProperty => PropertyId != Guid.Empty;
+    public bool IsConfigured => HasOrganization;
 }
 
 internal sealed class InMemoryWorkforceStore : IWorkforceStore
@@ -45,6 +47,12 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Properties.FirstOrDefault(item => item.Id == id));
 
+    public Task<IReadOnlyList<Property>> ListPropertiesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Property>>(
+            Properties.Where(item => item.OrganizationId == organizationId).ToArray());
+
     public Task<Department?> GetDepartmentAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Departments.FirstOrDefault(item => item.Id == id));
 
@@ -64,11 +72,29 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public Task<IReadOnlyList<Department>> ListDepartmentsAsync(Guid propertyId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Department>>(Departments.Where(item => item.PropertyId == propertyId).ToArray());
 
+    public Task<IReadOnlyList<Department>> ListDepartmentsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        var propertyIds = Properties.Where(item => item.OrganizationId == organizationId).Select(item => item.Id).ToHashSet();
+        return Task.FromResult<IReadOnlyList<Department>>(
+            Departments.Where(item => propertyIds.Contains(item.PropertyId)).ToArray());
+    }
+
     public Task<IReadOnlyList<Position>> ListPositionsAsync(
         Guid propertyId,
         CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Position>>(
             Positions.Where(item => item.PropertyId == propertyId).ToArray());
+
+    public Task<IReadOnlyList<Position>> ListPositionsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken)
+    {
+        var propertyIds = Properties.Where(item => item.OrganizationId == organizationId).Select(item => item.Id).ToHashSet();
+        return Task.FromResult<IReadOnlyList<Position>>(
+            Positions.Where(item => propertyIds.Contains(item.PropertyId)).ToArray());
+    }
 
     public Task<IReadOnlyList<DepartmentPositionApplicability>> ListApplicabilitiesForPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
@@ -361,7 +387,7 @@ internal sealed class WorkforceHarness
     {
         Workplace = new FixedWorkplace(OrganizationId, PropertyId);
         Store.Organizations.Add(new Organization(OrganizationId, "Test Organization"));
-        Store.Properties.Add(new Property(PropertyId, OrganizationId, "Test Property"));
+        Store.Properties.Add(new Property(PropertyId, OrganizationId, "Test Property", "UTC"));
 
         AddDepartment(DepartmentId, "Kat Hizmetleri", active: true);
         AddDepartment(InactiveDepartmentId, "Kapalı Departman", active: false);
@@ -404,7 +430,7 @@ internal sealed class WorkforceHarness
                     OfficialLookupCatalog.OccupationCatalogueVersion));
         }
 
-        Store.Properties.Add(new Property(OtherPropertyId, OrganizationId, "Other Property"));
+        Store.Properties.Add(new Property(OtherPropertyId, OrganizationId, "Other Property", "UTC"));
 
         Hire = new HireEmployeeUseCase(Store, Clock, Workplace);
         HireWithProfile = new HireEmployeeWithProfileUseCase(Store, Clock, Workplace);
@@ -415,7 +441,7 @@ internal sealed class WorkforceHarness
         History = new EmployeeHistoryQuery(Store, Clock, Workplace);
         HrDirectory = new HrEmployeeDirectoryQuery(Store, Clock, Workplace);
         HrCard = new HrEmployeeCardQuery(Store, Clock, Workplace);
-        Photos = new EmployeePhotoUseCases(Store, Workplace, PhotoStorage);
+        Photos = new EmployeePhotoUseCases(Store, Workplace, PhotoStorage, Clock);
         SgkWorkplaces = new MaintainSgkWorkplaceRegistrationsUseCase(Store, Workplace, Clock);
         SaveOfficial = new SaveOfficialEmploymentProfileUseCase(Store, Clock, Workplace);
         OfficialLookups = new OfficialLookupsQuery(Store);

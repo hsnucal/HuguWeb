@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="error.user-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.user-not-found.detail" xml:space="preserve"><value>Пользователь не найден.</value></data>
+  <data name="error.membership-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.membership-not-found.detail" xml:space="preserve"><value>Членство не найдено.</value></data>
+  <data name="error.role-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.role-not-found.detail" xml:space="preserve"><value>Роль не найдена.</value></data>
+  <data name="error.email-in-use.title" xml:space="preserve"><value>Запрос конфликтует с существующими данными.</value></data>
+  <data name="error.email-in-use.detail" xml:space="preserve"><value>Этот адрес электронной почты уже принадлежит пользователю.</value></data>
+  <data name="error.invalid-permission-code.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.invalid-permission-code.detail" xml:space="preserve"><value>Один или несколько кодов прав отсутствуют в каталоге приложения.</value></data>
+  <data name="error.role-in-use.title" xml:space="preserve"><value>Запрос конфликтует с существующими данными.</value></data>
+  <data name="error.role-in-use.detail" xml:space="preserve"><value>Роль, назначенная пользователям, нельзя удалить. Деактивируйте её.</value></data>
+  <data name="error.scope-mismatch.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.scope-mismatch.detail" xml:space="preserve"><value>Область роли не совпадает с областью членства организации/объекта.</value></data>
+  <data name="error.last-administrator.title" xml:space="preserve"><value>Запрос конфликтует с существующими данными.</value></data>
+  <data name="error.last-administrator.detail" xml:space="preserve"><value>Это изменение удалит последнего пользователя, который может управлять пользователями или ролями в организации.</value></data>
+  <data name="error.property-not-accessible.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.property-not-accessible.detail" xml:space="preserve"><value>Выбранный объект недоступен в текущем членстве.</value></data>
+  <data name="error.property-not-in-organization.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.property-not-in-organization.detail" xml:space="preserve"><value>Объект не принадлежит организации членства.</value></data>
+</root>
+

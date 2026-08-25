@@ -13,6 +13,14 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
     public Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Properties.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
+    public async Task<IReadOnlyList<Property>> ListPropertiesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.Properties
+            .Where(entity => entity.OrganizationId == organizationId)
+            .OrderBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
     public Task<Department?> GetDepartmentAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Departments.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
@@ -37,11 +45,27 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
             .Where(entity => entity.PropertyId == propertyId)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<Department>> ListDepartmentsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.Departments
+            .Where(entity => dbContext.Properties.Any(property =>
+                property.Id == entity.PropertyId && property.OrganizationId == organizationId))
+            .ToListAsync(cancellationToken);
+
     public async Task<IReadOnlyList<Position>> ListPositionsAsync(
         Guid propertyId,
         CancellationToken cancellationToken) =>
         await dbContext.Positions
             .Where(entity => entity.PropertyId == propertyId)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<Position>> ListPositionsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.Positions
+            .Where(entity => dbContext.Properties.Any(property =>
+                property.Id == entity.PropertyId && property.OrganizationId == organizationId))
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<DepartmentPositionApplicability>> ListApplicabilitiesForPositionsAsync(

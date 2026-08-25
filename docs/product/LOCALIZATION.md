@@ -60,14 +60,19 @@ Update endpoint:
 
 ## Translation keys
 
-Frontend resources live in `src/frontend/web/src/i18n/locales/`.
+Frontend resources are composed from domain modules under `src/frontend/web/src/i18n/`:
 
-Keys are grouped by experience, not by React filenames:
+- `common/` — `common.*`, `navigation.*`, `operations.*`
+- `auth/`
+- `workforce/`
+- `hr/` — existing `personnel.*` keys
+- `room-operations/`
+- `technical-service/` — existing `maintenance.*` keys
+- `authorization/`
 
-- `common.*`
-- `auth.*`
-- `navigation.*`
-- `operations.*`
+Runtime still uses one i18next `translation` namespace. See [LOCALIZATION_ARCHITECTURE](../security/authorization/LOCALIZATION_ARCHITECTURE.md).
+
+API Problem Details are localized with `.resx` + `IStringLocalizer` in the host, keyed by stable `code`. Backend does not use TypeScript locale files.
 
 ## Locale vs currency
 

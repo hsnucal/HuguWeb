@@ -9,6 +9,7 @@ import { canReadHrEmployees } from '../workforce/hrAccess'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import { canReadRoomOperations } from '../room-operations/roomOperationsAccess'
 import { canReadMaintenance } from '../technical-service/maintenanceAccess'
+import { canOpenSettings } from '../authorization/authorizationAccess'
 import {
   HomeIcon,
   PeopleIcon,
@@ -38,6 +39,7 @@ export function Sidebar({
   const showWorkforce = canReadHrEmployees(user) || canReadWorkforce(user)
   const showRoomOperations = canReadRoomOperations(user)
   const showTechnicalService = canReadMaintenance(user)
+  const showSettings = canOpenSettings(user)
 
   return (
     <aside className={styles.sidebar} aria-label={t('navigation.application')}>
@@ -114,16 +116,28 @@ export function Sidebar({
       </nav>
 
       <div className={styles.footer}>
-        <span
-          className={styles.future}
-          aria-disabled="true"
-          aria-label={t('navigation.unavailable', { label: t('navigation.settings') })}
-        >
-          <span className={styles.icon}>
-            <SettingsIcon />
+        {showSettings ? (
+          <NavLink
+            to="/app/settings/users"
+            className={({ isActive }) => (isActive ? styles.current : styles.item)}
+          >
+            <span className={styles.icon}>
+              <SettingsIcon />
+            </span>
+            {t('navigation.settings')}
+          </NavLink>
+        ) : (
+          <span
+            className={styles.future}
+            aria-disabled="true"
+            aria-label={t('navigation.unavailable', { label: t('navigation.settings') })}
+          >
+            <span className={styles.icon}>
+              <SettingsIcon />
+            </span>
+            {t('navigation.settings')}
           </span>
-          {t('navigation.settings')}
-        </span>
+        )}
 
         <div className={styles.account}>
           <AvatarMark name={userLabel} size="sm" tone="onBrand" />

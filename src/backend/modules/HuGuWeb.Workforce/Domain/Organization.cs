@@ -22,4 +22,16 @@ public sealed class Organization
 
     public Guid Id { get; private set; }
     public string Name { get; private set; }
+
+    public void Rename(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        var trimmed = name.Trim();
+        if (trimmed.Length > 200)
+        {
+            throw new ArgumentOutOfRangeException(nameof(name), "Organization name is too long.");
+        }
+
+        Name = trimmed;
+    }
 }

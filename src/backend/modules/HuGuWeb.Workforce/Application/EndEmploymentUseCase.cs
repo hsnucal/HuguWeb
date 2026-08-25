@@ -10,7 +10,7 @@ public sealed class EndEmploymentUseCase(
         EndEmploymentCommand command,
         CancellationToken cancellationToken)
     {
-        var workplace = await WorkplaceGuard.GetAsync(store, workplaceContext, cancellationToken);
+        var workplace = await WorkplaceGuard.GetOrganizationAsync(store, workplaceContext, cancellationToken);
         if (!workplace.IsSuccess)
         {
             return workplace.Error!;

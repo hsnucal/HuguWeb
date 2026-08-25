@@ -44,6 +44,11 @@ public sealed class GlobalExceptionHandler(
             problem.Detail = exception.Message;
         }
 
+        if (exception is AntiforgeryValidationException)
+        {
+            problem.Extensions["code"] = "invalid-request";
+        }
+
         if (httpContext.Items[CorrelationId.ItemKey] is string correlationId)
         {
             problem.Extensions["correlationId"] = correlationId;

@@ -9,6 +9,7 @@ public sealed class WorkplaceOptions
 
     public Guid OrganizationId { get; set; }
     public Guid PropertyId { get; set; }
+    public string TimeZoneId { get; set; } = string.Empty;
 }
 
 public sealed class ConfiguredWorkplaceContext(IOptions<WorkplaceOptions> options) : IWorkplaceContext
@@ -17,5 +18,9 @@ public sealed class ConfiguredWorkplaceContext(IOptions<WorkplaceOptions> option
 
     public Guid PropertyId => options.Value.PropertyId;
 
-    public bool IsConfigured => OrganizationId != Guid.Empty && PropertyId != Guid.Empty;
+    public bool HasOrganization => OrganizationId != Guid.Empty;
+
+    public bool HasProperty => PropertyId != Guid.Empty;
+
+    public bool IsConfigured => HasOrganization && HasProperty;
 }

@@ -4,8 +4,10 @@ import { useAuthSession } from '../auth/AuthContext'
 import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
+import { Notice } from '../ui/Notice'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { PropertySelect } from './PropertySelect'
 import styles from './AppShell.module.css'
 
 export function AppShell() {
@@ -34,6 +36,7 @@ export function AppShell() {
             HuGu
           </span>
           <span className={styles.mobileUser}>{userLabel}</span>
+          <PropertySelect id="mobile-property" className={styles.mobileLanguage} tone="onBrand" />
           <LanguageSelect
             id="mobile-language"
             className={styles.mobileLanguage}
@@ -53,10 +56,21 @@ export function AppShell() {
           </p>
         ) : null}
 
-        <TopBar kicker={heading.kicker} title={heading.title} subtitle={heading.subtitle} />
+        <TopBar
+          kicker={heading.kicker}
+          title={heading.title}
+          subtitle={heading.subtitle}
+          actions={<PropertySelect id="shell-property" />}
+        />
+
+        {user?.propertySelectionRequired ? (
+          <div className={styles.main}>
+            <Notice tone="warning">{t('common.propertySelectionRequired')}</Notice>
+          </div>
+        ) : null}
 
         <main className={styles.main} id="main" tabIndex={-1}>
-          <Outlet />
+          <Outlet key={user?.propertyId ?? 'organization'} />
         </main>
       </div>
     </div>
@@ -121,6 +135,22 @@ function headingFor(pathname: string, t: (key: string) => string) {
       kicker: t('navigation.technicalService'),
       title: t('maintenance.title'),
       subtitle: t('maintenance.intro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/settings/roles')) {
+    return {
+      kicker: t('navigation.settings'),
+      title: t('authorization.roles'),
+      subtitle: t('authorization.rolesIntro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/settings')) {
+    return {
+      kicker: t('navigation.settings'),
+      title: t('authorization.users'),
+      subtitle: t('authorization.usersIntro'),
     }
   }
 

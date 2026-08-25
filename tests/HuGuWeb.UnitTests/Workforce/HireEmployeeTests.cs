@@ -1,3 +1,4 @@
+using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
 
 namespace HuGuWeb.UnitTests.Workforce;
@@ -20,6 +21,21 @@ public class HireEmployeeTests
         Assert.Equal(harness.Store.Employments[0].Id, harness.Store.Assignments[0].EmploymentId);
         Assert.Equal(AssignmentKind.Primary, harness.Store.Assignments[0].Kind);
         Assert.Null(harness.Store.Assignments[0].EndDate);
+    }
+
+    [Fact]
+    public async Task Hire_WithoutPropertyContext_IsRejected()
+    {
+        var harness = new WorkforceHarness();
+        var useCase = new HireEmployeeUseCase(
+            harness.Store,
+            harness.Clock,
+            new FixedWorkplace(harness.OrganizationId, Guid.Empty));
+
+        var result = await useCase.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal("property-context-required", result.Error!.Code);
     }
 
     [Fact]

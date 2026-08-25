@@ -7,5 +7,5 @@ public sealed class ConfiguredRoomOperationsWorkplace(IWorkplaceContext workplac
 {
     public Guid PropertyId => workplace.PropertyId;
 
-    public bool IsConfigured => workplace.IsConfigured;
+    public bool IsConfigured => workplace.HasProperty;
 }

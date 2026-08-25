@@ -8,9 +8,12 @@ namespace HuGuWeb.Workforce.Infrastructure.Seeding;
 public static class DevelopmentWorkforceSeeder
 {
     public static readonly Guid OrganizationId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000001");
-    public static readonly Guid PropertyId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+    public static readonly Guid AnkaraPropertyId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+    public static readonly Guid AntalyaPropertyId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000003");
+    public static readonly Guid PropertyId = AnkaraPropertyId;
     public static readonly Guid DevelopmentEmployeeId = Guid.Parse("a1e1c0de-0003-4000-8000-000000000201");
     public const string DevelopmentPersonnelNumber = "DEV-2001";
+    public const string DevelopmentTimeZoneId = "Europe/Istanbul";
 
     private static readonly Guid HumanResourcesId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000101");
     private static readonly Guid HousekeepingId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000102");
@@ -27,15 +30,29 @@ public static class DevelopmentWorkforceSeeder
         {
             if (!await dbContext.Organizations.AnyAsync(entity => entity.Id == OrganizationId, cancellationToken))
             {
-                dbContext.Organizations.Add(new Organization(OrganizationId, "HuGuWeb Development Hotel"));
+                dbContext.Organizations.Add(new Organization(OrganizationId, "Demo Hotel Group"));
             }
 
-            if (!await dbContext.Properties.AnyAsync(entity => entity.Id == PropertyId, cancellationToken))
+            if (!await dbContext.Properties.AnyAsync(entity => entity.Id == AnkaraPropertyId, cancellationToken))
             {
-                dbContext.Properties.Add(new Property(PropertyId, OrganizationId, "HuGuWeb Development Property"));
+                dbContext.Properties.Add(new Property(
+                    AnkaraPropertyId,
+                    OrganizationId,
+                    "Ankara Hotel",
+                    DevelopmentTimeZoneId));
+            }
+
+            if (!await dbContext.Properties.AnyAsync(entity => entity.Id == AntalyaPropertyId, cancellationToken))
+            {
+                dbContext.Properties.Add(new Property(
+                    AntalyaPropertyId,
+                    OrganizationId,
+                    "Antalya Hotel",
+                    DevelopmentTimeZoneId));
             }
 
             await dbContext.SaveChangesAsync(cancellationToken);
+            await RelabelDevelopmentWorkplaceAsync(dbContext, cancellationToken);
 
             if (!await dbContext.Departments.AnyAsync(
                     entity => entity.PropertyId == PropertyId,
@@ -74,6 +91,7 @@ public static class DevelopmentWorkforceSeeder
                 await EnsurePositionAsync(dbContext, "İK Uzmanı", "HR-OFF", cancellationToken);
             }
 
+            await TrySeedAntalyaStructureAsync(dbContext, logger, cancellationToken);
             await TrySeedDevelopmentEmployeeAsync(dbContext, logger, cancellationToken);
             await TrySeedPersonnelMasterDemoAsync(dbContext, logger, cancellationToken);
             await TrySeedPersonnelNumberSequenceAsync(dbContext, cancellationToken);
@@ -92,15 +110,126 @@ public static class DevelopmentWorkforceSeeder
         }
     }
 
-    private static void AddDepartment(WorkforceDbContext dbContext, Guid id, string name, string code)
+    private static async Task RelabelDevelopmentWorkplaceAsync(
+        WorkforceDbContext dbContext,
+        CancellationToken cancellationToken)
     {
-        if (!Department.TryCreate(id, PropertyId, name, code, out var department, out var error)
+        var organization = await dbContext.Organizations.FirstOrDefaultAsync(
+            entity => entity.Id == OrganizationId,
+            cancellationToken);
+        organization?.Rename("Demo Hotel Group");
+
+        var ankara = await dbContext.Properties.FirstOrDefaultAsync(
+            entity => entity.Id == AnkaraPropertyId,
+            cancellationToken);
+        ankara?.Rename("Ankara Hotel");
+        ankara?.SetTimeZoneId(DevelopmentTimeZoneId);
+
+        var antalya = await dbContext.Properties.FirstOrDefaultAsync(
+            entity => entity.Id == AntalyaPropertyId,
+            cancellationToken);
+        antalya?.Rename("Antalya Hotel");
+        antalya?.SetTimeZoneId(DevelopmentTimeZoneId);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void AddDepartment(WorkforceDbContext dbContext, Guid id, string name, string code) =>
+        AddDepartment(dbContext, id, PropertyId, name, code);
+
+    private static void AddDepartment(
+        WorkforceDbContext dbContext,
+        Guid id,
+        Guid propertyId,
+        string name,
+        string code)
+    {
+        if (!Department.TryCreate(id, propertyId, name, code, out var department, out var error)
             || department is null)
         {
             throw new InvalidOperationException($"Development department seed is invalid: {error}");
         }
 
         dbContext.Departments.Add(department);
+    }
+
+    private static async Task TrySeedAntalyaStructureAsync(
+        WorkforceDbContext dbContext,
+        ILogger logger,
+        CancellationToken cancellationToken)
+    {
+        var hrId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000201");
+        var hkId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000202");
+        if (!await dbContext.Departments.AnyAsync(item => item.PropertyId == AntalyaPropertyId, cancellationToken))
+        {
+            AddDepartment(dbContext, hrId, AntalyaPropertyId, "İnsan Kaynakları", "HR");
+            AddDepartment(dbContext, hkId, AntalyaPropertyId, "Kat Hizmetleri", "HK");
+            AddDepartment(
+                dbContext,
+                Guid.Parse("a1e1c0de-0001-4000-8000-000000000203"),
+                AntalyaPropertyId,
+                "Ön Büro",
+                "FO");
+            AddDepartment(
+                dbContext,
+                Guid.Parse("a1e1c0de-0001-4000-8000-000000000204"),
+                AntalyaPropertyId,
+                "Teknik Servis",
+                "ENG");
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        if (!await dbContext.Positions.AnyAsync(item => item.PropertyId == AntalyaPropertyId, cancellationToken))
+        {
+            AddPosition(dbContext, AntalyaPropertyId, "İK Uzmanı", "HR-OFF");
+            AddPosition(dbContext, AntalyaPropertyId, "Kat Görevlisi", "HK-ATT");
+            AddPosition(dbContext, AntalyaPropertyId, "Resepsiyon Görevlisi", "FO-REC");
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        var antalyaEmployeeId = Guid.Parse("a1e1c0de-0003-4000-8000-000000000301");
+        if (await dbContext.Employees.AnyAsync(item => item.Id == antalyaEmployeeId, cancellationToken))
+        {
+            return;
+        }
+
+        var position = await dbContext.Positions.FirstOrDefaultAsync(
+            item => item.PropertyId == AntalyaPropertyId && item.Code == "HK-ATT",
+            cancellationToken);
+        if (position is null)
+        {
+            logger.LogWarning("Antalya demo employee was not seeded because HK-ATT is missing.");
+            return;
+        }
+
+        if (!Employee.TryCreate(
+                antalyaEmployeeId,
+                OrganizationId,
+                "Elif",
+                "Demir",
+                "2002",
+                out var employee,
+                out var error)
+            || employee is null)
+        {
+            logger.LogWarning("Antalya demo employee seed is invalid: {Error}", error);
+            return;
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var startDate = new DateOnly(2026, 3, 1);
+        var employment = Employment.Open(Guid.Parse("a1e1c0de-0003-4000-8000-000000000302"), employee.Id, startDate, today);
+        var assignment = Assignment.StartPrimary(
+            Guid.Parse("a1e1c0de-0003-4000-8000-000000000303"),
+            employment.Id,
+            hkId,
+            position.Id,
+            startDate);
+        dbContext.Employees.Add(employee);
+        dbContext.Employments.Add(employment);
+        dbContext.Assignments.Add(assignment);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Antalya Hotel demo employee is available.");
     }
 
     private static async Task TrySeedDevelopmentEmployeeAsync(
@@ -548,9 +677,12 @@ public static class DevelopmentWorkforceSeeder
             known.Count);
     }
 
-    private static void AddPosition(WorkforceDbContext dbContext, string name, string code)
+    private static void AddPosition(WorkforceDbContext dbContext, string name, string code) =>
+        AddPosition(dbContext, PropertyId, name, code);
+
+    private static void AddPosition(WorkforceDbContext dbContext, Guid propertyId, string name, string code)
     {
-        if (!Position.TryCreate(Guid.CreateVersion7(), PropertyId, name, code, out var position, out var error)
+        if (!Position.TryCreate(Guid.CreateVersion7(), propertyId, name, code, out var position, out var error)
             || position is null)
         {
             throw new InvalidOperationException($"Development position seed is invalid: {error}");

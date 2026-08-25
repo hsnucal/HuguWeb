@@ -51,6 +51,13 @@ public sealed record RoomOperationsError(string Code, string Title, string Detai
             "Organization and Property must be configured for room operations.",
             500);
 
+    public static RoomOperationsError PropertyContextRequired() =>
+        new(
+            "property-context-required",
+            "Property context is required.",
+            "Select an explicit Property before using room operations.",
+            400);
+
     public static RoomOperationsError RoomInactive() =>
         InvalidRequest("room-inactive", "An inactive room cannot receive new preparation work.");
 

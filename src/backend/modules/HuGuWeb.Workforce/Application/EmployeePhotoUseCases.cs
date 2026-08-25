@@ -5,7 +5,8 @@ namespace HuGuWeb.Workforce.Application;
 public sealed class EmployeePhotoUseCases(
     IWorkforceStore store,
     IWorkplaceContext workplaceContext,
-    IEmployeePhotoStorage photoStorage)
+    IEmployeePhotoStorage photoStorage,
+    IWorkforceClock clock)
 {
     public async Task<WorkforceResult<EmployeePhoto>> UploadAsync(
         Guid employeeId,
@@ -45,11 +46,11 @@ public sealed class EmployeePhotoUseCases(
                 storageKey,
                 contentType,
                 bytes.Length,
-                DateTimeOffset.UtcNow));
+                clock.UtcNow));
         }
         else
         {
-            existing.Replace(storageKey, contentType, bytes.Length, DateTimeOffset.UtcNow);
+            existing.Replace(storageKey, contentType, bytes.Length, clock.UtcNow);
         }
 
         try
@@ -121,7 +122,7 @@ public sealed class EmployeePhotoUseCases(
         Guid employeeId,
         CancellationToken cancellationToken)
     {
-        var workplace = await WorkplaceGuard.GetAsync(store, workplaceContext, cancellationToken);
+        var workplace = await WorkplaceGuard.GetOrganizationAsync(store, workplaceContext, cancellationToken);
         if (!workplace.IsSuccess)
         {
             return workplace.Error!;

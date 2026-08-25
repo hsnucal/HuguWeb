@@ -4,6 +4,7 @@ using HuGuWeb.Workforce.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HuGuWeb.Workforce.Infrastructure;
 
@@ -16,6 +17,7 @@ public static class WorkforceServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("IdentityDatabase")
             ?? throw new InvalidOperationException("Connection string 'IdentityDatabase' is not configured.");
 
+        services.TryAddSingleton(TimeProvider.System);
         services.Configure<WorkplaceOptions>(configuration.GetSection(WorkplaceOptions.SectionName));
         services.Configure<EmployeePhotoStorageOptions>(
             configuration.GetSection(EmployeePhotoStorageOptions.SectionName));

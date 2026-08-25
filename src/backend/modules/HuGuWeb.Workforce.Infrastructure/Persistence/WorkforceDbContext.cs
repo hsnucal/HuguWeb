@@ -75,6 +75,7 @@ file sealed class PropertyConfiguration : IEntityTypeConfiguration<Property>
         builder.ToTable("Properties");
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.Name).HasMaxLength(200).IsRequired();
+        builder.Property(entity => entity.TimeZoneId).HasMaxLength(Property.TimeZoneIdMaxLength).IsRequired();
         builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
         builder.HasOne<Organization>()
             .WithMany()

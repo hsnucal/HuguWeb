@@ -355,6 +355,7 @@ const errorKeys: Record<string, string> = {
   'kep-invalid': 'personnel.validation.kepInvalid',
   'employment-not-found': 'personnel.errors.employmentNotFound',
   'employment-property-unresolved': 'personnel.errors.employmentPropertyUnresolved',
+  'property-context-required': 'common.propertySelectionRequired',
 }
 
 export function hrErrorKey(error: unknown): string {

@@ -145,8 +145,15 @@ public sealed record WorkforceError(
         new(
             "workplace-not-configured",
             "Workplace is not configured.",
-            "Organization and Property must be configured for workforce operations.",
+            "Organization must be configured for workforce operations.",
             500);
+
+    public static WorkforceError PropertyContextRequired() =>
+        new(
+            "property-context-required",
+            "Property context is required.",
+            "Select an explicit Property before performing this operation.",
+            400);
 
     public static WorkforceError Forbidden(string code, string detail) =>
         new(code, "Access denied.", detail, 403);

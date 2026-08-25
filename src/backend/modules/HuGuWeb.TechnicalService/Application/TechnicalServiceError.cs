@@ -57,6 +57,13 @@ public sealed record TechnicalServiceError(string Code, string Title, string Det
             "Organization and Property must be configured for technical service.",
             500);
 
+    public static TechnicalServiceError PropertyContextRequired() =>
+        new(
+            "property-context-required",
+            "Property context is required.",
+            "Select an explicit Property before using technical service.",
+            400);
+
     public static TechnicalServiceError PreparationImpactFailed(string detail) =>
         Conflict(
             "preparation-impact-failed",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { AuthContext, type AuthContextValue, type AuthStatus, type PreferenceError } from './AuthContext'
-import { fetchCsrfToken, fetchSession, login as loginRequest, logout as logoutRequest } from './sessionApi'
+import { fetchCsrfToken, fetchSession, login as loginRequest, logout as logoutRequest, selectProperty as selectPropertyRequest } from './sessionApi'
 import {
   applyLanguage,
   currentLanguage,
@@ -57,6 +57,25 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  useEffect(() => {
+    function onFocus() {
+      if (status !== 'authenticated') {
+        return
+      }
+
+      void fetchSession()
+        .then((session) => {
+          if (session.authenticated && session.user) {
+            setUser(session.user)
+          }
+        })
+        .catch(() => undefined)
+    }
+
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
+  }, [status])
+
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
@@ -89,6 +108,10 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
           await applyLanguage(previous)
           setPreferenceError('reverted')
         }
+      },
+      selectProperty: async (propertyId: string) => {
+        const updated = await selectPropertyRequest(propertyId)
+        setUser(updated)
       },
     }),
     [status, user, preferenceError],

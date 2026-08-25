@@ -198,6 +198,7 @@ const errorKeys: Record<string, string> = {
   'position-not-available-for-department': 'personnel.validation.positionNotAvailable',
   'invalid-sgk-workplace': 'workforce.errors.invalidSgkWorkplace',
   'registration-number-required': 'workforce.errors.invalidSgkWorkplace',
+  'property-context-required': 'common.propertySelectionRequired',
 }
 
 export function workforceErrorKey(error: unknown): string {

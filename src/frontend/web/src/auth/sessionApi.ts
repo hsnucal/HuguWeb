@@ -28,3 +28,10 @@ export async function updatePreferredLanguage(language: string): Promise<Current
     body: JSON.stringify({ language }),
   })
 }
+
+export async function selectProperty(propertyId: string): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>('/api/auth/property', {
+    method: 'PUT',
+    body: JSON.stringify({ propertyId }),
+  })
+}

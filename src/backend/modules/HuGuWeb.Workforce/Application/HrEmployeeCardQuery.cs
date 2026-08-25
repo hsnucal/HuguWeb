@@ -19,7 +19,7 @@ public sealed class HrEmployeeCardQuery(
             return history.Error!;
         }
 
-        var workplace = await WorkplaceGuard.GetAsync(store, workplaceContext, cancellationToken);
+        var workplace = await WorkplaceGuard.GetOrganizationAsync(store, workplaceContext, cancellationToken);
         if (!workplace.IsSuccess)
         {
             return workplace.Error!;
@@ -54,11 +54,17 @@ public sealed class HrEmployeeCardQuery(
             bes = EmploymentBesRead.From(besRow);
         }
 
+        var propertyName = await ResolvePropertyNameAsync(
+            store,
+            workplaceContext,
+            history.Value,
+            cancellationToken);
+
         return HrEmployeeCardFactory.Create(
             employee!,
             history.Value!,
             workplace.Value.Organization.Name,
-            workplace.Value.Property.Name,
+            propertyName,
             profile,
             contacts,
             photo is not null,
@@ -66,6 +72,34 @@ public sealed class HrEmployeeCardQuery(
             official,
             workforce,
             bes);
+    }
+
+    private static async Task<string> ResolvePropertyNameAsync(
+        IWorkforceStore store,
+        IWorkplaceContext workplaceContext,
+        EmployeeHistory? history,
+        CancellationToken cancellationToken)
+    {
+        if (workplaceContext.HasProperty)
+        {
+            var selected = await store.GetPropertyAsync(workplaceContext.PropertyId, cancellationToken);
+            return selected?.Name ?? string.Empty;
+        }
+
+        var departmentId = history?.CurrentPrimaryAssignment?.DepartmentId;
+        if (departmentId is null)
+        {
+            return string.Empty;
+        }
+
+        var department = await store.GetDepartmentAsync(departmentId.Value, cancellationToken);
+        if (department is null)
+        {
+            return string.Empty;
+        }
+
+        var property = await store.GetPropertyAsync(department.PropertyId, cancellationToken);
+        return property?.Name ?? string.Empty;
     }
 }
 

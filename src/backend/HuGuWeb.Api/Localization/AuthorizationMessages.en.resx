@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="error.user-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.user-not-found.detail" xml:space="preserve"><value>The user was not found.</value></data>
+  <data name="error.membership-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.membership-not-found.detail" xml:space="preserve"><value>The membership was not found.</value></data>
+  <data name="error.role-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.role-not-found.detail" xml:space="preserve"><value>The role was not found.</value></data>
+  <data name="error.email-in-use.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.email-in-use.detail" xml:space="preserve"><value>This email already belongs to a user.</value></data>
+  <data name="error.invalid-permission-code.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.invalid-permission-code.detail" xml:space="preserve"><value>One or more permission codes are not in the application catalogue.</value></data>
+  <data name="error.role-in-use.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.role-in-use.detail" xml:space="preserve"><value>A role assigned to users cannot be deleted. Deactivate it instead.</value></data>
+  <data name="error.scope-mismatch.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.scope-mismatch.detail" xml:space="preserve"><value>The role scope does not match the membership organization/property scope.</value></data>
+  <data name="error.last-administrator.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.last-administrator.detail" xml:space="preserve"><value>This change would remove the last user who can manage users or roles in the organization.</value></data>
+  <data name="error.property-not-accessible.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.property-not-accessible.detail" xml:space="preserve"><value>The selected Property is not in the active membership scope.</value></data>
+  <data name="error.property-not-in-organization.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.property-not-in-organization.detail" xml:space="preserve"><value>The Property does not belong to the membership organization.</value></data>
+</root>
+

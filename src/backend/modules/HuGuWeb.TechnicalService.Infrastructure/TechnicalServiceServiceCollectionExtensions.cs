@@ -4,6 +4,7 @@ using HuGuWeb.TechnicalService.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HuGuWeb.TechnicalService.Infrastructure;
 
@@ -16,9 +17,10 @@ public static class TechnicalServiceServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("IdentityDatabase")
             ?? throw new InvalidOperationException("Connection string 'IdentityDatabase' is not configured.");
 
+        services.TryAddSingleton(TimeProvider.System);
         services.AddDbContext<TechnicalServiceDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<ITechnicalServiceClock, SystemTechnicalServiceClock>();
-        services.AddSingleton<ITechnicalServiceWorkplace, ConfiguredTechnicalServiceWorkplace>();
+        services.AddScoped<ITechnicalServiceWorkplace, ConfiguredTechnicalServiceWorkplace>();
         services.AddScoped<ITechnicalServiceStore, EfTechnicalServiceStore>();
         services.AddScoped<IAssignableEmployeeDirectory, WorkforceAssignableEmployeeDirectory>();
         services.AddScoped<IRoomIdentityDirectory, RoomOperationsRoomDirectory>();

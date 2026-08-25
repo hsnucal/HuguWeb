@@ -29,8 +29,8 @@ public static class DevelopmentRoomOperationsSeeder
     {
         try
         {
-            // Same development Property as Workforce seed. Not a cross-module type dependency.
-            var propertyId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+            var ankaraId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+            var antalyaId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000003");
             var seeded = 0;
 
             foreach (var (id, number) in Rooms)
@@ -41,9 +41,38 @@ public static class DevelopmentRoomOperationsSeeder
                 }
 
                 var cycleId = Guid.CreateVersion7();
-                if (!Room.TryCreate(id, propertyId, number, cycleId, out var room, out var error) || room is null)
+                if (!Room.TryCreate(id, ankaraId, number, cycleId, out var room, out var error) || room is null)
                 {
                     throw new InvalidOperationException($"Development room seed is invalid: {error}");
+                }
+
+                dbContext.Rooms.Add(room);
+                dbContext.RoomReadinessHistory.Add(RoomReadinessHistoryEntry.Record(
+                    Guid.CreateVersion7(),
+                    room.Id,
+                    cycleId,
+                    RoomReadiness.Dirty,
+                    ReadinessChangeCause.Seeded,
+                    DateTimeOffset.UtcNow));
+                seeded++;
+            }
+
+            (Guid Id, string Number)[] antalyaRooms =
+            [
+                (Guid.Parse("a1e1c0de-0002-4000-8000-000000000301"), "101"),
+                (Guid.Parse("a1e1c0de-0002-4000-8000-000000000302"), "102")
+            ];
+            foreach (var (id, number) in antalyaRooms)
+            {
+                if (await dbContext.Rooms.AnyAsync(room => room.Id == id, cancellationToken))
+                {
+                    continue;
+                }
+
+                var cycleId = Guid.CreateVersion7();
+                if (!Room.TryCreate(id, antalyaId, number, cycleId, out var room, out var error) || room is null)
+                {
+                    throw new InvalidOperationException($"Antalya room seed is invalid: {error}");
                 }
 
                 dbContext.Rooms.Add(room);
@@ -63,8 +92,7 @@ public static class DevelopmentRoomOperationsSeeder
             }
 
             logger.LogInformation(
-                "Development rooms are available on Property {PropertyId}. Initial readiness is Dirty.",
-                propertyId);
+                "Development rooms are available on Ankara and Antalya properties. Initial readiness is Dirty.");
         }
         catch (Exception exception)
         {

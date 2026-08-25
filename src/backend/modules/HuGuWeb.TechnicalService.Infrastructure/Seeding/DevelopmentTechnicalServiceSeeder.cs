@@ -33,7 +33,8 @@ public static class DevelopmentTechnicalServiceSeeder
     {
         try
         {
-            var propertyId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+            var ankaraId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000002");
+            var antalyaId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000003");
             var seeded = 0;
 
             foreach (var (id, name) in Categories)
@@ -43,10 +44,32 @@ public static class DevelopmentTechnicalServiceSeeder
                     continue;
                 }
 
-                if (!MaintenanceIssueCategory.TryCreate(id, propertyId, name, out var category, out var error)
+                if (!MaintenanceIssueCategory.TryCreate(id, ankaraId, name, out var category, out var error)
                     || category is null)
                 {
                     throw new InvalidOperationException($"Development category seed is invalid: {error}");
+                }
+
+                dbContext.Categories.Add(category);
+                seeded++;
+            }
+
+            (Guid Id, string Name)[] antalyaCategories =
+            [
+                (Guid.Parse("a1e1c0de-0004-4000-8000-000000000201"), "Klima"),
+                (Guid.Parse("a1e1c0de-0004-4000-8000-000000000202"), "Elektrik")
+            ];
+            foreach (var (id, name) in antalyaCategories)
+            {
+                if (await dbContext.Categories.AnyAsync(item => item.Id == id, cancellationToken))
+                {
+                    continue;
+                }
+
+                if (!MaintenanceIssueCategory.TryCreate(id, antalyaId, name, out var category, out var error)
+                    || category is null)
+                {
+                    throw new InvalidOperationException($"Antalya category seed is invalid: {error}");
                 }
 
                 dbContext.Categories.Add(category);
@@ -59,8 +82,7 @@ public static class DevelopmentTechnicalServiceSeeder
             }
 
             logger.LogInformation(
-                "Development technical service categories are available on Property {PropertyId}.",
-                propertyId);
+                "Development technical service categories are available on Ankara and Antalya properties.");
         }
         catch (Exception exception)
         {

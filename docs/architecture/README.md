@@ -27,8 +27,10 @@ See [TECHNOLOGY_DECISIONS.md](TECHNOLOGY_DECISIONS.md) for the accepted matrix a
 | ASP.NET Core Identity | **Accepted** — [ADR-007](adr/ADR-007-Authentication-Strategy.md) |
 | Permission-based authorization | **Accepted** — [ADR-008](adr/ADR-008-Authorization-Strategy.md) |
 | Provider-neutral cloud strategy | **Accepted** — [ADR-009](adr/ADR-009-Cloud-Strategy.md) |
+| Database-managed membership authorization | **Accepted** — [ADR-010](adr/ADR-010-Database-Managed-Authorization.md) |
+| Organization / Property request context | **Accepted** — [foundation/ARCH-FOUNDATION-001.md](foundation/ARCH-FOUNDATION-001.md) |
 | Microservices | Avoid unless a later ADR justifies — rejected for current stage in ADR-001 |
-| Multi-tenancy implementation | Not designed — remains open |
+| Multi-tenancy as SaaS db-per-customer | Rejected for current stage — shared tables ([TENANCY](foundation/TENANCY.md)) |
 | Event Sourcing / CQRS everywhere | Avoid unless ADR justifies |
 | Message brokers / event streaming | Avoid unless ADR justifies |
 
@@ -60,15 +62,9 @@ Module ownership is initially **logical**, not necessarily physically isolated. 
 
 ### Multi-property
 
-Initial product focus remains single-property independent mid-size hotels. Multi-property remains strategic future scope. Architecture should avoid making future multi-property impossible. Do **not** implement tenant infrastructure now.
+HuGuWeb is one Organization with many Properties on **shared tables** ([ARCH-FOUNDATION-001](foundation/ARCH-FOUNDATION-001.md), [TENANCY](foundation/TENANCY.md)). Isolation is `OrganizationId` / `PropertyId` plus membership. Do not create table-per-hotel, schema-per-hotel, or database-per-hotel.
 
-The following concepts are **not** automatically equivalent and must be formally defined before implementation:
-
-- Tenant
-- Hotel / Property
-- Hotel Group
-
-See [Glossary](../product/GLOSSARY.md) and [Future Scope](../product/FUTURE_SCOPE.md).
+Organization, Property, and hotel-group language remain distinct. See [Glossary](../product/GLOSSARY.md).
 
 ---
 

@@ -2,7 +2,7 @@ using HuGuWeb.TechnicalService.Domain;
 
 namespace HuGuWeb.TechnicalService.Infrastructure;
 
-public sealed class SystemTechnicalServiceClock : ITechnicalServiceClock
+public sealed class SystemTechnicalServiceClock(TimeProvider time) : ITechnicalServiceClock
 {
-    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+    public DateTimeOffset UtcNow => time.GetUtcNow();
 }

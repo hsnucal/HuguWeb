@@ -18,6 +18,7 @@ public static class PipelineExtensions
         }
 
         app.UseCors(SecurityExtensions.CorsPolicyName);
+        app.UseRequestLocalization();
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -37,6 +38,7 @@ public static class PipelineExtensions
         });
 
         app.MapAuthEndpoints();
+        app.MapAuthorizationEndpoints();
         app.MapWorkforceEndpoints();
         app.MapHrEmployeeEndpoints();
         app.MapRoomOperationsEndpoints();

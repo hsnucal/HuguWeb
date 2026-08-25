@@ -21,11 +21,25 @@ public sealed class UpdateLanguageRequest
     public string Language { get; set; } = string.Empty;
 }
 
+public sealed class SelectPropertyRequest
+{
+    public Guid PropertyId { get; set; }
+}
+
+public sealed record AccessiblePropertyResponse(Guid Id, string Name, string TimeZoneId);
+
 public sealed record CurrentUserResponse(
     string Id,
     string? Email,
     string? PreferredLanguage,
-    IReadOnlyList<string> Permissions);
+    IReadOnlyList<string> Permissions,
+    Guid? MembershipId,
+    Guid? OrganizationId,
+    Guid? PropertyId,
+    string? ScopeType,
+    Guid? EmployeeId,
+    IReadOnlyList<AccessiblePropertyResponse> AccessibleProperties,
+    bool PropertySelectionRequired);
 
 public sealed record SessionResponse(bool Authenticated, CurrentUserResponse? User);
 

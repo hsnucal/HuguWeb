@@ -138,6 +138,8 @@ export function roomOperationsErrorKey(reason: unknown): string {
         return 'roomOperations.errors.inspectionNotAllowed'
       case 'assignment-required':
         return 'roomOperations.errors.assignmentRequired'
+      case 'property-context-required':
+        return 'common.propertySelectionRequired'
       default:
         break
     }

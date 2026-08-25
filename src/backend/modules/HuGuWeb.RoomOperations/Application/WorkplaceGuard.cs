@@ -4,7 +4,12 @@ internal static class WorkplaceGuard
 {
     public static RoomOperationsResult<IRoomOperationsWorkplace> Get(IRoomOperationsWorkplace workplace)
     {
-        if (!workplace.IsConfigured || workplace.PropertyId == Guid.Empty)
+        if (workplace.PropertyId == Guid.Empty)
+        {
+            return RoomOperationsError.PropertyContextRequired();
+        }
+
+        if (!workplace.IsConfigured)
         {
             return RoomOperationsError.WorkplaceNotConfigured();
         }

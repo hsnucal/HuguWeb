@@ -7,5 +7,5 @@ public sealed class ConfiguredTechnicalServiceWorkplace(IWorkplaceContext workpl
 {
     public Guid PropertyId => workplace.PropertyId;
 
-    public bool IsConfigured => workplace.IsConfigured;
+    public bool IsConfigured => workplace.HasProperty;
 }

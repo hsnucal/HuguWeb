@@ -9,11 +9,24 @@ export type ProblemDetails = {
   errors?: Record<string, string[]>
 }
 
+export type AccessibleProperty = {
+  id: string
+  name: string
+  timeZoneId: string
+}
+
 export type CurrentUser = {
   id: string
   email: string | null
   preferredLanguage: string | null
   permissions: string[]
+  membershipId?: string | null
+  organizationId?: string | null
+  propertyId?: string | null
+  scopeType?: string | null
+  employeeId?: string | null
+  accessibleProperties?: AccessibleProperty[]
+  propertySelectionRequired?: boolean
 }
 
 export type SessionResponse = {

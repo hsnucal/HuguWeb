@@ -8,6 +8,9 @@ import { DepartmentsPage } from '../workforce/DepartmentsPage'
 import { PositionsPage } from '../workforce/PositionsPage'
 import { SgkWorkplacesPage } from '../workforce/SgkWorkplacesPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
+import { AuthorizationLayout } from '../authorization/AuthorizationLayout'
+import { UsersPage } from '../authorization/UsersPage'
+import { RolesPage } from '../authorization/RolesPage'
 import { RoomOperationsPage } from '../room-operations/RoomOperationsPage'
 import { RoomDetailPage } from '../room-operations/RoomDetailPage'
 import { TechnicalServicePage } from '../technical-service/TechnicalServicePage'
@@ -37,6 +40,11 @@ export function App() {
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="positions" element={<PositionsPage />} />
           <Route path="official-settings" element={<SgkWorkplacesPage />} />
+        </Route>
+        <Route path="settings" element={<AuthorizationLayout />}>
+          <Route index element={<Navigate to="users" replace />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="roles" element={<RolesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/app" replace />} />

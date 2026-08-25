@@ -6,6 +6,8 @@ public interface IWorkplaceContext
 {
     Guid OrganizationId { get; }
     Guid PropertyId { get; }
+    bool HasOrganization { get; }
+    bool HasProperty { get; }
     bool IsConfigured { get; }
 }
 
@@ -13,6 +15,7 @@ public interface IWorkforceStore
 {
     Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken);
     Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Property>> ListPropertiesAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<Department?> GetDepartmentAsync(Guid id, CancellationToken cancellationToken);
     Task<Position?> GetPositionAsync(Guid id, CancellationToken cancellationToken);
     Task<Employee?> GetEmployeeAsync(Guid id, CancellationToken cancellationToken);
@@ -21,7 +24,13 @@ public interface IWorkforceStore
         string personnelNumber,
         CancellationToken cancellationToken);
     Task<IReadOnlyList<Department>> ListDepartmentsAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Department>> ListDepartmentsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
     Task<IReadOnlyList<Position>> ListPositionsAsync(Guid propertyId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Position>> ListPositionsForOrganizationAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
     Task<IReadOnlyList<DepartmentPositionApplicability>> ListApplicabilitiesForPositionsAsync(
         IReadOnlyCollection<Guid> positionIds,
         CancellationToken cancellationToken);

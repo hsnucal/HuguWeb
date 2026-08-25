@@ -1,7 +1,10 @@
 using HuGuWeb.Api.Authorization;
+using HuGuWeb.Api.Context;
 using HuGuWeb.Api.Identity;
+using HuGuWeb.Workforce.Application;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HuGuWeb.Api.Extensions;
 
@@ -34,6 +37,24 @@ public static class SecurityExtensions
             .AddEntityFrameworkStores<AppIdentityDbContext>()
             .AddDefaultTokenProviders();
 
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddScoped<IAuthorizationStore, EfAuthorizationStore>();
+        builder.Services.AddScoped<AccessSnapshotService>();
+        builder.Services.AddScoped<SecurityStampRefreshService>();
+        builder.Services.AddScoped<LastAdministratorProtectionService>();
+        builder.Services.AddScoped<PropertyAccessService>();
+        builder.Services.AddScoped<AuthorizationAdministrationService>();
+        builder.Services.AddScoped<EmployeeTenantGuard>();
+        builder.Services.AddScoped<ICurrentTenantContext, CurrentTenantContext>();
+        builder.Services.AddScoped<IRequestActorContext, RequestActorContext>();
+        builder.Services.AddScoped<IUserClaimsPrincipalFactory<ApplicationUser>, HuGuUserClaimsPrincipalFactory>();
+        builder.Services.Replace(ServiceDescriptor.Scoped<IWorkplaceContext, RequestWorkplaceContext>());
+        builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+        {
+            options.ValidationInterval = TimeSpan.FromMinutes(1);
+        });
+
         builder.Services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.Name = environment.IsDevelopment()
@@ -49,12 +70,14 @@ public static class SecurityExtensions
                 WriteApiAuthenticationProblem(
                     context.HttpContext,
                     StatusCodes.Status401Unauthorized,
-                    "Authentication required.");
+                    "Authentication required.",
+                    "authentication-required");
             options.Events.OnRedirectToAccessDenied = context =>
                 WriteApiAuthenticationProblem(
                     context.HttpContext,
                     StatusCodes.Status403Forbidden,
-                    "Access denied.");
+                    "Access denied.",
+                    "permission-denied");
         });
 
         builder.Services.AddAntiforgery(options =>
@@ -128,6 +151,18 @@ public static class SecurityExtensions
                 policy => policy.RequireAssertion(context =>
                     context.User.HasClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.Manage)
                     && context.User.HasClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.AuthorizationUsersManage,
+                policy => policy.RequireClaim(
+                    AuthorizationPermissions.ClaimType,
+                    AuthorizationPermissions.UsersManage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.AuthorizationRolesManage,
+                policy => policy.RequireClaim(
+                    AuthorizationPermissions.ClaimType,
+                    AuthorizationPermissions.RolesManage));
         });
 
         var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -146,7 +181,7 @@ public static class SecurityExtensions
                 }
 
                 policy
-                    .WithHeaders("Content-Type", "X-XSRF-TOKEN", "X-Correlation-ID")
+                    .WithHeaders("Content-Type", "X-XSRF-TOKEN", "X-Correlation-ID", "Accept-Language")
                     .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS");
             });
         });
@@ -154,7 +189,11 @@ public static class SecurityExtensions
         return builder;
     }
 
-    private static async Task WriteApiAuthenticationProblem(HttpContext httpContext, int statusCode, string title)
+    private static async Task WriteApiAuthenticationProblem(
+        HttpContext httpContext,
+        int statusCode,
+        string title,
+        string code)
     {
         httpContext.Response.StatusCode = statusCode;
 
@@ -165,7 +204,8 @@ public static class SecurityExtensions
             ProblemDetails = new ProblemDetails
             {
                 Status = statusCode,
-                Title = title
+                Title = title,
+                Extensions = { ["code"] = code }
             }
         });
     }

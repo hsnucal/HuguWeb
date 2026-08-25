@@ -4,6 +4,7 @@ using HuGuWeb.RoomOperations.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace HuGuWeb.RoomOperations.Infrastructure;
 
@@ -16,9 +17,10 @@ public static class RoomOperationsServiceCollectionExtensions
         var connectionString = configuration.GetConnectionString("IdentityDatabase")
             ?? throw new InvalidOperationException("Connection string 'IdentityDatabase' is not configured.");
 
+        services.TryAddSingleton(TimeProvider.System);
         services.AddDbContext<RoomOperationsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddSingleton<IRoomOperationsClock, SystemRoomOperationsClock>();
-        services.AddSingleton<IRoomOperationsWorkplace, ConfiguredRoomOperationsWorkplace>();
+        services.AddScoped<IRoomOperationsWorkplace, ConfiguredRoomOperationsWorkplace>();
         services.AddScoped<IRoomOperationsStore, EfRoomOperationsStore>();
         services.AddScoped<IAssignableEmployeeDirectory, WorkforceAssignableEmployeeDirectory>();
         services.AddScoped<RequestNeedsCleaningUseCase>();

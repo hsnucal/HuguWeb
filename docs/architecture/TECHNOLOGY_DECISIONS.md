@@ -19,7 +19,7 @@ Related: [Architecture README](README.md) · [ADR index](adr/README.md)
 | Data access | EF Core 10 for transactional persistence; raw SQL where justified | Dapper-first; EF-only dogma | **Accepted** — [ADR-005](adr/ADR-005-Data-Access.md) |
 | API style | REST-first JSON HTTP + OpenAPI | GraphQL-first; gRPC-first | **Accepted** — [ADR-006](adr/ADR-006-API-Style.md) |
 | Authentication | ASP.NET Core Identity inside HuGuWeb; cookie auth for web SPA | External OIDC IdP; Duende/IdentityServer at bootstrap | **Accepted** — [ADR-007](adr/ADR-007-Authentication-Strategy.md) |
-| Authorization | Permission-based, roles as bundles, ASP.NET policies | Static role-name checks; ABAC engine; external policy service | **Accepted** — [ADR-008](adr/ADR-008-Authorization-Strategy.md) |
+| Authorization | Permission-based; roles as DB bundles over Identity | Static role-name checks; IdentityRole as hotel IAM; ABAC engine | **Accepted** — [ADR-008](adr/ADR-008-Authorization-Strategy.md), [ADR-010](adr/ADR-010-Database-Managed-Authorization.md) |
 | Cloud strategy | Provider-neutral initial architecture; no vendor selected | Azure-first; AWS-first; Kubernetes | **Accepted** (strategy only) — [ADR-009](adr/ADR-009-Cloud-Strategy.md) |
 | ORM coexistence | EF Core now; raw SQL escape hatch; Dapper later if measured | Dapper at bootstrap | **Accepted** — ADR-005 |
 | Background jobs | Not at bootstrap; in-process hosted services first when needed | Kafka; RabbitMQ; Hangfire at bootstrap | Open — deferred |
@@ -139,26 +139,24 @@ Physical isolation may be strengthened later only when justified.
 
 ## Multi-Property Guardrail
 
-- Initial product focus remains **single-property independent mid-size hotels**.
-- Multi-property remains **strategic future scope**.
-- Initial architecture should avoid making future multi-property impossible.
-- Do **not** implement tenant infrastructure now.
+- HuGuWeb supports **multiple Properties in one Organization** on **shared tables** (Accepted: [ARCH-FOUNDATION-001](foundation/ARCH-FOUNDATION-001.md), [TENANCY](foundation/TENANCY.md)).
+- Isolation is `OrganizationId` / `PropertyId` + membership. Not table/schema/database-per-hotel.
+- Property-scoped operations require an explicit Property context. Organization-wide membership does **not** infer a pilot/default Property.
+- Menus derive from effective permissions. Queries derive from tenant context.
 
-These terms are **not** equivalent and remain formally open in the [Glossary](../product/GLOSSARY.md):
+These terms remain distinct:
 
-| Term | Discovery-level meaning | Initial architecture stance |
-|------|-------------------------|-----------------------------|
-| **Tenant** | Isolation boundary for a customer organization in a SaaS sense | Do not implement tenant infrastructure. First pilots can assume one customer installation. |
-| **Organization** | Legal/commercial entity; may or may not equal tenant | Do not model until product defines it. |
-| **Hotel / Property** | One operational site | Where data is property-scoped, prefer an explicit property identifier in the domain later rather than a hidden global singleton. No property admin UI or multi-property switching now. |
-| **Hotel Group** | Portfolio of properties | Future; do not create group tables, hierarchy, or cross-property reporting now. |
+| Term | Meaning | Current architecture |
+|------|---------|----------------------|
+| **Tenant** | Isolation for a customer installation | One shared DB; not a SaaS tenant platform |
+| **Organization** | Legal/commercial entity | First-class Workforce row; membership `OrganizationId` |
+| **Hotel / Property** | One operational site | First-class row; `TimeZoneId`; Property-scoped domains require explicit context |
+| **Hotel Group** | Portfolio of properties | Represented as one Organization with many Properties for Development; no extra group hierarchy table |
 
 **How much future readiness is enough?**
 
-- Enough: avoid hard-coding “there is only ever one hotel in the universe” into every table with no place to put a property id later.
-- Too much: tenant resolvers, discriminator columns on every row, row-level security, shared-schema vs db-per-tenant, group inheritance, and chain-level permissions.
-
-Growth path: single-property independent hotel → later property as first-class concept → later group/tenant isolation when evidence and commercial model exist.
+- Enough: explicit Property identifiers, shared tables, indexes on tenant keys, no silent default hotel.
+- Too much: microservices, row-level security products, db-per-tenant, brokers.
 
 ---
 
@@ -345,6 +343,7 @@ If any of the above cannot be re-verified at implementation time, treat the majo
 | [ADR-007](adr/ADR-007-Authentication-Strategy.md) | Authentication | Accepted |
 | [ADR-008](adr/ADR-008-Authorization-Strategy.md) | Authorization | Accepted |
 | [ADR-009](adr/ADR-009-Cloud-Strategy.md) | Cloud strategy (provider-neutral; vendor not selected) | Accepted |
+| [ADR-010](adr/ADR-010-Database-Managed-Authorization.md) | Database-managed membership authorization | Accepted |
 
 ---
 

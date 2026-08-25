@@ -1,9 +1,22 @@
 .topBar {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.35rem var(--space-page-gutter) 1.15rem;
+}
+
+.heading {
+  display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 0.28rem;
-  padding: 1.35rem var(--space-page-gutter) 1.15rem;
+  min-width: 0;
+}
+
+.actions {
+  flex: 0 0 auto;
+  padding-top: 0.15rem;
 }
 
 .kicker {

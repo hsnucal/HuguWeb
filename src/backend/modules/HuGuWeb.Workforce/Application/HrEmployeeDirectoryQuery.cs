@@ -11,7 +11,7 @@ public sealed class HrEmployeeDirectoryQuery(
         bool canReadSensitive,
         CancellationToken cancellationToken)
     {
-        var workplace = await WorkplaceGuard.GetAsync(store, workplaceContext, cancellationToken);
+        var workplace = await WorkplaceGuard.GetOrganizationAsync(store, workplaceContext, cancellationToken);
         if (!workplace.IsSuccess)
         {
             return workplace.Error!;
@@ -24,9 +24,13 @@ public sealed class HrEmployeeDirectoryQuery(
         var assignments = await store.ListAssignmentsForEmploymentsAsync(
             employments.Select(item => item.Id).ToArray(),
             cancellationToken);
-        var departments = (await store.ListDepartmentsAsync(workplace.Value.Property.Id, cancellationToken))
+        var departments = (await store.ListDepartmentsForOrganizationAsync(
+                workplace.Value.Organization.Id,
+                cancellationToken))
             .ToDictionary(item => item.Id);
-        var positions = (await store.ListPositionsAsync(workplace.Value.Property.Id, cancellationToken))
+        var positions = (await store.ListPositionsForOrganizationAsync(
+                workplace.Value.Organization.Id,
+                cancellationToken))
             .ToDictionary(item => item.Id);
         var profiles = (await store.ListHrProfilesForEmployeesAsync(employeeIds, cancellationToken))
             .ToDictionary(item => item.EmployeeId);

@@ -13,6 +13,7 @@ export type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   updatePreferredLanguage: (language: AppLanguage) => Promise<void>
+  selectProperty: (propertyId: string) => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
