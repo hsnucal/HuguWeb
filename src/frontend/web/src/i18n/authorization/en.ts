@@ -3,6 +3,7 @@ authorization: {
     users: 'Users',
     roles: 'Roles & permissions',
     usersIntro: 'ERP logins, memberships, and assigned roles.',
+    linkedEmployeeHint: 'This user creation was started from a personnel card (EmployeeId: {{employeeId}}).',
     rolesIntro: 'Permission bundles for this organization. Role names are not checked at runtime.',
     email: 'Email',
     password: 'Initial password',

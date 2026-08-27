@@ -116,5 +116,17 @@ public interface IWorkforceStore
         CancellationToken cancellationToken);
     void AddEmploymentBesSettings(EmploymentBesSettings settings);
 
+    Task<EmployeePaymentProfile?> GetPaymentProfileAsync(Guid employeeId, CancellationToken cancellationToken);
+    void AddPaymentProfile(EmployeePaymentProfile profile);
+
+    Task<IReadOnlyList<PersonnelProfileChange>> ListPersonnelProfileChangesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken);
+
+    void AddPersonnelProfileChange(PersonnelProfileChange change);
+    void AddPersonnelImportRun(PersonnelImportRun importRun);
+
+    Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
+
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

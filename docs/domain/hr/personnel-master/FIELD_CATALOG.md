@@ -27,7 +27,7 @@ Source/reference notes are **REFERENCE PRODUCT BEHAVIOR** unless marked HuGuWeb 
 
 | Label (TR) | Technical | Type | Required | Owner | HR-01 | Sensitivity | List | Import | Export | Validation / notes | Source |
 |------------|-----------|------|----------|-------|-------|-------------|------|--------|--------|---------------------|--------|
-| Fotoğraf | PhotoObjectKey | string | no | EmployeePhoto | A | Sensitive | Yes (thumbnail for HR) | No (bulk photo workflow) | No | Metadata + storage; not base64 on Employee; type/size at implement | Ref card + bulk photo |
+| Fotoğraf | PhotoObjectKey | string | no | EmployeePhoto | A | Sensitive | Yes (thumbnail for HR) | No | No | Metadata + storage; not base64 on Employee; type/size at implement. Managed individually from Personnel Card. Bulk photo import removed before HR-01C acceptance. | Ref card |
 | | ContentType | string | if photo | EmployeePhoto | A | Normal | No | No | No | | |
 | | ByteSize | int | if photo | EmployeePhoto | A | Normal | No | No | No | | |
 | | UploadedAt | datetime | if photo | EmployeePhoto | A | Normal | No | No | No | | |

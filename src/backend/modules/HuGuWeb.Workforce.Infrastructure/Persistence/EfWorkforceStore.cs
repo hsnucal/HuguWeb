@@ -370,6 +370,32 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
     public void AddEmploymentBesSettings(EmploymentBesSettings settings) =>
         dbContext.EmploymentBesSettings.Add(settings);
 
+    public Task<EmployeePaymentProfile?> GetPaymentProfileAsync(Guid employeeId, CancellationToken cancellationToken) =>
+        dbContext.EmployeePaymentProfiles.FirstOrDefaultAsync(entity => entity.EmployeeId == employeeId, cancellationToken);
+
+    public void AddPaymentProfile(EmployeePaymentProfile profile) =>
+        dbContext.EmployeePaymentProfiles.Add(profile);
+
+    public async Task<IReadOnlyList<PersonnelProfileChange>> ListPersonnelProfileChangesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken) =>
+        await dbContext.PersonnelProfileChanges
+            .Where(entity => entity.EmployeeId == employeeId)
+            .OrderByDescending(entity => entity.ChangedAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public void AddPersonnelProfileChange(PersonnelProfileChange change) =>
+        dbContext.PersonnelProfileChanges.Add(change);
+
+    public void AddPersonnelImportRun(PersonnelImportRun importRun) =>
+        dbContext.PersonnelImportRuns.Add(importRun);
+
+    public async Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        return new EfWorkforceTransaction(transaction);
+    }
+
     private static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\", StringComparison.Ordinal)
             .Replace("%", "\\%", StringComparison.Ordinal)
@@ -411,4 +437,16 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
         return false;
     }
+}
+
+internal sealed class EfWorkforceTransaction(Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction)
+    : IWorkforceTransaction
+{
+    public async Task CommitAsync(CancellationToken cancellationToken) =>
+        await transaction.CommitAsync(cancellationToken);
+
+    public async Task RollbackAsync(CancellationToken cancellationToken) =>
+        await transaction.RollbackAsync(cancellationToken);
+
+    public async ValueTask DisposeAsync() => await transaction.DisposeAsync();
 }

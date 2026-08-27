@@ -106,6 +106,8 @@ public static class HrValidation
         public const string ArgeProjectCode = "argeProjectCode";
         public const string RegistrationNumber = "registrationNumber";
         public const string DisplayName = "displayName";
+        public const string PaymentIban = "paymentIban";
+        public const string PaymentBankName = "paymentBankName";
 
         public static string EmergencyName(int index) => $"emergencyContacts[{index}].name";
 

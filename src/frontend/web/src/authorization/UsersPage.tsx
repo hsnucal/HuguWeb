@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 import { useAuthSession } from '../auth/AuthContext'
 import { Button } from '../ui/Button'
 import { Notice } from '../ui/Notice'
@@ -25,6 +26,8 @@ import { permissionLabel } from './permissionLabel'
 export function UsersPage() {
   const { t } = useTranslation()
   const { user } = useAuthSession()
+  const [searchParams] = useSearchParams()
+  const linkedEmployeeId = searchParams.get('employeeId') ?? ''
   const [rows, setRows] = useState<AuthorizationUser[] | null>(null)
   const [roles, setRoles] = useState<AuthorizationRole[]>([])
   const [email, setEmail] = useState('')
@@ -62,7 +65,11 @@ export function UsersPage() {
   async function onCreate() {
     setError(null)
     try {
-      const created = await createAuthorizationUser(email, password)
+      const created = await createAuthorizationUser(
+        email,
+        password,
+        linkedEmployeeId === '' ? undefined : linkedEmployeeId,
+      )
       if (user?.organizationId) {
         await createMembership(created.id, user.organizationId, user.propertyId ?? null)
       }
@@ -83,6 +90,9 @@ export function UsersPage() {
   return (
     <div className={styles.page}>
       <p className={styles.muted}>{t('authorization.usersIntro')}</p>
+      {linkedEmployeeId ? (
+        <Notice tone="info">{t('authorization.linkedEmployeeHint', { employeeId: linkedEmployeeId })}</Notice>
+      ) : null}
       {error ? <Notice tone="danger">{error}</Notice> : null}
       <form
         className={styles.panel}

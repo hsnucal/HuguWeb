@@ -44,9 +44,10 @@ Do **not** localize stored code identifiers (`Tckn`, `Active`, permission ids). 
 | [PERSONNEL_CARD.md](PERSONNEL_CARD.md) | Card UX, tabs, unsaved-changes invariant, create/edit modes |
 | [PERSONNEL_LIST.md](PERSONNEL_LIST.md) | List, filters, column picker |
 | [PRIVACY_AND_PERMISSIONS.md](PRIVACY_AND_PERMISSIONS.md) | Classification, permissions, personas direction, operational DTO |
-| [IMPORT_EXPORT.md](IMPORT_EXPORT.md) | Excel import/export, bulk photo (conceptual) |
+| [IMPORT_EXPORT.md](IMPORT_EXPORT.md) | Excel import/export (conceptual); bulk photo removed before HR-01C acceptance |
 | [INVARIANTS.md](INVARIANTS.md) | Binding rules for a later implementation |
 | [FIRST_SLICE.md](FIRST_SLICE.md) | Frozen **HR-01B** / **HR-01C** split |
+| [HR-01C-Personnel-Master-Completion.md](HR-01C-Personnel-Master-Completion.md) | HR-01C implementation — **Accepted** (2026-08-27) |
 
 Related (do not contradict):
 
@@ -70,7 +71,7 @@ Observed in the Product Owner–provided WebİK frontend snapshot. **Not** HuGuW
 - Configurable list columns with default-hidden sensitive columns
 - Advanced search/filter
 - Excel import (column mapping, TCKN match) and Excel export
-- Bulk photo by filename (TC or sicil)
+- Bulk photo by filename (TC or sicil) — **removed from HR-01C before acceptance**; photos are managed on Personnel Card
 - Toplu Zam exists on the Personel list — belongs later in HuGuWeb
 - Official fields (SGK, İŞKUR, KBS identity notification) depend on Personel Card data
 - Unsaved-change guard on card close (✕ / Close / Escape / beforeunload)

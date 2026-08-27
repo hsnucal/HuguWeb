@@ -91,6 +91,14 @@ public static class EmployeePhotoFile
     public static bool IsSafeStorageKey(string? storageKey) =>
         !string.IsNullOrWhiteSpace(storageKey) && StorageKeyPattern.IsMatch(storageKey);
 
+    public static bool IsSupportedFileName(string? fileName, out string extension)
+    {
+        extension = Path.GetExtension(fileName ?? string.Empty).ToLowerInvariant();
+        return extension is ".jpg" or ".jpeg" or ".png" or ".webp";
+    }
+
+    public const long MaxByteSize = EmployeePhoto.MaxBytes;
+
     private static bool MatchesSignature(byte[] bytes, string extension)
     {
         if (extension == ".jpg")

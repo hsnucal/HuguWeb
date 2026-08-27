@@ -40,7 +40,7 @@ Implementation belongs to HR-01B/01C. If an invariant would require payroll, gov
 
 16. Employee does not store image bytes as a string column.
 17. Replacing a photo archives or deletes the previous storage object; one current photo per employee.
-18. Bulk photo matches PersonnelNumber first.
+18. Employee photos are managed individually from Personnel Card. Bulk photo import was removed before HR-01C acceptance.
 
 ---
 

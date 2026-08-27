@@ -43,14 +43,14 @@ Current `workforce.read` / `workforce.manage` is too coarse once TCKN, address, 
 7. **Grade is deferred.** Do not add it in HR-01B. Position remains sufficient. Career-level structure waits for Career / Compensation. Grade never grants permissions.
 8. **Working Group is not a Personel Master concept.** Do not add it. Reference values (Normal / Retired / Disabled / Foreign / Intern) look like employment/legal classifications. Revisit as `EmploymentClassification` in HR-02 / Official / Compensation. Do not equate it with Shift.
 9. **No wage in HR-01B.** Current/base wage, net/gross, wage period, and salary history belong to HR-09. Do not create compensation stubs because the reference card shows salary. IBAN + optional BankName is `EmployeePaymentProfile` in **HR-01C**. Branch/account stay deferred.
-10. **Photo is metadata + storage object**, not base64 on Employee. Bulk photo later matches **PersonnelNumber** first.
+10. **Photo is metadata + storage object**, not base64 on Employee. Photos are managed individually from Personnel Card. Bulk photo import was removed before HR-01C acceptance.
 11. **Employee is never physically deleted** because employment ended. Personel Card must not expose normal “Personeli Sil.”
 12. **Documents are deferred to HR-04.** Employee does not need attachment metadata now.
 13. **Official lifecycle state does not live on Employee.** HR-01B prepares identity/profile only. Parent names, disability, and official codes belong to **HR-03**. SGK/KBS/İŞKUR adapters stay later.
 14. **Permissions split:** `workforce.read` remains the operational reference; `hr.employee.*` owns Personel Card; `hr.employee.sensitive.read` owns highly sensitive fields. `hr.employee.sensitive.manage` is later. No DB-managed roles. No personas implemented.
 15. **Operational modules keep a minimal `OperationalEmployeeReference`.** Technical Service and Room Operations must not consume HR profile DTOs.
 16. **Unsaved-changes guard is an accepted UX invariant** (not implemented in HR-01A).
-17. **Excel import/export and bulk photo are accepted capabilities** with authorization and preview rules; they are **HR-01C**, not HR-01B.
+17. **Excel import/export are accepted capabilities** with authorization and preview rules; they are **HR-01C**, not HR-01B. Bulk photo import was removed before HR-01C acceptance.
 18. **Column picker is allowed** but cannot reveal highly sensitive fields without the matching permission. MVP preference storage is **local UI**, not a server preference service.
 
 ---
@@ -75,11 +75,11 @@ Current `workforce.read` / `workforce.manage` is too coarse once TCKN, address, 
 | SGK dates / flags | Official slice; not Employment status |
 | Current wage | Employment compensation terms; not HR-01B |
 | Bank / IBAN | Payment profile; highly sensitive; HR-01C to persist |
-| Photo | Storage abstraction + metadata; PersonnelNumber match |
+| Photo | Storage abstraction + metadata; individual Card upload |
 | Documents | HR-04 |
 | Physical delete | Forbidden as termination |
 | Operational DTO | Minimal reference only |
-| Import/export / bulk photo | HR-01C |
+| Import/export | HR-01C. Bulk photo removed before HR-01C acceptance |
 | First production slice | [FIRST_SLICE.md](FIRST_SLICE.md) HR-01B |
 
 ---

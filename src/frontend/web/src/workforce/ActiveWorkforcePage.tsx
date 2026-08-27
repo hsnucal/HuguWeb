@@ -30,6 +30,8 @@ import {
   type PersonnelColumnId,
 } from './personnelColumns'
 import { PersonnelCard } from './PersonnelCard'
+import { PersonnelImportDialog } from './PersonnelImportDialog'
+import { exportHrEmployees, downloadBlob } from './hrPersonnelMasterApi'
 import { formatMobileForDisplay } from './personnelInput'
 
 async function fetchDirectory() {
@@ -67,6 +69,7 @@ export function ActiveWorkforcePage() {
   const [feedback, setFeedback] = useState<string | null>(null)
   const [columns, setColumns] = useState<PersonnelColumnId[]>(() => loadPersonnelColumns(canReadSensitive))
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
   const pickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -174,6 +177,24 @@ export function ActiveWorkforcePage() {
     savePersonnelColumns(allowed)
   }
 
+  async function onExport() {
+    setError(null)
+    try {
+      const blob = await exportHrEmployees({
+        search: query,
+        departmentId: departmentFilter || undefined,
+        positionId: positionFilter || undefined,
+        status: view === 'active' ? 'Active' : view === 'scheduled' ? 'Scheduled' : 'Ended',
+        startFrom: startFrom || undefined,
+        startTo: startTo || undefined,
+        columns: visibleColumns,
+      })
+      downloadBlob(blob, `personnel-${new Date().toISOString().slice(0, 10)}.xlsx`)
+    } catch (reason) {
+      setError(t(hrErrorKey(reason)))
+    }
+  }
+
   if (directory === null && error === null) {
     return <Skeleton variant="list" rows={6} label={t('workforce.loading')} />
   }
@@ -189,13 +210,25 @@ export function ActiveWorkforcePage() {
               : t('workforce.formerIntro')}
         </p>
         {canManage ? (
-          <Button layout="inline" onClick={() => {
-            setFeedback(null)
-            setCard({ type: 'create' })
-          }}>
-            {t('personnel.newPersonnel')}
+          <div className={styles.formActions}>
+            <Button layout="inline" onClick={() => {
+              setFeedback(null)
+              setCard({ type: 'create' })
+            }}>
+              {t('personnel.newPersonnel')}
+            </Button>
+            <Button variant="secondary" layout="inline" onClick={() => void onExport()}>
+              {t('personnel.exportExcel')}
+            </Button>
+            <Button variant="secondary" layout="inline" onClick={() => setImportOpen(true)}>
+              {t('personnel.importExcel')}
+            </Button>
+          </div>
+        ) : (
+          <Button variant="secondary" layout="inline" onClick={() => void onExport()}>
+            {t('personnel.exportExcel')}
           </Button>
-        ) : null}
+        )}
       </div>
 
       {feedback ? <Notice tone="success">{feedback}</Notice> : null}
@@ -370,6 +403,13 @@ export function ActiveWorkforcePage() {
       ) : null}
 
       {canManage && !canHire ? <Notice tone="info">{t('personnel.createNeedsStructure')}</Notice> : null}
+
+      {importOpen ? (
+        <PersonnelImportDialog
+          onClose={() => setImportOpen(false)}
+          onCompleted={() => void reload()}
+        />
+      ) : null}
     </div>
   )
 }

@@ -23,6 +23,13 @@ public sealed class UpdateEmployeeHrProfileUseCase(
             return WorkforceError.EmployeeNotFound();
         }
 
+        var profileBefore = await store.GetHrProfileAsync(command.EmployeeId, cancellationToken);
+        var paymentBefore = await store.GetPaymentProfileAsync(command.EmployeeId, cancellationToken);
+        var contactsBefore = command.CanWriteSensitive
+            ? await store.ListEmergencyContactsAsync(command.EmployeeId, cancellationToken)
+            : [];
+        var snapshotBefore = PersonnelProfileChangeRecorder.Capture(employee, profileBefore, paymentBefore);
+
         if (!employee.TryRename(command.GivenName, command.FamilyName, out var nameError))
         {
             return WorkforceError.InvalidFields(
@@ -51,40 +58,68 @@ public sealed class UpdateEmployeeHrProfileUseCase(
             return employment.Error!;
         }
 
-        var official = await OfficialEmploymentComposer.ApplyAsync(
-            store,
-            employment.Value,
-            command.OfficialProfile ?? OfficialEmploymentWriteModel.Empty,
-            clock.Today,
-            createIfEmpty: false,
-            cancellationToken);
-        if (!official.IsSuccess)
+        if (command.OfficialProfile is not null)
         {
-            return official.Error!;
+            var official = await OfficialEmploymentComposer.ApplyAsync(
+                store,
+                employment.Value,
+                command.OfficialProfile,
+                clock.Today,
+                createIfEmpty: false,
+                cancellationToken);
+            if (!official.IsSuccess)
+            {
+                return official.Error!;
+            }
         }
 
-        var workforce = EmploymentWorkforceComposer.Apply(
-            employment.Value,
-            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
-        if (!workforce.IsSuccess)
+        if (command.WorkforceTerms is not null)
         {
-            return workforce.Error!;
+            var workforce = EmploymentWorkforceComposer.Apply(employment.Value, command.WorkforceTerms);
+            if (!workforce.IsSuccess)
+            {
+                return workforce.Error!;
+            }
         }
 
-        var existingBes = await store.GetEmploymentBesSettingsAsync(employment.Value.Id, cancellationToken);
-        var bes = EmploymentBesComposer.Apply(
-            store,
-            employment.Value,
-            existingBes,
-            command.BesSettings ?? EmploymentBesWriteModel.Empty,
-            createIfEmpty: false);
-        if (!bes.IsSuccess)
+        if (command.BesSettings is not null)
         {
-            return bes.Error!;
+            var existingBes = await store.GetEmploymentBesSettingsAsync(employment.Value.Id, cancellationToken);
+            var bes = EmploymentBesComposer.Apply(
+                store,
+                employment.Value,
+                existingBes,
+                command.BesSettings,
+                createIfEmpty: false);
+            if (!bes.IsSuccess)
+            {
+                return bes.Error!;
+            }
         }
 
         try
         {
+            if (command.ChangeContext is not null)
+            {
+                var profileAfter = await store.GetHrProfileAsync(command.EmployeeId, cancellationToken);
+                var paymentAfter = await store.GetPaymentProfileAsync(command.EmployeeId, cancellationToken);
+                var contactsAfter = command.CanWriteSensitive
+                    ? await store.ListEmergencyContactsAsync(command.EmployeeId, cancellationToken)
+                    : contactsBefore;
+                var changes = new List<(string FieldCode, string? OldValue, string? NewValue)>();
+                changes.AddRange(PersonnelProfileChangeRecorder.Diff(
+                    snapshotBefore,
+                    PersonnelProfileChangeRecorder.Capture(employee, profileAfter, paymentAfter)));
+                changes.AddRange(PersonnelProfileChangeRecorder.DiffEmergencyContacts(contactsBefore, contactsAfter));
+                PersonnelProfileChangeRecorder.RecordDiff(
+                    store,
+                    command.EmployeeId,
+                    workplace.Value.Organization.Id,
+                    workplaceContext.HasProperty ? workplaceContext.PropertyId : null,
+                    command.ChangeContext,
+                    changes);
+            }
+
             await store.SaveChangesAsync(cancellationToken);
         }
         catch (PersonnelNumberConflictException)
@@ -108,4 +143,5 @@ public sealed record UpdateEmployeeHrProfileCommand(
     bool CanWriteSensitive,
     OfficialEmploymentWriteModel? OfficialProfile = null,
     EmploymentWorkforceWriteModel? WorkforceTerms = null,
-    EmploymentBesWriteModel? BesSettings = null);
+    EmploymentBesWriteModel? BesSettings = null,
+    PersonnelChangeContext? ChangeContext = null);

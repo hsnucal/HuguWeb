@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using HuGuWeb.Api.Authorization;
+using HuGuWeb.Api.Context;
 using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -160,6 +161,7 @@ public static class HrEmployeeEndpoints
         UpdateEmployeeHrProfileUseCase update,
         HrEmployeeCardQuery cardQuery,
         EmployeeTenantGuard tenant,
+        IRequestActorContext actorContext,
         CancellationToken cancellationToken)
     {
         if (!await tenant.AllowsEmployeeAsync(user, id, cancellationToken))
@@ -177,7 +179,8 @@ public static class HrEmployeeEndpoints
                 canWriteSensitive,
                 request.OfficialProfile.ToWriteModel(),
                 request.WorkforceTerms.ToWriteModel(),
-                request.BesSettings.ToWriteModel()),
+                request.BesSettings.ToWriteModel(),
+                ToChangeContext(user, actorContext)),
             cancellationToken);
         if (!updated.IsSuccess)
         {
@@ -280,6 +283,22 @@ public static class HrEmployeeEndpoints
 
     private static bool CanReadSensitive(ClaimsPrincipal user) =>
         user.HasClaim(HrEmployeePermissions.ClaimType, HrEmployeePermissions.SensitiveRead);
+
+    private static PersonnelChangeContext? ToChangeContext(
+        ClaimsPrincipal user,
+        IRequestActorContext actorContext)
+    {
+        var actor = actorContext.Current;
+        return actor is null
+            ? null
+            : new PersonnelChangeContext(
+                actor.UserId,
+                actor.EmployeeId,
+                actor.OrganizationId,
+                actor.PropertyId,
+                actor.OccurredAtUtc,
+                PersonnelChangeSources.Manual);
+    }
 }
 
 public sealed record CreateHrEmployeeRequest(

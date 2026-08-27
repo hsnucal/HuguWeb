@@ -218,6 +218,12 @@ export type HrEmployeeCard = {
   officialProfile: OfficialEmploymentProfileRead | null
   workforceTerms: EmploymentWorkforceRead | null
   besSettings: EmploymentBesRead | null
+  paymentProfile: EmployeePaymentProfileRead | null
+}
+
+export type EmployeePaymentProfileRead = {
+  iban: string
+  bankName: string | null
 }
 
 export type EmergencyContactWrite = {

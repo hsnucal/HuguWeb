@@ -387,6 +387,61 @@ export type Translations = {
     transferAction: string
     noHrAccess: string
     sensitiveHidden: string
+    exportExcel: string
+    importExcel: string
+    importTitle: string
+    importIntro: string
+    importTemplate: string
+    importFile: string
+    importUploadDrop: string
+    importUploadOr: string
+    importChooseFile: string
+    importFileHint: string
+    importChangeFile: string
+    importRemoveFile: string
+    importBack: string
+    importPreview: string
+    importConfirm: string
+    importSummaryTotal: string
+    importSummaryCreate: string
+    importSummaryUpdate: string
+    importSummaryInvalid: string
+    importColStatus: string
+    importColRow: string
+    importColAction: string
+    importColPersonnelNumber: string
+    importColGivenName: string
+    importColFamilyName: string
+    importColDepartment: string
+    importColPosition: string
+    importColStartDate: string
+    importColError: string
+    importStatusNew: string
+    importStatusUpdate: string
+    importStatusInvalid: string
+    importSummary: string
+    importRow: string
+    importActionCreate: string
+    importActionUpdate: string
+    importResult: string
+    paymentSection: string
+    paymentIban: string
+    paymentBankName: string
+    savePayment: string
+    erpAccess: string
+    erpNoAccount: string
+    erpActiveUser: string
+    createErpUser: string
+    profileChangeHistory: string
+    historyFields: {
+      'given-name': string
+      'family-name': string
+      'mobile-phone': string
+      email: string
+      'payment-iban': string
+      'payment-bank-name': string
+      photo: string
+    }
     errors: {
       nationalIdentityInUse: string
       invalidHrProfile: string
@@ -598,6 +653,7 @@ export type Translations = {
     users: string
     roles: string
     usersIntro: string
+    linkedEmployeeHint: string
     rolesIntro: string
     email: string
     password: string

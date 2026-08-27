@@ -31,6 +31,9 @@ public sealed class HrEmployeeCardQuery(
             ? await store.ListEmergencyContactsAsync(employeeId, cancellationToken)
             : [];
         var photo = await store.GetEmployeePhotoAsync(employeeId, cancellationToken);
+        var paymentProfile = canReadSensitive
+            ? await store.GetPaymentProfileAsync(employeeId, cancellationToken)
+            : null;
         var employments = await store.ListEmploymentsAsync(employeeId, cancellationToken);
         var targetEmployment = OfficialEmploymentSelection.ForEmployee(employments);
         OfficialEmploymentProfileReadModel? official = null;
@@ -71,7 +74,10 @@ public sealed class HrEmployeeCardQuery(
             canReadSensitive,
             official,
             workforce,
-            bes);
+            bes,
+            paymentProfile is null
+                ? null
+                : new EmployeePaymentProfileReadModel(paymentProfile.Iban, paymentProfile.BankName));
     }
 
     private static async Task<string> ResolvePropertyNameAsync(
@@ -116,7 +122,8 @@ public static class HrEmployeeCardFactory
         bool canReadSensitive,
         OfficialEmploymentProfileReadModel? officialProfile = null,
         EmploymentWorkforceReadModel? workforceTerms = null,
-        EmploymentBesReadModel? besSettings = null)
+        EmploymentBesReadModel? besSettings = null,
+        EmployeePaymentProfileReadModel? paymentProfile = null)
     {
         return new HrEmployeeCard(
             employee.Id,
@@ -171,9 +178,12 @@ public static class HrEmployeeCardFactory
             canReadSensitive,
             officialProfile,
             workforceTerms,
-            besSettings);
+            besSettings,
+            paymentProfile);
     }
 }
+
+public sealed record EmployeePaymentProfileReadModel(string Iban, string? BankName);
 
 public sealed record HrEmployeeCard(
     Guid EmployeeId,
@@ -190,7 +200,8 @@ public sealed record HrEmployeeCard(
     bool CanReadSensitive,
     OfficialEmploymentProfileReadModel? OfficialProfile,
     EmploymentWorkforceReadModel? WorkforceTerms,
-    EmploymentBesReadModel? BesSettings);
+    EmploymentBesReadModel? BesSettings,
+    EmployeePaymentProfileReadModel? PaymentProfile);
 
 public sealed record HrProfileReadModel(
     EducationLevel? EducationLevel,

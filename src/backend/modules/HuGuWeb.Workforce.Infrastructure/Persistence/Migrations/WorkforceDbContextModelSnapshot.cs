@@ -368,6 +368,42 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("EmployeeHrProfiles", (string)null);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeePaymentProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Iban")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("character varying(34)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("EmployeePaymentProfiles", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeePhoto", b =>
                 {
                     b.Property<Guid>("Id")
@@ -635,6 +671,52 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("Organizations", (string)null);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelImportRun", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("CreatedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("RowCount")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UpdatedCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("OrganizationId", "OccurredAtUtc");
+
+                    b.ToTable("PersonnelImportRuns", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelNumberSequence", b =>
                 {
                     b.Property<Guid>("OrganizationId")
@@ -651,6 +733,58 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasKey("OrganizationId");
 
                     b.ToTable("PersonnelNumberSequences", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelProfileChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ChangeSource")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("ChangedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ChangedByEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FieldCode")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("NewValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("OldValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.HasIndex("EmployeeId", "ChangedAtUtc");
+
+                    b.ToTable("PersonnelProfileChanges", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Position", b =>
@@ -888,6 +1022,21 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeePaymentProfile", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeePhoto", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Employee", null)
@@ -954,8 +1103,38 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelImportRun", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.Property", null)
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelNumberSequence", b =>
                 {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelProfileChange", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
                         .WithMany()
                         .HasForeignKey("OrganizationId")

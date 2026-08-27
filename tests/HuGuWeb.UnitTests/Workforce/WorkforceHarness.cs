@@ -20,6 +20,11 @@ internal sealed class FixedWorkplace(Guid organizationId, Guid propertyId) : IWo
 
 internal sealed class InMemoryWorkforceStore : IWorkforceStore
 {
+    private InMemoryWorkforceSnapshot? _transactionSnapshot;
+    private int _transactionSaveCount;
+
+    public int? FailSaveChangesAfterCount { get; set; }
+
     public List<Organization> Organizations { get; } = [];
     public List<Property> Properties { get; } = [];
     public List<Department> Departments { get; } = [];
@@ -40,6 +45,9 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<SgkOccupationCode> SgkOccupationCodes { get; } = [];
     public List<EmploymentDutyCode> EmploymentDutyCodes { get; } = [];
     public List<EmploymentBesSettings> EmploymentBesSettings { get; } = [];
+    public List<EmployeePaymentProfile> PaymentProfiles { get; } = [];
+    public List<PersonnelProfileChange> ProfileChanges { get; } = [];
+    public List<PersonnelImportRun> ImportRuns { get; } = [];
 
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Organizations.FirstOrDefault(item => item.Id == id));
@@ -299,8 +307,55 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public void AddEmploymentBesSettings(EmploymentBesSettings settings) =>
         EmploymentBesSettings.Add(settings);
 
+    public Task<EmployeePaymentProfile?> GetPaymentProfileAsync(Guid employeeId, CancellationToken cancellationToken) =>
+        Task.FromResult(PaymentProfiles.FirstOrDefault(item => item.EmployeeId == employeeId));
+
+    public void AddPaymentProfile(EmployeePaymentProfile profile) => PaymentProfiles.Add(profile);
+
+    public Task<IReadOnlyList<PersonnelProfileChange>> ListPersonnelProfileChangesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<PersonnelProfileChange>>(
+            ProfileChanges.Where(item => item.EmployeeId == employeeId).OrderByDescending(item => item.ChangedAtUtc).ToArray());
+
+    public void AddPersonnelProfileChange(PersonnelProfileChange change) => ProfileChanges.Add(change);
+
+    public void AddPersonnelImportRun(PersonnelImportRun importRun) => ImportRuns.Add(importRun);
+
+    public Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
+    {
+        if (_transactionSnapshot is not null)
+        {
+            throw new InvalidOperationException("Nested workforce transactions are not supported.");
+        }
+
+        _transactionSnapshot = InMemoryWorkforceSnapshot.Capture(this);
+        _transactionSaveCount = 0;
+        return Task.FromResult<IWorkforceTransaction>(new InMemoryWorkforceTransaction(this));
+    }
+
+    internal void CommitTransaction() => _transactionSnapshot = null;
+
+    internal void RollbackTransaction()
+    {
+        if (_transactionSnapshot is not null)
+        {
+            _transactionSnapshot.Restore(this);
+            _transactionSnapshot = null;
+        }
+    }
+
     public Task SaveChangesAsync(CancellationToken cancellationToken)
     {
+        if (_transactionSnapshot is not null)
+        {
+            _transactionSaveCount++;
+            if (FailSaveChangesAfterCount is int limit && _transactionSaveCount >= limit)
+            {
+                throw new InvalidOperationException("Simulated persistence failure.");
+            }
+        }
+
         var duplicateNumber = Employees
             .GroupBy(item => (item.OrganizationId, item.PersonnelNumber))
             .Any(group => group.Count() > 1);
@@ -322,6 +377,177 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
         }
 
         return Task.CompletedTask;
+    }
+}
+
+internal sealed class InMemoryWorkforceTransaction(InMemoryWorkforceStore store) : IWorkforceTransaction
+{
+    private bool _completed;
+
+    public Task CommitAsync(CancellationToken cancellationToken)
+    {
+        Complete();
+        store.CommitTransaction();
+        return Task.CompletedTask;
+    }
+
+    public Task RollbackAsync(CancellationToken cancellationToken)
+    {
+        Complete();
+        store.RollbackTransaction();
+        return Task.CompletedTask;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        if (!_completed)
+        {
+            store.RollbackTransaction();
+        }
+
+        return ValueTask.CompletedTask;
+    }
+
+    private void Complete() => _completed = true;
+}
+
+internal sealed class InMemoryWorkforceSnapshot
+{
+    private readonly List<Organization> _organizations;
+    private readonly List<Property> _properties;
+    private readonly List<Department> _departments;
+    private readonly List<Position> _positions;
+    private readonly List<DepartmentPositionApplicability> _applicabilities;
+    private readonly List<Employee> _employees;
+    private readonly List<Employment> _employments;
+    private readonly List<Assignment> _assignments;
+    private readonly List<EmployeeHrProfile> _hrProfiles;
+    private readonly List<EmergencyContact> _emergencyContacts;
+    private readonly List<EmployeePhoto> _photos;
+    private readonly List<SgkWorkplaceRegistration> _sgkWorkplaceRegistrations;
+    private readonly List<OfficialEmploymentProfile> _officialEmploymentProfiles;
+    private readonly List<SgkDocumentType> _sgkDocumentTypes;
+    private readonly List<ApplicableLawCode> _applicableLawCodes;
+    private readonly List<InsuranceBranch> _insuranceBranches;
+    private readonly List<SgkOccupationCode> _sgkOccupationCodes;
+    private readonly List<EmploymentDutyCode> _employmentDutyCodes;
+    private readonly List<EmploymentBesSettings> _employmentBesSettings;
+    private readonly List<EmployeePaymentProfile> _paymentProfiles;
+    private readonly List<PersonnelProfileChange> _profileChanges;
+    private readonly List<PersonnelImportRun> _importRuns;
+    private readonly Dictionary<Guid, PersonnelNumberSequence> _sequences;
+
+    private InMemoryWorkforceSnapshot(
+        List<Organization> organizations,
+        List<Property> properties,
+        List<Department> departments,
+        List<Position> positions,
+        List<DepartmentPositionApplicability> applicabilities,
+        List<Employee> employees,
+        List<Employment> employments,
+        List<Assignment> assignments,
+        List<EmployeeHrProfile> hrProfiles,
+        List<EmergencyContact> emergencyContacts,
+        List<EmployeePhoto> photos,
+        List<SgkWorkplaceRegistration> sgkWorkplaceRegistrations,
+        List<OfficialEmploymentProfile> officialEmploymentProfiles,
+        List<SgkDocumentType> sgkDocumentTypes,
+        List<ApplicableLawCode> applicableLawCodes,
+        List<InsuranceBranch> insuranceBranches,
+        List<SgkOccupationCode> sgkOccupationCodes,
+        List<EmploymentDutyCode> employmentDutyCodes,
+        List<EmploymentBesSettings> employmentBesSettings,
+        List<EmployeePaymentProfile> paymentProfiles,
+        List<PersonnelProfileChange> profileChanges,
+        List<PersonnelImportRun> importRuns,
+        Dictionary<Guid, PersonnelNumberSequence> sequences)
+    {
+        _organizations = organizations;
+        _properties = properties;
+        _departments = departments;
+        _positions = positions;
+        _applicabilities = applicabilities;
+        _employees = employees;
+        _employments = employments;
+        _assignments = assignments;
+        _hrProfiles = hrProfiles;
+        _emergencyContacts = emergencyContacts;
+        _photos = photos;
+        _sgkWorkplaceRegistrations = sgkWorkplaceRegistrations;
+        _officialEmploymentProfiles = officialEmploymentProfiles;
+        _sgkDocumentTypes = sgkDocumentTypes;
+        _applicableLawCodes = applicableLawCodes;
+        _insuranceBranches = insuranceBranches;
+        _sgkOccupationCodes = sgkOccupationCodes;
+        _employmentDutyCodes = employmentDutyCodes;
+        _employmentBesSettings = employmentBesSettings;
+        _paymentProfiles = paymentProfiles;
+        _profileChanges = profileChanges;
+        _importRuns = importRuns;
+        _sequences = sequences;
+    }
+
+    public static InMemoryWorkforceSnapshot Capture(InMemoryWorkforceStore store) =>
+        new(
+            [.. store.Organizations],
+            [.. store.Properties],
+            [.. store.Departments],
+            [.. store.Positions],
+            [.. store.Applicabilities],
+            [.. store.Employees],
+            [.. store.Employments],
+            [.. store.Assignments],
+            [.. store.HrProfiles],
+            [.. store.EmergencyContacts],
+            [.. store.Photos],
+            [.. store.SgkWorkplaceRegistrations],
+            [.. store.OfficialEmploymentProfiles],
+            [.. store.SgkDocumentTypes],
+            [.. store.ApplicableLawCodes],
+            [.. store.InsuranceBranches],
+            [.. store.SgkOccupationCodes],
+            [.. store.EmploymentDutyCodes],
+            [.. store.EmploymentBesSettings],
+            [.. store.PaymentProfiles],
+            [.. store.ProfileChanges],
+            [.. store.ImportRuns],
+            store.Sequences.ToDictionary(item => item.Key, item => item.Value));
+
+    public void Restore(InMemoryWorkforceStore store)
+    {
+        Replace(store.Organizations, _organizations);
+        Replace(store.Properties, _properties);
+        Replace(store.Departments, _departments);
+        Replace(store.Positions, _positions);
+        Replace(store.Applicabilities, _applicabilities);
+        Replace(store.Employees, _employees);
+        Replace(store.Employments, _employments);
+        Replace(store.Assignments, _assignments);
+        Replace(store.HrProfiles, _hrProfiles);
+        Replace(store.EmergencyContacts, _emergencyContacts);
+        Replace(store.Photos, _photos);
+        Replace(store.SgkWorkplaceRegistrations, _sgkWorkplaceRegistrations);
+        Replace(store.OfficialEmploymentProfiles, _officialEmploymentProfiles);
+        Replace(store.SgkDocumentTypes, _sgkDocumentTypes);
+        Replace(store.ApplicableLawCodes, _applicableLawCodes);
+        Replace(store.InsuranceBranches, _insuranceBranches);
+        Replace(store.SgkOccupationCodes, _sgkOccupationCodes);
+        Replace(store.EmploymentDutyCodes, _employmentDutyCodes);
+        Replace(store.EmploymentBesSettings, _employmentBesSettings);
+        Replace(store.PaymentProfiles, _paymentProfiles);
+        Replace(store.ProfileChanges, _profileChanges);
+        Replace(store.ImportRuns, _importRuns);
+        store.Sequences.Clear();
+        foreach (var (key, value) in _sequences)
+        {
+            store.Sequences[key] = value;
+        }
+    }
+
+    private static void Replace<T>(List<T> target, List<T> source)
+    {
+        target.Clear();
+        target.AddRange(source);
     }
 }
 

@@ -1,6 +1,7 @@
 using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
 using HuGuWeb.Workforce.Infrastructure.Persistence;
+using HuGuWeb.Workforce.Infrastructure.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,12 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<OfficialLookupsQuery>();
         services.AddScoped<MaintainSgkWorkplaceRegistrationsUseCase>();
         services.AddScoped<SaveOfficialEmploymentProfileUseCase>();
+        services.AddSingleton<PersonnelImportPreviewStore>();
+        services.AddSingleton<IPersonnelSpreadsheetService, ClosedXmlPersonnelSpreadsheetService>();
+        services.AddScoped<PersonnelExcelExportUseCase>();
+        services.AddScoped<PersonnelExcelImportUseCase>();
+        services.AddScoped<SaveEmployeePaymentProfileUseCase>();
+        services.AddScoped<PersonnelProfileHistoryQuery>();
         return services;
     }
 }

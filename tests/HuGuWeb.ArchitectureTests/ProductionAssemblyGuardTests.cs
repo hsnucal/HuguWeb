@@ -429,7 +429,7 @@ public class ProductionAssemblyGuardTests
     }
 
     [Fact]
-    public void Hr01B_DoesNotIntroduceDeferredHrPlatformTypes()
+    public void Hr01C_DoesNotIntroduceDeferredHrPlatformTypes()
     {
         var names = typeof(Employee).Assembly.GetTypes()
             .Concat(typeof(WorkforceDbContext).Assembly.GetTypes())
@@ -437,7 +437,8 @@ public class ProductionAssemblyGuardTests
             .Select(type => type.Name)
             .ToArray();
 
-        Assert.DoesNotContain("EmployeePaymentProfile", names);
+        Assert.Contains("EmployeePaymentProfile", names);
+        Assert.Contains("PersonnelProfileChange", names);
         Assert.DoesNotContain("PayrollRun", names);
         Assert.DoesNotContain("LeaveBalance", names);
         Assert.DoesNotContain("LeaveRequest", names);

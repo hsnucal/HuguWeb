@@ -249,4 +249,32 @@ public sealed record WorkforceError(
 
     public static WorkforceError InvalidSgkWorkplace(string code, string field, string detail) =>
         InvalidFields(code, detail, field, code);
+
+    public static WorkforceError PersonnelImportInvalidFile(string detail) =>
+        InvalidRequest("personnel-import-invalid-file", detail);
+
+    public static WorkforceError PersonnelImportTooLarge(string detail) =>
+        InvalidRequest("personnel-import-too-large", detail);
+
+    public static WorkforceError PersonnelImportPreviewExpired() =>
+        InvalidRequest("personnel-import-preview-expired", "Import preview has expired. Upload the file again.");
+
+    public static WorkforceError PersonnelImportPreviewInvalid() =>
+        InvalidRequest("personnel-import-preview-invalid", "Import preview is invalid or incomplete.");
+
+    public static WorkforceError PersonnelImportPreviewForbidden() =>
+        InvalidRequest("personnel-import-preview-forbidden", "Import preview belongs to another user or property context.");
+
+    public static WorkforceError PersonnelImportFailed(string detail) =>
+        InvalidRequest("personnel-import-failed", detail);
+
+    public static WorkforceError PersonnelImportRowInvalid(string detail) =>
+        InvalidRequest("personnel-import-row-invalid", detail);
+
+    public static WorkforceError PaymentProfileInvalidIban() =>
+        InvalidFields(
+            "payment-profile-invalid-iban",
+            "IBAN is invalid.",
+            HrValidation.Fields.PaymentIban,
+            "payment-profile-invalid-iban");
 }

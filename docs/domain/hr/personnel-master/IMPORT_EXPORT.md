@@ -1,4 +1,4 @@
-# Import, export, and bulk photo
+# Import and export
 
 > **Status:** Accepted — HR-01A. Conceptual workflows and rules. **HR-01C** to implement. Do not add a spreadsheet library in HR-01A or HR-01B.
 
@@ -46,23 +46,12 @@ Create-via-import still must satisfy Hire invariants (employment + primary assig
 
 ---
 
-## Bulk photo (HR-01C)
+## Bulk photo
 
-```text
-ZIP / files → filename match → preview
-  → unmatched / duplicate / invalid → confirm → result
-```
+**Product Owner decision (pre-acceptance):** Bulk photo import removed before HR-01C acceptance.
+Employee photos are managed individually from Personnel Card.
 
-| Rule | Choice |
-|------|--------|
-| Primary match | PersonnelNumber (filename stem) |
-| Optional fallback | National identity number, only if explicitly allowed and user has sensitive permission |
-| TCKN in UX | Do not show unmatched TCKN filenames to users without `hr.employee.sensitive.read` |
-| Replace | Confirm; last confirmed wins per employee |
-| Types / size | Image types only; size cap at implementation |
-| Close during upload | Do not allow dismiss that leaves a silent half-batch |
-
-**REFERENCE PRODUCT OBSERVATION:** WebİK bulk photo matched “TC or sicil” in the filename. HuGuWeb prefers sicil so TCKN does not leak through Finder/Explorer.
+The earlier HR-01A conceptual workflow (ZIP/files → PersonnelNumber filename match → preview unmatched/duplicate/invalid → confirm) is **not** part of HR-01C.
 
 ---
 

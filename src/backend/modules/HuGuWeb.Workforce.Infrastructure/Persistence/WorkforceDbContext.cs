@@ -31,6 +31,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<InsuranceBranch> InsuranceBranches => Set<InsuranceBranch>();
     public DbSet<SgkOccupationCode> SgkOccupationCodes => Set<SgkOccupationCode>();
     public DbSet<EmploymentDutyCode> EmploymentDutyCodes => Set<EmploymentDutyCode>();
+    public DbSet<EmployeePaymentProfile> EmployeePaymentProfiles => Set<EmployeePaymentProfile>();
+    public DbSet<PersonnelProfileChange> PersonnelProfileChanges => Set<PersonnelProfileChange>();
+    public DbSet<PersonnelImportRun> PersonnelImportRuns => Set<PersonnelImportRun>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +57,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new InsuranceBranchConfiguration());
         modelBuilder.ApplyConfiguration(new SgkOccupationCodeConfiguration());
         modelBuilder.ApplyConfiguration(new EmploymentDutyCodeConfiguration());
+        modelBuilder.ApplyConfiguration(new EmployeePaymentProfileConfiguration());
+        modelBuilder.ApplyConfiguration(new PersonnelProfileChangeConfiguration());
+        modelBuilder.ApplyConfiguration(new PersonnelImportRunConfiguration());
     }
 }
 
@@ -517,5 +523,71 @@ file sealed class EmploymentBesSettingsConfiguration : IEntityTypeConfiguration<
             .HasForeignKey(entity => entity.EmploymentId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(entity => entity.EmploymentId).IsUnique();
+    }
+}
+
+file sealed class EmployeePaymentProfileConfiguration : IEntityTypeConfiguration<EmployeePaymentProfile>
+{
+    public void Configure(EntityTypeBuilder<EmployeePaymentProfile> builder)
+    {
+        builder.ToTable("EmployeePaymentProfiles");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Iban).HasMaxLength(EmployeePaymentProfile.IbanMaxLength).IsRequired();
+        builder.Property(entity => entity.BankName).HasMaxLength(EmployeePaymentProfile.BankNameMaxLength);
+        builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
+        builder.HasOne<Employee>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => entity.EmployeeId).IsUnique();
+    }
+}
+
+file sealed class PersonnelProfileChangeConfiguration : IEntityTypeConfiguration<PersonnelProfileChange>
+{
+    public void Configure(EntityTypeBuilder<PersonnelProfileChange> builder)
+    {
+        builder.ToTable("PersonnelProfileChanges");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.FieldCode).HasMaxLength(PersonnelProfileChange.FieldCodeMaxLength).IsRequired();
+        builder.Property(entity => entity.OldValue).HasMaxLength(PersonnelProfileChange.ValueMaxLength);
+        builder.Property(entity => entity.NewValue).HasMaxLength(PersonnelProfileChange.ValueMaxLength);
+        builder.Property(entity => entity.ChangedByUserId).HasMaxLength(PersonnelProfileChange.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.ChangeSource).HasMaxLength(PersonnelProfileChange.SourceMaxLength);
+        builder.Property(entity => entity.ChangedAtUtc).IsRequired();
+        builder.HasOne<Employee>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmployeeId, entity.ChangedAtUtc });
+    }
+}
+
+file sealed class PersonnelImportRunConfiguration : IEntityTypeConfiguration<PersonnelImportRun>
+{
+    public void Configure(EntityTypeBuilder<PersonnelImportRun> builder)
+    {
+        builder.ToTable("PersonnelImportRuns");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.FileName).HasMaxLength(PersonnelImportRun.FileNameMaxLength).IsRequired();
+        builder.Property(entity => entity.ActorUserId).HasMaxLength(PersonnelImportRun.ActorUserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.OccurredAtUtc).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Property>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PropertyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.OccurredAtUtc });
     }
 }

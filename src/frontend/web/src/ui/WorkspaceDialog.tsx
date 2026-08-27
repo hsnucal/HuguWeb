@@ -5,6 +5,7 @@ const CLOSE_FALLBACK_MS = 280
 
 export function WorkspaceDialog({
   title,
+  subtitle,
   onRequestClose,
   children,
   footer,
@@ -18,10 +19,11 @@ export function WorkspaceDialog({
   bodyOverflow = 'auto',
 }: {
   title: string
+  subtitle?: string
   onRequestClose: () => void
   children: ReactNode
   footer?: ReactNode
-  size?: 'workspace' | 'confirm'
+  size?: 'workspace' | 'confirm' | 'compact'
   initialFocusRef?: RefObject<HTMLElement | null>
   stacked?: boolean
   inert?: boolean
@@ -133,7 +135,7 @@ export function WorkspaceDialog({
   }, [closing])
 
   const panelClass = [
-    size === 'confirm' ? styles.confirm : styles.workspace,
+    size === 'confirm' ? styles.confirm : size === 'compact' ? styles.compact : styles.workspace,
     entered ? styles.panelEntered : styles.panelEnter,
     closing ? styles.panelClosing : '',
   ]
@@ -179,6 +181,7 @@ export function WorkspaceDialog({
             <h2 id={titleId} className={styles.title}>
               {title}
             </h2>
+            {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
           </div>
         )}
         <div className={`${styles.body} ${bodyOverflow === 'hidden' ? styles.bodyContained : ''}`}>{children}</div>

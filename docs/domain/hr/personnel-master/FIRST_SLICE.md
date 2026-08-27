@@ -47,7 +47,7 @@ Personel Master **model** is larger than the first production slice. Do not make
 ### Out of HR-01B
 
 - Excel import / export
-- Bulk photo
+- Bulk photo *(later removed from HR-01C before acceptance; photos remain individual on Personnel Card)*
 - Bank / IBAN (`EmployeePaymentProfile`)
 - Wage / current salary / salary history / Toplu Zam
 - Profile change-history table
@@ -85,7 +85,7 @@ Personel Master **model** is larger than the first production slice. Do not make
 |------|--------|
 | Excel export | Authorized fields only; permission-filtered; optionally respects current filters |
 | Excel import | Template → Upload → Mapping → Validation preview → Confirm → Result report. No silent partial import. Input data only |
-| Bulk photo | ZIP/files → PersonnelNumber filename match → preview unmatched/duplicate/invalid → confirm. Optional TCKN/YKN match only when authorized |
+| Bulk photo | **Removed before HR-01C acceptance.** Employee photos are managed individually from Personnel Card. |
 | EmployeePaymentProfile | IBAN + optional BankName. Highly sensitive. Not on operational APIs |
 | Narrow Personel Master profile history | Sicil correction, identity-number correction, legal name change, contact change, bank change. Not enterprise audit |
 
@@ -98,7 +98,7 @@ HR-01C is still Personel Master, not Compensation.
 ```text
 HR-00  Organization & Workforce Foundation     Accepted (0.7–0.8)
 HR-01B Personel Master                         next implementation
-HR-01C Bulk / profile extensions               Excel, bulk photo, IBAN, narrow history
+HR-01C Bulk / profile extensions               Excel, IBAN, narrow history (bulk photo removed before acceptance)
 HR-02  Employment / entry–exit                 contract type, exit reason, rehire, optional seniority/company-start, EmploymentClassification?
 HR-03  Official / government                   SGK, KBS, İŞKUR; parent names; disability; official codes
 HR-04  Documents                               Belgeler / Evraklar / checklists

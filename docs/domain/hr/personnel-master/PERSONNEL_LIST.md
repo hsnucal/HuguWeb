@@ -66,7 +66,7 @@ Opens the Personel Card overlay (HR-01B). Do not navigate to a GUID-looking URL 
 |--------|--------|
 | Excel export | HR-01C (rules frozen now) |
 | Excel import | HR-01C |
-| Bulk photo | HR-01C |
+| Bulk photo | **Removed before HR-01C acceptance** — photos are managed individually on Personnel Card |
 | Toplu Zam | **HR-09 Compensation** — not Personel Master |
 | Generic bulk field edit | Reject |
 

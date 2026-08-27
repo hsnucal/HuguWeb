@@ -3,6 +3,7 @@ authorization: {
     users: 'Kullanıcılar',
     roles: 'Roller ve yetkiler',
     usersIntro: 'ERP oturumları, üyelikler ve atanan roller.',
+    linkedEmployeeHint: 'Bu kullanıcı oluşturma işlemi personel kartından başlatıldı (EmployeeId: {{employeeId}}).',
     rolesIntro: 'Bu organizasyon için yetki paketleri. Rol adları çalışma anında kontrol edilmez.',
     email: 'E-posta',
     password: 'İlk parola',

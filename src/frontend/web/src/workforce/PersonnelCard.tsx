@@ -50,6 +50,16 @@ import {
   type OfficialLookups,
   type SgkWorkplaceRecord,
 } from './hrApi'
+import {
+  getHrEmployeeErpAccount,
+  getHrPersonnelHistory,
+  saveHrPaymentProfile,
+  type EmployeeErpAccountSummary,
+  type PersonnelHistoryResponse,
+} from './hrPersonnelMasterApi'
+import { canManageAuthorizationUsers } from '../authorization/authorizationAccess'
+import { useAuthSession } from '../auth/AuthContext'
+import { Link } from 'react-router'
 import { nationalityLabel } from './nationalityDisplay'
 import {
   emptyPersonnelForm,
@@ -687,8 +697,27 @@ export function PersonnelCard({
                   />
                 ) : null}
 
+                {tab === 'general' && mode.type === 'edit' ? (
+                  <PaymentErpSection
+                    key={`${mode.employeeId}-${card?.paymentProfile?.iban ?? 'none'}`}
+                    employeeId={mode.employeeId}
+                    card={card}
+                    canReadSensitive={canReadSensitive}
+                    canManage={canManage}
+                    onSaved={async () => {
+                      const detail = await getHrEmployee(mode.employeeId)
+                      setCard(detail)
+                    }}
+                  />
+                ) : null}
+
                 {tab === 'history' ? (
-                  <HistoryTab card={card} language={language} createMode={mode.type === 'create'} />
+                  <HistoryTab
+                    card={card}
+                    language={language}
+                    createMode={mode.type === 'create'}
+                    employeeId={mode.type === 'edit' ? mode.employeeId : null}
+                  />
                 ) : null}
               </div>
             </div>
@@ -2150,48 +2179,193 @@ function WorkTab({
   )
 }
 
+function PaymentErpSection({
+  employeeId,
+  card,
+  canReadSensitive,
+  canManage,
+  onSaved,
+}: {
+  employeeId: string
+  card: HrEmployeeCard | null
+  canReadSensitive: boolean
+  canManage: boolean
+  onSaved: () => Promise<void>
+}) {
+  const { t } = useTranslation()
+  const { user } = useAuthSession()
+  const [iban, setIban] = useState(card?.paymentProfile?.iban ?? '')
+  const [bankName, setBankName] = useState(card?.paymentProfile?.bankName ?? '')
+  const [erp, setErp] = useState<EmployeeErpAccountSummary | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const account = await getHrEmployeeErpAccount(employeeId)
+        if (!cancelled) {
+          setErp(account)
+        }
+      } catch {
+        if (!cancelled) {
+          setErp({ hasAccount: false, email: null, isLocked: null })
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [employeeId])
+
+  async function onSavePayment() {
+    if (!canReadSensitive || !canManage) {
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+    try {
+      await saveHrPaymentProfile(employeeId, iban, bankName || null)
+      await onSaved()
+    } catch (reason) {
+      setError(t(hrErrorKey(reason)))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <fieldset className={styles.section}>
+        <legend>{t('personnel.erpAccess')}</legend>
+        {erp?.hasAccount ? (
+          <p>{t('personnel.erpActiveUser', { email: erp.email ?? '' })}</p>
+        ) : (
+          <p>{t('personnel.erpNoAccount')}</p>
+        )}
+        {canManageAuthorizationUsers(user) && !erp?.hasAccount ? (
+          <Link to={`/app/users?employeeId=${employeeId}`}>{t('personnel.createErpUser')}</Link>
+        ) : null}
+      </fieldset>
+      {canReadSensitive ? (
+        <fieldset className={styles.section}>
+          <legend>{t('personnel.paymentSection')}</legend>
+          {error ? <Notice tone="danger">{error}</Notice> : null}
+          <div className={styles.grid}>
+            <TextField
+              id="hr-payment-iban"
+              label={t('personnel.paymentIban')}
+              value={iban}
+              onChange={setIban}
+              disabled={!canManage}
+            />
+            <TextField
+              id="hr-payment-bank"
+              label={t('personnel.paymentBankName')}
+              value={bankName}
+              onChange={setBankName}
+              disabled={!canManage}
+            />
+          </div>
+          {canManage ? (
+            <Button layout="inline" loading={saving} onClick={() => void onSavePayment()}>
+              {t('personnel.savePayment')}
+            </Button>
+          ) : null}
+        </fieldset>
+      ) : null}
+    </>
+  )
+}
+
 function HistoryTab({
   card,
   language,
   createMode,
+  employeeId,
 }: {
   card: HrEmployeeCard | null
   language: AppLanguage
   createMode: boolean
+  employeeId: string | null
 }) {
   const { t } = useTranslation()
+  const [history, setHistory] = useState<PersonnelHistoryResponse | null>(null)
+
+  useEffect(() => {
+    if (!employeeId) {
+      return
+    }
+
+    let cancelled = false
+    void (async () => {
+      try {
+        const rows = await getHrPersonnelHistory(employeeId)
+        if (!cancelled) {
+          setHistory(rows)
+        }
+      } catch {
+        if (!cancelled) {
+          setHistory({ profileChanges: [], employments: card?.employments ?? [] })
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [employeeId, card?.employments])
+
   if (createMode) {
     return <EmptyState compact title={t('personnel.historyEmptyCreate')} />
   }
 
-  const items = (card?.employments ?? []).flatMap((employment) =>
+  const assignmentItems = (history?.employments ?? card?.employments ?? []).flatMap((employment) =>
     employment.primaryAssignments.map((assignment) => ({ employment, assignment })),
   )
+  const profileChanges = history?.profileChanges ?? []
 
-  if (items.length === 0) {
+  if (profileChanges.length === 0 && assignmentItems.length === 0) {
     return <EmptyState compact title={t('workforce.noHistory')} />
   }
 
   return (
-    <Timeline label={t('workforce.workHistory')}>
-      {items.map(({ employment, assignment }) => (
-        <TimelineItem
-          key={assignment.id}
-          time={formatDateOnly(assignment.startDate, language)}
-          supporting={
-            assignment.endDate ? formatDateOnly(assignment.endDate, language) : t('workforce.present')
-          }
-          marker={assignment.endDate || employment.status === 'Ended' ? 'neutral' : 'success'}
-        >
-          <span>
-            {t('personnel.assignmentPeriod')}: {assignment.departmentName} · {assignment.positionName}
-          </span>
-          <span className={styles.meta}>
-            {t('personnel.employmentPeriod')}: {formatDateOnly(employment.startDate, language)}
-            {employment.endDate ? ` – ${formatDateOnly(employment.endDate, language)}` : ''}
-          </span>
-        </TimelineItem>
-      ))}
-    </Timeline>
+    <>
+      {profileChanges.length > 0 ? (
+        <Timeline label={t('personnel.profileChangeHistory')}>
+          {profileChanges.map((item) => (
+            <TimelineItem key={item.id} time={formatDateOnly(item.changedAtUtc.slice(0, 10), language)} marker="neutral">
+              <span>{t(`personnel.historyFields.${item.fieldCode}`, { defaultValue: item.fieldCode })}</span>
+              <span className={styles.meta}>
+                {item.oldValue ?? '—'} → {item.newValue ?? '—'}
+              </span>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      ) : null}
+      {assignmentItems.length > 0 ? (
+        <Timeline label={t('workforce.workHistory')}>
+          {assignmentItems.map(({ employment, assignment }) => (
+            <TimelineItem
+              key={assignment.id}
+              time={formatDateOnly(assignment.startDate, language)}
+              supporting={
+                assignment.endDate ? formatDateOnly(assignment.endDate, language) : t('workforce.present')
+              }
+              marker={assignment.endDate || employment.status === 'Ended' ? 'neutral' : 'success'}
+            >
+              <span>
+                {t('personnel.assignmentPeriod')}: {assignment.departmentName} · {assignment.positionName}
+              </span>
+              <span className={styles.meta}>
+                {t('personnel.employmentPeriod')}: {formatDateOnly(employment.startDate, language)}
+                {employment.endDate ? ` – ${formatDateOnly(employment.endDate, language)}` : ''}
+              </span>
+            </TimelineItem>
+          ))}
+        </Timeline>
+      ) : null}
+    </>
   )
 }
