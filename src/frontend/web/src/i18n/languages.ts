@@ -6,11 +6,16 @@ export const DEFAULT_LANGUAGE: AppLanguage = 'tr'
 
 export const LANGUAGE_STORAGE_KEY = 'huguweb.preferredLanguage'
 
+/** Native names for the language selector. Flag assets live in `LanguageFlag`. */
 export const APP_LANGUAGE_OPTIONS: ReadonlyArray<{ code: AppLanguage; nativeName: string }> = [
   { code: 'tr', nativeName: 'Türkçe' },
   { code: 'en', nativeName: 'English' },
   { code: 'ru', nativeName: 'Русский' },
 ]
+
+export function languageNativeName(language: AppLanguage): string {
+  return APP_LANGUAGE_OPTIONS.find((option) => option.code === language)?.nativeName ?? language
+}
 
 export function isAppLanguage(value: string | null | undefined): value is AppLanguage {
   return value === 'tr' || value === 'en' || value === 'ru'

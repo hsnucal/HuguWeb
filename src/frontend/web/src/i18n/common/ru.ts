@@ -1,6 +1,7 @@
 export const ru = {
 common: {
     language: 'Язык',
+    languageCurrent: 'Язык: {{name}}',
     skipToContent: 'Перейти к содержимому',
     preferenceSaveFailed: 'Не удалось сохранить язык. Предыдущий язык восстановлен.',
     preferenceSaveFailedKeep:
@@ -21,6 +22,8 @@ navigation: {
     workforce: 'Персонал',
     roomOperations: 'Операции по номерам',
     technicalService: 'Техническая служба',
+    openMenu: 'Открыть меню',
+    closeMenu: 'Закрыть меню',
   },
 operations: {
     title: 'Операционный центр',

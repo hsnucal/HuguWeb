@@ -109,10 +109,26 @@ export function ChevronLeftIcon({ className }: IconProps) {
   )
 }
 
+export function ChevronDownIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M6.5 9 12 14.5 17.5 9" />
+    </svg>
+  )
+}
+
 export function CloseIcon({ className }: IconProps) {
   return (
     <svg className={className} {...svg}>
       <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" />
+    </svg>
+  )
+}
+
+export function MenuIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <path d="M4.5 7h15M4.5 12h15M4.5 17h15" />
     </svg>
   )
 }

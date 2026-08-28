@@ -188,7 +188,9 @@
   --motion-easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --motion-easing-enter: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --sidebar-width: 13.25rem;
+  --sidebar-expanded-width: 15.5rem;
+  --sidebar-collapsed-width: 4.5rem;
+  --sidebar-width: var(--sidebar-expanded-width);
 }
 
 @media (prefers-reduced-motion: reduce) {

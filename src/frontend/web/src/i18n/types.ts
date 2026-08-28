@@ -1,6 +1,7 @@
 export type Translations = {
   common: {
     language: string
+    languageCurrent: string
     skipToContent: string
     preferenceSaveFailed: string
     preferenceSaveFailedKeep: string
@@ -33,6 +34,8 @@ export type Translations = {
     workforce: string
     roomOperations: string
     technicalService: string
+    openMenu: string
+    closeMenu: string
   }
   operations: {
     title: string

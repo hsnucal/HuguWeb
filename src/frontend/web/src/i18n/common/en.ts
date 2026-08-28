@@ -1,6 +1,7 @@
 export const en = {
 common: {
     language: 'Language',
+    languageCurrent: 'Language: {{name}}',
     skipToContent: 'Skip to content',
     preferenceSaveFailed: 'Language preference could not be saved. The previous language was restored.',
     preferenceSaveFailedKeep:
@@ -21,6 +22,8 @@ navigation: {
     workforce: 'Workforce',
     roomOperations: 'Room Operations',
     technicalService: 'Technical Service',
+    openMenu: 'Open menu',
+    closeMenu: 'Close menu',
   },
 operations: {
     title: 'Operations Center',

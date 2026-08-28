@@ -1,6 +1,7 @@
 export const tr = {
 common: {
     language: 'Dil',
+    languageCurrent: 'Dil: {{name}}',
     skipToContent: 'İçeriğe geç',
     preferenceSaveFailed: 'Dil tercihi kaydedilemedi. Önceki dil geri yüklendi.',
     preferenceSaveFailedKeep:
@@ -21,6 +22,8 @@ navigation: {
     workforce: 'Personel',
     roomOperations: 'Oda Operasyonları',
     technicalService: 'Teknik Servis',
+    openMenu: 'Menüyü aç',
+    closeMenu: 'Menüyü kapat',
   },
 operations: {
     title: 'Operasyon Merkezi',

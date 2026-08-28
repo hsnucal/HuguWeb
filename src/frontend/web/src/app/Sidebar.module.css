@@ -1,6 +1,7 @@
 .sidebar {
   display: flex;
   flex-direction: column;
+  width: var(--sidebar-width);
   height: 100%;
   min-height: 0;
   overflow-x: hidden;
@@ -9,6 +10,13 @@
   padding: 1.1rem 0.7rem 0.85rem;
   background: var(--color-brand-primary);
   color: var(--color-on-brand);
+  transition:
+    width var(--motion-duration-panel) var(--motion-easing-standard),
+    padding var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed {
+  padding-inline: 0.55rem;
 }
 
 .brand {
@@ -16,14 +24,112 @@
   flex-shrink: 0;
   align-items: center;
   gap: 0.65rem;
+  min-width: 0;
   padding: 0.15rem 0.55rem 1.15rem;
+  transition: padding var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.brandIdentity,
+.brandToggle {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+  overflow: hidden;
+}
+
+.brandToggle {
+  margin: 0;
+  padding: 0.2rem 0.35rem;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.brandToggle:hover {
+  background: var(--color-on-brand-hover);
+}
+
+.brandToggle:focus-visible {
+  outline: 2px solid var(--color-on-brand-focus);
+  outline-offset: 2px;
+}
+
+.brandToggleWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.collapsed .brandIdentity,
+.collapsed .brandToggle {
+  flex: 0 0 auto;
+  justify-content: center;
+  gap: 0;
+}
+
+.collapsed .brandToggle {
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-inline: auto;
+  padding: 0;
+}
+
+.collapsed .brandToggleWrap {
+  flex: 1 1 auto;
 }
 
 .wordmark {
+  overflow: hidden;
   font-size: 0.98rem;
   font-weight: var(--font-weight-semibold);
   letter-spacing: -0.04em;
   color: var(--color-on-brand);
+  white-space: nowrap;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--motion-duration-panel) var(--motion-easing-standard),
+    transform var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .wordmark {
+  width: 0;
+  opacity: 0;
+  transform: translateX(-0.35rem);
+  pointer-events: none;
+}
+
+.drawerClose {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-on-brand);
+  cursor: pointer;
+}
+
+.drawerClose:hover {
+  background: var(--color-on-brand-hover);
+}
+
+.drawerClose:focus-visible {
+  outline: 2px solid var(--color-on-brand-focus);
+  outline-offset: 2px;
 }
 
 .nav {
@@ -31,13 +137,13 @@
   flex: 1;
   flex-direction: column;
   gap: 0.2rem;
+  min-height: 0;
 }
 
 .current,
 .item,
 .future {
-  display: grid;
-  grid-template-columns: 1.85rem minmax(0, 1fr);
+  display: flex;
   align-items: center;
   gap: 0.55rem;
   width: 100%;
@@ -50,16 +156,27 @@
   font-size: var(--font-size-sm);
   line-height: 1.25;
   text-align: left;
-  overflow-wrap: break-word;
   text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
   transition:
     background-color var(--motion-duration-fast) var(--motion-easing-standard),
     color var(--motion-duration-fast) var(--motion-easing-standard),
-    transform var(--motion-duration-fast) var(--motion-easing-standard);
+    gap var(--motion-duration-panel) var(--motion-easing-standard),
+    padding var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .current,
+.collapsed .item,
+.collapsed .future {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0.28rem;
 }
 
 .icon {
   display: grid;
+  flex-shrink: 0;
   place-items: center;
   width: 1.85rem;
   height: 1.85rem;
@@ -67,6 +184,24 @@
   background: transparent;
   color: inherit;
   opacity: 0.88;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--motion-duration-panel) var(--motion-easing-standard),
+    transform var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .label {
+  width: 0;
+  opacity: 0;
+  transform: translateX(-0.35rem);
+  pointer-events: none;
 }
 
 .item:hover {
@@ -123,12 +258,30 @@
   align-items: center;
   min-width: 0;
   padding: 0.35rem 0.4rem;
+  overflow: hidden;
+}
+
+.collapsed .account {
+  justify-items: center;
+  grid-template-columns: 1fr;
+  padding-inline: 0.2rem;
 }
 
 .accountCopy {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .accountCopy {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .accountName {
@@ -146,8 +299,15 @@
 }
 
 .language {
-  width: 100%;
-  padding-inline: 0.35rem;
+  width: 10.25rem;
+  max-width: calc(100% - 0.5rem);
+  margin-inline: 0.4rem;
+}
+
+.collapsed .language {
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-inline: auto;
 }
 
 .preferenceError {
@@ -159,6 +319,10 @@
   overflow-wrap: break-word;
 }
 
+.collapsed .preferenceError {
+  padding-inline: 0.1rem;
+}
+
 .signOut {
   justify-content: flex-start;
   width: 100%;
@@ -168,6 +332,30 @@
   font-size: var(--font-size-sm);
   color: var(--color-on-brand);
   background: transparent;
+  overflow: hidden;
+}
+
+.collapsed .signOut {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 0.28rem;
+}
+
+.signOutLabel {
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--motion-duration-panel) var(--motion-easing-standard),
+    transform var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.collapsed .signOutLabel {
+  width: 0;
+  opacity: 0;
+  transform: translateX(-0.35rem);
+  pointer-events: none;
 }
 
 button.signOut:hover:not(:disabled) {
@@ -178,4 +366,18 @@ button.signOut:hover:not(:disabled) {
 button.signOut:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.18);
   color: var(--color-on-brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .brand,
+  .wordmark,
+  .current,
+  .item,
+  .future,
+  .label,
+  .accountCopy,
+  .signOutLabel {
+    transition: none;
+  }
 }

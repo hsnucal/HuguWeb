@@ -62,7 +62,7 @@ Search may be a top-bar control rather than a primary nav row. That composition 
 
 Desktop ERP uses a stable shell: sidebar + optional slim top bar + work area.
 
-Exact sidebar behavior and exact top-bar composition are **candidates** (see [Open Decisions](README.md#open-design-decisions)).
+Desktop sidebar collapse is **accepted** ([Responsive Strategy](RESPONSIVE_STRATEGY.md)). Exact top-bar composition remains a **candidate** (see [Open Decisions](README.md#open-design-decisions)).
 
 ### Sidebar direction
 
@@ -70,6 +70,7 @@ Requirements:
 
 - expanded state shows the HG mark + HuGu
 - collapsed state shows the HG mark alone (when that rail exists)
+- the HG/HuGu brand area is the collapse/expand control; there is no standalone chevron
 - current selection clearly visible (brand accent + label, not color alone)
 - no excessive nested menus
 - bottom area may contain help, settings, and user context
@@ -97,7 +98,7 @@ Expanded-state hypothesis (low fidelity):
 └──────────────────────┘
 ```
 
-Collapsed-state hypothesis (later):
+Collapsed-state (desktop rail):
 
 ```text
 ┌────┐

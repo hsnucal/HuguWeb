@@ -45,10 +45,10 @@ These numbers are planning assumptions for chrome (sidebar collapse, table overf
 
 ## Sidebar and Top Bar on Smaller Web Viewports
 
-Candidate behavior (not accepted exact interaction):
+Accepted sidebar chrome:
 
-- Desktop: sidebar expanded by default; user may collapse
-- Tablet: sidebar may start collapsed or as an overlay so the work area remains usable
+- Desktop: expanded by default; user-controlled collapse via the HG/HuGu brand area; collapsed preference persisted locally; no hover expansion; the work area uses released space
+- Narrow viewports (≤768px): labeled drawer, not the desktop collapsed icon rail; the desktop collapse preference does not force the drawer into collapsed mode
 - Do not convert the ERP into a bottom-tab mobile app on the web
 
 Tables may scroll horizontally rather than stacking every column into cards. Card-stacking every ERP table is usually worse for scanning.

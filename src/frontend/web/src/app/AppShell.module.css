@@ -7,6 +7,15 @@
   background:
     radial-gradient(ellipse 60% 40% at 0% 0%, color-mix(in srgb, var(--color-brand-soft) 55%, transparent), transparent 55%),
     var(--color-surface-page);
+  transition: grid-template-columns var(--motion-duration-panel) var(--motion-easing-standard);
+}
+
+.shell[data-sidebar-collapsed='true'] {
+  --sidebar-width: var(--sidebar-collapsed-width);
+}
+
+.backdrop {
+  display: none;
 }
 
 .workspace {
@@ -39,15 +48,12 @@
   display: none;
 }
 
-@media (max-width: 1280px) {
-  .shell {
-    --sidebar-width: 12.5rem;
-  }
+.menuTrigger {
+  display: none;
 }
 
 @media (max-width: 1024px) {
   .shell {
-    --sidebar-width: 11.75rem;
     --space-page-gutter: var(--space-5);
   }
 
@@ -65,10 +71,52 @@
     min-height: 100dvh;
     overflow: visible;
     --space-page-gutter: var(--space-4);
+    --sidebar-width: var(--sidebar-expanded-width);
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 27;
+    background: var(--color-overlay-scrim);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    cursor: pointer;
+    transition:
+      opacity var(--motion-duration-panel) var(--motion-easing-standard),
+      visibility var(--motion-duration-panel) var(--motion-easing-standard);
+  }
+
+  .shell[data-drawer-open='true'] .backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .shell > aside {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 28;
+    width: var(--sidebar-expanded-width);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    visibility: hidden;
+    pointer-events: none;
+    box-shadow: var(--shadow-m);
+    transition:
+      transform var(--motion-duration-panel) var(--motion-easing-standard),
+      visibility var(--motion-duration-panel) var(--motion-easing-standard);
+  }
+
+  .shell[data-drawer-open='true'] > aside {
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .workspace {
@@ -90,6 +138,28 @@
     border-bottom: 1px solid var(--color-on-brand-border);
     background: var(--color-brand-primary);
     color: var(--color-on-brand);
+  }
+
+  .menuTrigger {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--color-on-brand);
+    cursor: pointer;
+  }
+
+  .menuTrigger:hover {
+    background: var(--color-on-brand-hover);
+  }
+
+  .menuTrigger:focus-visible {
+    outline: 2px solid var(--color-on-brand-focus);
+    outline-offset: 2px;
   }
 
   .mobileBrand {
@@ -139,5 +209,13 @@
 
   .main {
     padding: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell,
+  .backdrop,
+  .shell > aside {
+    transition: none;
   }
 }

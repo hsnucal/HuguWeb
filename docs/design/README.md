@@ -58,7 +58,7 @@ Statuses are the Sprint 0.4 freeze for review. They do **not** authorize UI impl
 | Logo design | Official HG monogram in repo; Product Owner visual approval remaining | **Implemented** |
 | Icon system | Semantic placeholders only | **Candidate** |
 | Component library | None selected | **Deferred** |
-| Exact sidebar behavior | Expanded wordmark, collapse later, bottom utility area | **Candidate** |
+| Exact sidebar behavior | Desktop expanded by default; HG/HuGu brand toggles collapse; preference local; narrow viewports use a drawer | **Accepted** |
 | Exact top bar composition | Slim bar likely; property / search / alerts as a split vs sidebar | **Candidate** |
 | Dashboard density | Comfortable / Standard / Dense; Standard recommended | **Candidate** |
 | Table / grid library | None selected | **Deferred** |
@@ -79,11 +79,10 @@ Product Owner + CTO still need to decide:
 3. Final logo visual approval (HG mark is implemented; Product Owner review remaining)
 4. Icon system
 5. Component library strategy
-6. Exact sidebar behavior (default expanded vs collapsed, collapse interaction)
-7. Exact top bar composition (and where user identity lives)
-8. Final default density (Standard is only a recommendation)
-9. Table / grid library (when a real dense screen exists)
-10. Chart library (only if a decision-purpose chart is approved)
+6. Exact top bar composition (and where user identity lives)
+7. Final default density (Standard is only a recommendation)
+8. Table / grid library (when a real dense screen exists)
+9. Chart library (only if a decision-purpose chart is approved)
 
 Do not auto-select these during implementation sprints.
 

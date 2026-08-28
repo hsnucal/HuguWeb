@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
@@ -5,9 +6,12 @@ import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { Notice } from '../ui/Notice'
+import { CloseIcon, MenuIcon } from '../ui/icons'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { PropertySelect } from './PropertySelect'
+import { resolveSidebarChrome } from './sidebarChrome'
+import { useNarrowViewport, useSidebarCollapsedPreference } from './useSidebarLayout'
 import styles from './AppShell.module.css'
 
 export function AppShell() {
@@ -16,21 +20,111 @@ export function AppShell() {
   const { user, preferenceError, signOut, updatePreferredLanguage } = useAuthSession()
   const userLabel = user?.email ?? user?.id ?? t('auth.signedIn')
   const heading = headingFor(location.pathname, t)
+  const isNarrow = useNarrowViewport()
+  const { collapsed, toggleSidebarCollapsed } = useSidebarCollapsedPreference()
+  const chrome = resolveSidebarChrome({
+    collapsedPreference: collapsed,
+    isNarrowViewport: isNarrow,
+  })
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const sidebarRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const drawerVisible = chrome.isDrawer && drawerOpen
 
   async function onLogout() {
     await signOut()
   }
 
+  function closeDrawer() {
+    setDrawerOpen(false)
+  }
+
+  useEffect(() => {
+    if (!drawerVisible) {
+      return
+    }
+
+    const node = sidebarRef.current
+    const previous = document.activeElement
+    const menuButton = menuButtonRef.current
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    node?.focus()
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setDrawerOpen(false)
+        return
+      }
+
+      if (event.key !== 'Tab' || !node) {
+        return
+      }
+
+      const items = getFocusable(node)
+      if (items.length === 0) {
+        return
+      }
+
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', onKeyDown)
+      const restore =
+        previous instanceof HTMLElement && !node?.contains(previous) ? previous : menuButton
+      restore?.focus()
+    }
+  }, [drawerVisible])
+
   return (
-    <div className={styles.shell}>
+    <div
+      className={styles.shell}
+      data-sidebar-collapsed={chrome.railCollapsed ? 'true' : 'false'}
+      data-drawer-open={drawerVisible ? 'true' : 'false'}
+    >
       <a className="skip-link" href="#main">
         {t('common.skipToContent')}
       </a>
 
-      <Sidebar userLabel={userLabel} onSignOut={() => void onLogout()} />
+      <div className={styles.backdrop} aria-hidden="true" onClick={closeDrawer} />
+
+      <Sidebar
+        ref={sidebarRef}
+        userLabel={userLabel}
+        railCollapsed={chrome.railCollapsed}
+        isDrawer={chrome.isDrawer}
+        drawerOpen={drawerVisible}
+        onSignOut={() => void onLogout()}
+        onToggleCollapsed={toggleSidebarCollapsed}
+        onCloseDrawer={closeDrawer}
+        onNavigate={closeDrawer}
+      />
 
       <div className={styles.workspace}>
         <div className={styles.mobileBar}>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className={styles.menuTrigger}
+            aria-expanded={drawerVisible}
+            aria-controls="app-sidebar"
+            aria-label={drawerVisible ? t('navigation.closeMenu') : t('navigation.openMenu')}
+            onClick={() => setDrawerOpen((open) => !open)}
+          >
+            {drawerVisible ? <CloseIcon /> : <MenuIcon />}
+          </button>
           <span className={styles.mobileBrand}>
             <BrandMark size="sm" tone="inverse" />
             HuGu
@@ -75,6 +169,14 @@ export function AppShell() {
       </div>
     </div>
   )
+}
+
+function getFocusable(root: HTMLElement): HTMLElement[] {
+  return [
+    ...root.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ].filter((item) => !item.hasAttribute('disabled') && item.getAttribute('aria-hidden') !== 'true')
 }
 
 function headingFor(pathname: string, t: (key: string) => string) {
