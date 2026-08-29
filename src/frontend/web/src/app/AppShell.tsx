@@ -188,6 +188,14 @@ function headingFor(pathname: string, t: (key: string) => string) {
     }
   }
 
+  if (pathname.startsWith('/app/workforce/leave-types')) {
+    return {
+      kicker: t('workforce.title'),
+      title: t('workforce.leaveTypes'),
+      subtitle: t('workforce.leaveTypesIntro'),
+    }
+  }
+
   if (pathname.startsWith('/app/workforce/official-settings')) {
     return {
       kicker: t('workforce.title'),

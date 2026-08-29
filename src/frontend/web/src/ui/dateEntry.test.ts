@@ -14,6 +14,12 @@ test('valid 18.04.2019 maps to ISO and back', () => {
   assert.equal(toIsoDate('2019-04-18'), '2019-04-18')
 })
 
+test('native date-picker ISO values populate the shared DateField contract', () => {
+  assert.equal(toIsoDate('2026-08-29'), '2026-08-29')
+  assert.equal(isoToDisplayDate('2026-08-29'), '29.08.2026')
+  assert.equal(toIsoDate('2026-02-31'), null)
+})
+
 test('rejects oversized years such as 18.04.201991', () => {
   assert.equal(toIsoDate('18.04.201991'), null)
   assert.equal(pastedDateHasOversizedYear('18.04.201991'), true)
@@ -34,4 +40,11 @@ test('rejects impossible calendar dates and accepts leap days', () => {
 test('typing constraint keeps a four-digit year', () => {
   assert.equal(constrainDateInput('1804201999'), '18.04.2019')
   assert.equal(constrainDateInput('18.04.2019'), '18.04.2019')
+})
+
+test('optional graduation-style DateOnly stays empty or valid ISO', () => {
+  assert.equal(toIsoDate(''), null)
+  assert.equal(toIsoDate('15.06.2018'), '2018-06-15')
+  assert.equal(toIsoDate('15.06.20181'), null)
+  assert.equal(toIsoDate('31.02.2018'), null)
 })

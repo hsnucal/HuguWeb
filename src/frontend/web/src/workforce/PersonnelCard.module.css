@@ -558,6 +558,7 @@
 
 @media (max-width: 720px) {
   .grid,
+  .grid2,
   .grid3,
   .contactRow {
     grid-template-columns: 1fr;
@@ -575,4 +576,67 @@
   .chipCurrent {
     transition: none;
   }
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-form);
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.leaveSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.leaveHint {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.leaveTableWrap {
+  overflow: auto;
+}
+
+.leaveTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.leaveTable th,
+.leaveTable td {
+  padding: 0.45rem 0.55rem;
+  text-align: start;
+  border-bottom: 1px solid var(--color-border-subtle);
+  vertical-align: middle;
+}
+
+.leaveTable th {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.leaveNegative {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-semibold);
+}
+
+.leaveForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-form);
 }

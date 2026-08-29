@@ -86,6 +86,16 @@ export type Translations = {
     positionsIntro: string
     officialSettings: string
     officialSettingsIntro: string
+    leaveTypes: string
+    leaveTypesIntro: string
+    leaveTypeCode: string
+    leaveTypeName: string
+    leaveTracksBalance: string
+    leaveTracksBalanceYes: string
+    leaveTracksBalanceNo: string
+    createLeaveType: string
+    emptyLeaveTypes: string
+    emptyLeaveTypesHint: string
     sgkWorkplace: string
     registrationNumber: string
     displayName: string
@@ -214,6 +224,82 @@ export type Translations = {
     tabOfficial: string
     tabPayment: string
     tabHistory: string
+    leave: {
+      tab: string
+      loading: string
+      summaryTitle: string
+      entitlementsTitle: string
+      historyTitle: string
+      emptyTitle: string
+      emptyHint: string
+      noEntitlements: string
+      noRecords: string
+      noBalanceTypes: string
+      calendarHint: string
+      type: string
+      netMovement: string
+      used: string
+      remaining: string
+      date: string
+      source: string
+      amount: string
+      note: string
+      startDate: string
+      endDate: string
+      status: string
+      addEntitlement: string
+      addLeave: string
+      cancelLeave: string
+      confirmCancel: string
+      cancellationReason: string
+      amountHint: string
+      positiveAmountHint: string
+      adjustmentAmountHint: string
+      kinds: {
+        Annual: string
+        Unpaid: string
+        Sick: string
+        Marriage: string
+        Paternity: string
+        Maternity: string
+        Bereavement: string
+        Excuse: string
+        Administrative: string
+        Other: string
+      }
+      sources: {
+        Entitlement: string
+        CarryOver: string
+        ManualAdjustment: string
+      }
+      statuses: {
+        Recorded: string
+        Cancelled: string
+      }
+      errors: {
+        generic: string
+        typeNotFound: string
+        typeInactive: string
+        typeRequired: string
+        codeConflict: string
+        codeRequired: string
+        nameRequired: string
+        hasHistory: string
+        entitlementAmount: string
+        balanceNotSupported: string
+        noteRequired: string
+        dateOutsideEmployment: string
+        invalidDateRange: string
+        invalidDate: string
+        invalidAmount: string
+        positiveAmount: string
+        adjustmentAmount: string
+        overlap: string
+        recordNotFound: string
+        alreadyCancelled: string
+        reasonRequired: string
+      }
+    }
     sectionIdentity: string
     sectionContact: string
     sectionAddress: string
@@ -731,6 +817,8 @@ export type Translations = {
       'hr.employee.read': string
       'hr.employee.manage': string
       'hr.employee.sensitive.read': string
+      'hr.leave.read': string
+      'hr.leave.manage': string
       'room-operations.read': string
       'room-operations.manage': string
       'room-operations.inspect': string

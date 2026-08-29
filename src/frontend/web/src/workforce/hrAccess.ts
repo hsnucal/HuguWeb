@@ -12,3 +12,12 @@ export function canManageHrEmployees(user: CurrentUser | null): boolean {
 export function canReadHrSensitive(user: CurrentUser | null): boolean {
   return (user?.permissions ?? []).includes('hr.employee.sensitive.read')
 }
+
+export function canReadHrLeave(user: CurrentUser | null): boolean {
+  const permissions = user?.permissions ?? []
+  return permissions.includes('hr.leave.read') || permissions.includes('hr.leave.manage')
+}
+
+export function canManageHrLeave(user: CurrentUser | null): boolean {
+  return (user?.permissions ?? []).includes('hr.leave.manage')
+}

@@ -39,6 +39,8 @@ authorization: {
       'hr.employee.read': 'Personel kartı okuma',
       'hr.employee.manage': 'Personel yönetimi',
       'hr.employee.sensitive.read': 'Hassas personel okuma',
+      'hr.leave.read': 'İzin okuma',
+      'hr.leave.manage': 'İzin yönetimi',
       'room-operations.read': 'Oda operasyonları okuma',
       'room-operations.manage': 'Oda operasyonları yönetimi',
       'room-operations.inspect': 'Oda denetimi',

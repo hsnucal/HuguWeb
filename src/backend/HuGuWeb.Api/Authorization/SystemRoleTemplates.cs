@@ -35,7 +35,9 @@ public static class SystemRoleTemplates
         WorkforcePermissions.Manage,
         HrEmployeePermissions.Read,
         HrEmployeePermissions.Manage,
-        HrEmployeePermissions.SensitiveRead
+        HrEmployeePermissions.SensitiveRead,
+        HrLeavePermissions.Read,
+        HrLeavePermissions.Manage
     ];
 
     public static IReadOnlyList<SystemRoleTemplate> All { get; } =

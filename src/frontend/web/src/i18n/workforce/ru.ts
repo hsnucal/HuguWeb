@@ -19,6 +19,17 @@ workforce: {
     officialSettings: 'Официальные настройки объекта',
     officialSettingsIntro:
       'Регистрации рабочих мест SGK для этого объекта. Карточка сотрудника выбирает существующую запись, а не вводит новый номер.',
+    leaveTypes: 'Типы отпусков',
+    leaveTypesIntro:
+      'Типы отпусков организации. Код нельзя изменить после создания; неактивные типы нельзя выбрать для новых записей.',
+    leaveTypeCode: 'Код',
+    leaveTypeName: 'Название',
+    leaveTracksBalance: 'Вести остаток',
+    leaveTracksBalanceYes: 'Остаток учитывается',
+    leaveTracksBalanceNo: 'Остаток не учитывается',
+    createLeaveType: 'Добавить свой тип отпуска',
+    emptyLeaveTypes: 'Типов отпуска пока нет.',
+    emptyLeaveTypesHint: 'Типы по умолчанию создаются при инициализации организации. Можно добавить свой тип.',
     sgkWorkplace: 'Рабочее место SGK',
     registrationNumber: 'Регистрационный номер',
     displayName: 'Подпись',

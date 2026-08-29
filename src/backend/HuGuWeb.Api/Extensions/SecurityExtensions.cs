@@ -153,6 +153,16 @@ public static class SecurityExtensions
                     && context.User.HasClaim(WorkforcePermissions.ClaimType, WorkforcePermissions.Manage)));
 
             options.AddPolicy(
+                AuthorizationPolicies.HrLeaveRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Read)
+                    || context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrLeaveManage,
+                policy => policy.RequireClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage));
+
+            options.AddPolicy(
                 AuthorizationPolicies.AuthorizationUsersManage,
                 policy => policy.RequireClaim(
                     AuthorizationPermissions.ClaimType,

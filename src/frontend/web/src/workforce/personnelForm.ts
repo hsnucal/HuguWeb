@@ -16,6 +16,7 @@ import type {
 } from './hrApi'
 import { toIsoDate } from '../ui/dateEntry'
 import { normalizeMobileDigits } from './personnelInput'
+import { toPersistedIban } from './paymentIban'
 
 export type PersonnelForm = {
   givenName: string
@@ -228,7 +229,7 @@ function isoOrNull(value: string): string | null {
 }
 
 export function hasPaymentInput(form: PersonnelForm): boolean {
-  return form.paymentIban.trim() !== '' || form.paymentBankName.trim() !== ''
+  return toPersistedIban(form.paymentIban) !== '' || form.paymentBankName.trim() !== ''
 }
 
 function emptyToNumber(value: string): number | null {

@@ -14,6 +14,7 @@ public interface IWorkplaceContext
 public interface IWorkforceStore
 {
     Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Guid>> ListOrganizationIdsAsync(CancellationToken cancellationToken);
     Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<Property>> ListPropertiesAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<Department?> GetDepartmentAsync(Guid id, CancellationToken cancellationToken);
@@ -125,6 +126,23 @@ public interface IWorkforceStore
 
     void AddPersonnelProfileChange(PersonnelProfileChange change);
     void AddPersonnelImportRun(PersonnelImportRun importRun);
+
+    Task<IReadOnlyList<LeaveType>> ListLeaveTypesAsync(Guid organizationId, CancellationToken cancellationToken);
+    Task<LeaveType?> GetLeaveTypeAsync(Guid id, CancellationToken cancellationToken);
+    Task<LeaveType?> FindLeaveTypeByCodeAsync(
+        Guid organizationId,
+        string normalizedCode,
+        CancellationToken cancellationToken);
+    Task<bool> LeaveTypeHasUsageAsync(Guid leaveTypeId, CancellationToken cancellationToken);
+    void AddLeaveType(LeaveType leaveType);
+
+    Task<IReadOnlyList<LeaveEntitlement>> ListLeaveEntitlementsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<LeaveRecord>> ListLeaveRecordsAsync(Guid employmentId, CancellationToken cancellationToken);
+    Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken);
+    void AddLeaveEntitlement(LeaveEntitlement entitlement);
+    void AddLeaveRecord(LeaveRecord record);
 
     Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 

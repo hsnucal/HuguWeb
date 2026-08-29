@@ -10,6 +10,9 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Organizations.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
+    public async Task<IReadOnlyList<Guid>> ListOrganizationIdsAsync(CancellationToken cancellationToken) =>
+        await dbContext.Organizations.Select(entity => entity.Id).ToListAsync(cancellationToken);
+
     public Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Properties.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
@@ -389,6 +392,68 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void AddPersonnelImportRun(PersonnelImportRun importRun) =>
         dbContext.PersonnelImportRuns.Add(importRun);
+
+    public async Task<IReadOnlyList<LeaveType>> ListLeaveTypesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.LeaveTypes
+            .Where(entity => entity.OrganizationId == organizationId)
+            .OrderBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<LeaveType?> GetLeaveTypeAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.LeaveTypes.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public Task<LeaveType?> FindLeaveTypeByCodeAsync(
+        Guid organizationId,
+        string normalizedCode,
+        CancellationToken cancellationToken) =>
+        dbContext.LeaveTypes.FirstOrDefaultAsync(
+            entity => entity.OrganizationId == organizationId && entity.Code == normalizedCode,
+            cancellationToken);
+
+    public Task<bool> LeaveTypeHasUsageAsync(Guid leaveTypeId, CancellationToken cancellationToken) =>
+        AnyLeaveTypeUsageAsync(leaveTypeId, cancellationToken);
+
+    private async Task<bool> AnyLeaveTypeUsageAsync(Guid leaveTypeId, CancellationToken cancellationToken)
+    {
+        var hasEntitlements = await dbContext.LeaveEntitlements
+            .AnyAsync(entity => entity.LeaveTypeId == leaveTypeId, cancellationToken);
+        if (hasEntitlements)
+        {
+            return true;
+        }
+
+        return await dbContext.LeaveRecords
+            .AnyAsync(entity => entity.LeaveTypeId == leaveTypeId, cancellationToken);
+    }
+
+    public void AddLeaveType(LeaveType leaveType) => dbContext.LeaveTypes.Add(leaveType);
+
+    public async Task<IReadOnlyList<LeaveEntitlement>> ListLeaveEntitlementsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        await dbContext.LeaveEntitlements
+            .Where(entity => entity.EmploymentId == employmentId)
+            .OrderByDescending(entity => entity.EffectiveDate)
+            .ThenByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<LeaveRecord>> ListLeaveRecordsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        await dbContext.LeaveRecords
+            .Where(entity => entity.EmploymentId == employmentId)
+            .OrderByDescending(entity => entity.StartDate)
+            .ThenByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.LeaveRecords.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public void AddLeaveEntitlement(LeaveEntitlement entitlement) => dbContext.LeaveEntitlements.Add(entitlement);
+
+    public void AddLeaveRecord(LeaveRecord record) => dbContext.LeaveRecords.Add(record);
 
     public async Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {

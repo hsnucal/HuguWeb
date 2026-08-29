@@ -13,7 +13,7 @@ import { TextField } from '../ui/TextField'
 import { AvatarMark } from '../ui/AvatarMark'
 import styles from './Workforce.module.css'
 import { canManageWorkforce } from './workforceAccess'
-import { canManageHrEmployees, canReadHrSensitive } from './hrAccess'
+import { canManageHrEmployees, canManageHrLeave, canReadHrLeave, canReadHrSensitive } from './hrAccess'
 import {
   hrEmployeePhotoUrl,
   hrErrorKey,
@@ -60,6 +60,8 @@ export function ActiveWorkforcePage() {
   const canManage = canManageHrEmployees(user)
   const canWorkforceManage = canManageWorkforce(user)
   const canReadSensitive = canReadHrSensitive(user)
+  const canReadLeave = canReadHrLeave(user)
+  const canManageLeave = canManageHrLeave(user)
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
   const [directory, setDirectory] = useState<HrEmployeeListItem[] | null>(null)
   const [departments, setDepartments] = useState<DepartmentRecord[]>([])
@@ -436,6 +438,8 @@ export function ActiveWorkforcePage() {
           canManage={canManage}
           canManageWorkforce={canWorkforceManage}
           canReadSensitive={canReadSensitive}
+          canReadLeave={canReadLeave}
+          canManageLeave={canManageLeave}
           onClose={() => setCard(null)}
           onSaved={async (employeeId) => {
             await reload()

@@ -4,6 +4,8 @@ import { emptyPersonnelForm, toHrWrite } from './personnelForm.ts'
 import {
   firstInvalidTarget,
   invalidPersonnelTabs,
+  revalidateKnownErrors,
+  validatePersonnelField,
   validatePersonnelForm,
 } from './personnelValidation.ts'
 
@@ -108,4 +110,77 @@ test('bank name without IBAN is owned by the payment tab', () => {
   assert.equal(errors.paymentIban, 'payment-iban-required')
   assert.equal(firstInvalidTarget(errors, form, true)?.tab, 'payment')
   assert.equal(firstInvalidTarget(errors, form, true)?.controlId, 'hr-payment-iban')
+})
+
+test('incomplete IBAN fails blur/field validation and save; complete and empty pass', () => {
+  const form = emptyPersonnelForm('2026-08-28')
+  form.givenName = 'Ayşe'
+  form.familyName = 'Yılmaz'
+  form.departmentId = 'dept-1'
+  form.positionId = 'pos-1'
+
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    undefined,
+  )
+
+  form.paymentIban = 'TR1'
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    'payment-profile-invalid-iban',
+  )
+
+  form.paymentIban = 'TR12 3123'
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    'payment-profile-invalid-iban',
+  )
+  assert.equal(
+    validatePersonnelForm(form, { createMode: true, today: '2026-08-28' }).paymentIban,
+    'payment-profile-invalid-iban',
+  )
+
+  form.paymentIban = 'TR33000610051978645784132'
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    'payment-profile-invalid-iban',
+  )
+
+  form.paymentIban = 'TR33 0006 1005 1978 6457 8413 26'
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    undefined,
+  )
+  assert.equal(validatePersonnelForm(form, { createMode: true, today: '2026-08-28' }).paymentIban, undefined)
+
+  form.paymentIban = 'TR 12 3123 1231 2312 3213 2131 32'
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    undefined,
+  )
+  assert.equal(validatePersonnelForm(form, { createMode: true, today: '2026-08-28' }).paymentIban, undefined)
+
+  form.paymentIban = ''
+  assert.equal(
+    validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),
+    undefined,
+  )
+  assert.equal(validatePersonnelForm(form, { createMode: true, today: '2026-08-28' }).paymentIban, undefined)
+})
+
+test('incomplete IBAN does not appear until blur, then clears when completed', () => {
+  const form = emptyPersonnelForm('2026-08-28')
+  form.paymentIban = 'TR12 3123'
+  const context = { createMode: true, today: '2026-08-28' }
+
+  // Live typing with no prior field error: do not introduce IBAN error yet.
+  assert.deepEqual(revalidateKnownErrors({}, form, context, []), {})
+
+  // After blur/save has marked the field, revalidation keeps the error until complete.
+  const afterBlur = revalidateKnownErrors({ paymentIban: 'payment-profile-invalid-iban' }, form, context, [])
+  assert.equal(afterBlur.paymentIban, 'payment-profile-invalid-iban')
+
+  form.paymentIban = 'TR33 0006 1005 1978 6457 8413 26'
+  const afterComplete = revalidateKnownErrors({ paymentIban: 'payment-profile-invalid-iban' }, form, context, [])
+  assert.equal(afterComplete.paymentIban, undefined)
 })

@@ -291,4 +291,62 @@ public sealed record WorkforceError(
             "IBAN is invalid.",
             HrValidation.Fields.PaymentIban,
             "payment-profile-invalid-iban");
+
+    public static WorkforceError LeaveTypeNotFound() =>
+        NotFound(LeaveValidation.Codes.LeaveTypeNotFound, "The leave type was not found.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [LeaveValidation.Fields.LeaveTypeId] = [LeaveValidation.Codes.LeaveTypeNotFound]
+            }
+        };
+
+    public static WorkforceError LeaveTypeInactive() =>
+        InvalidFields(
+            LeaveValidation.Codes.LeaveTypeInactive,
+            "An inactive leave type cannot be used for a new movement or record.",
+            LeaveValidation.Fields.LeaveTypeId,
+            LeaveValidation.Codes.LeaveTypeInactive);
+
+    public static WorkforceError LeaveTypeCodeConflict() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveTypeCodeConflict,
+            "Leave type code is already in use.",
+            "This leave type code already exists in the organization, including inactive types.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [LeaveValidation.Fields.Code] = [LeaveValidation.Codes.LeaveTypeCodeConflict]
+            }
+        };
+
+    public static WorkforceError LeaveValidationField(string field, string code, string detail) =>
+        InvalidFields(code, detail, field, code);
+
+    public static WorkforceError LeaveEntitlementBalanceNotSupported() =>
+        InvalidFields(
+            LeaveValidation.Codes.LeaveEntitlementBalanceNotSupported,
+            "Entitlement movements are only valid for balance-tracked leave types.",
+            LeaveValidation.Fields.LeaveTypeId,
+            LeaveValidation.Codes.LeaveEntitlementBalanceNotSupported);
+
+    public static WorkforceError LeaveDateOutsideEmployment() =>
+        InvalidRequest(
+            LeaveValidation.Codes.LeaveDateOutsideEmployment,
+            "Leave dates must fall inside the employment period.");
+
+    public static WorkforceError LeaveOverlap() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveOverlap,
+            "Leave dates overlap an existing record.",
+            "Another recorded leave for this employment covers one or more of these dates.");
+
+    public static WorkforceError LeaveRecordNotFound() =>
+        NotFound(LeaveValidation.Codes.LeaveRecordNotFound, "The leave record was not found.");
+
+    public static WorkforceError LeaveAlreadyCancelled() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveAlreadyCancelled,
+            "Leave record is already cancelled.",
+            "A cancelled leave record cannot be cancelled again.");
 }

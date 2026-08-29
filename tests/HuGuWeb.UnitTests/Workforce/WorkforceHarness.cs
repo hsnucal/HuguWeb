@@ -48,9 +48,15 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<EmployeePaymentProfile> PaymentProfiles { get; } = [];
     public List<PersonnelProfileChange> ProfileChanges { get; } = [];
     public List<PersonnelImportRun> ImportRuns { get; } = [];
+    public List<LeaveType> LeaveTypes { get; } = [];
+    public List<LeaveEntitlement> LeaveEntitlements { get; } = [];
+    public List<LeaveRecord> LeaveRecords { get; } = [];
 
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Organizations.FirstOrDefault(item => item.Id == id));
+
+    public Task<IReadOnlyList<Guid>> ListOrganizationIdsAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Guid>>(Organizations.Select(item => item.Id).ToArray());
 
     public Task<Property?> GetPropertyAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Properties.FirstOrDefault(item => item.Id == id));
@@ -322,6 +328,54 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
 
     public void AddPersonnelImportRun(PersonnelImportRun importRun) => ImportRuns.Add(importRun);
 
+    public Task<IReadOnlyList<LeaveType>> ListLeaveTypesAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveType>>(
+            LeaveTypes.Where(item => item.OrganizationId == organizationId).OrderBy(item => item.Name).ToArray());
+
+    public Task<LeaveType?> GetLeaveTypeAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(LeaveTypes.FirstOrDefault(item => item.Id == id));
+
+    public Task<LeaveType?> FindLeaveTypeByCodeAsync(
+        Guid organizationId,
+        string normalizedCode,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(LeaveTypes.FirstOrDefault(item =>
+            item.OrganizationId == organizationId && item.Code == normalizedCode));
+
+    public Task<bool> LeaveTypeHasUsageAsync(Guid leaveTypeId, CancellationToken cancellationToken) =>
+        Task.FromResult(
+            LeaveEntitlements.Any(item => item.LeaveTypeId == leaveTypeId)
+            || LeaveRecords.Any(item => item.LeaveTypeId == leaveTypeId));
+
+    public void AddLeaveType(LeaveType leaveType) => LeaveTypes.Add(leaveType);
+
+    public Task<IReadOnlyList<LeaveEntitlement>> ListLeaveEntitlementsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveEntitlement>>(
+            LeaveEntitlements
+                .Where(item => item.EmploymentId == employmentId)
+                .OrderByDescending(item => item.EffectiveDate)
+                .ThenByDescending(item => item.CreatedAtUtc)
+                .ToArray());
+
+    public Task<IReadOnlyList<LeaveRecord>> ListLeaveRecordsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveRecord>>(
+            LeaveRecords
+                .Where(item => item.EmploymentId == employmentId)
+                .OrderByDescending(item => item.StartDate)
+                .ThenByDescending(item => item.CreatedAtUtc)
+                .ToArray());
+
+    public Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(LeaveRecords.FirstOrDefault(item => item.Id == id));
+
+    public void AddLeaveEntitlement(LeaveEntitlement entitlement) => LeaveEntitlements.Add(entitlement);
+
+    public void AddLeaveRecord(LeaveRecord record) => LeaveRecords.Add(record);
+
     public Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
         if (_transactionSnapshot is not null)
@@ -435,6 +489,9 @@ internal sealed class InMemoryWorkforceSnapshot
     private readonly List<EmployeePaymentProfile> _paymentProfiles;
     private readonly List<PersonnelProfileChange> _profileChanges;
     private readonly List<PersonnelImportRun> _importRuns;
+    private readonly List<LeaveType> _leaveTypes;
+    private readonly List<LeaveEntitlement> _leaveEntitlements;
+    private readonly List<LeaveRecord> _leaveRecords;
     private readonly Dictionary<Guid, PersonnelNumberSequence> _sequences;
 
     private InMemoryWorkforceSnapshot(
@@ -460,6 +517,9 @@ internal sealed class InMemoryWorkforceSnapshot
         List<EmployeePaymentProfile> paymentProfiles,
         List<PersonnelProfileChange> profileChanges,
         List<PersonnelImportRun> importRuns,
+        List<LeaveType> leaveTypes,
+        List<LeaveEntitlement> leaveEntitlements,
+        List<LeaveRecord> leaveRecords,
         Dictionary<Guid, PersonnelNumberSequence> sequences)
     {
         _organizations = organizations;
@@ -484,6 +544,9 @@ internal sealed class InMemoryWorkforceSnapshot
         _paymentProfiles = paymentProfiles;
         _profileChanges = profileChanges;
         _importRuns = importRuns;
+        _leaveTypes = leaveTypes;
+        _leaveEntitlements = leaveEntitlements;
+        _leaveRecords = leaveRecords;
         _sequences = sequences;
     }
 
@@ -511,6 +574,9 @@ internal sealed class InMemoryWorkforceSnapshot
             [.. store.PaymentProfiles],
             [.. store.ProfileChanges],
             [.. store.ImportRuns],
+            [.. store.LeaveTypes],
+            [.. store.LeaveEntitlements],
+            [.. store.LeaveRecords],
             store.Sequences.ToDictionary(item => item.Key, item => item.Value));
 
     public void Restore(InMemoryWorkforceStore store)
@@ -537,6 +603,9 @@ internal sealed class InMemoryWorkforceSnapshot
         Replace(store.PaymentProfiles, _paymentProfiles);
         Replace(store.ProfileChanges, _profileChanges);
         Replace(store.ImportRuns, _importRuns);
+        Replace(store.LeaveTypes, _leaveTypes);
+        Replace(store.LeaveEntitlements, _leaveEntitlements);
+        Replace(store.LeaveRecords, _leaveRecords);
         store.Sequences.Clear();
         foreach (var (key, value) in _sequences)
         {
@@ -607,6 +676,12 @@ internal sealed class WorkforceHarness
     public MaintainSgkWorkplaceRegistrationsUseCase SgkWorkplaces { get; }
     public SaveOfficialEmploymentProfileUseCase SaveOfficial { get; }
     public OfficialLookupsQuery OfficialLookups { get; }
+    public EnsureDefaultLeaveTypesUseCase EnsureDefaultLeaveTypes { get; }
+    public LeaveTypeAdminUseCase LeaveTypeAdmin { get; }
+    public EmployeeLeaveQuery LeaveQuery { get; }
+    public RecordLeaveEntitlementUseCase RecordLeaveEntitlement { get; }
+    public RecordLeaveUseCase RecordLeave { get; }
+    public CancelLeaveRecordUseCase CancelLeaveRecord { get; }
     public Guid OtherPropertyId { get; } = Guid.CreateVersion7();
 
     public WorkforceHarness()
@@ -671,6 +746,73 @@ internal sealed class WorkforceHarness
         SgkWorkplaces = new MaintainSgkWorkplaceRegistrationsUseCase(Store, Workplace, Clock);
         SaveOfficial = new SaveOfficialEmploymentProfileUseCase(Store, Clock, Workplace);
         OfficialLookups = new OfficialLookupsQuery(Store);
+        EnsureDefaultLeaveTypes = new EnsureDefaultLeaveTypesUseCase(Store, Clock);
+        LeaveTypeAdmin = new LeaveTypeAdminUseCase(Store, Clock, Workplace);
+        LeaveQuery = new EmployeeLeaveQuery(Store, Clock, Workplace);
+        RecordLeaveEntitlement = new RecordLeaveEntitlementUseCase(Store, Clock, Workplace, LeaveQuery);
+        RecordLeave = new RecordLeaveUseCase(Store, Clock, Workplace, LeaveQuery);
+        CancelLeaveRecord = new CancelLeaveRecordUseCase(Store, Clock, Workplace, LeaveQuery);
+    }
+
+    public async Task<Guid> SeedDefaultLeaveTypesAsync()
+    {
+        await EnsureDefaultLeaveTypes.ExecuteAsync(OrganizationId, CancellationToken.None);
+        return OrganizationId;
+    }
+
+    public LeaveType SeedLeaveType(
+        string code,
+        string name,
+        bool tracksBalance,
+        LeaveTypeSystemKind? systemKind = null,
+        bool active = true)
+    {
+        LeaveType leaveType;
+        if (systemKind is { } kind)
+        {
+            leaveType = LeaveType.CreateSystemDefault(
+                Guid.CreateVersion7(),
+                OrganizationId,
+                code,
+                name,
+                kind,
+                tracksBalance,
+                "seed-actor",
+                Clock.UtcNow);
+        }
+        else
+        {
+            Assert.True(LeaveType.TryCreateCustom(
+                Guid.CreateVersion7(),
+                OrganizationId,
+                code,
+                name,
+                tracksBalance,
+                "seed-actor",
+                Clock.UtcNow,
+                out var created,
+                out _,
+                out _));
+            leaveType = created!;
+        }
+
+        if (!active)
+        {
+            leaveType.Deactivate("seed-actor", Clock.UtcNow);
+        }
+
+        Store.LeaveTypes.Add(leaveType);
+        return leaveType;
+    }
+
+    public async Task<(Guid EmployeeId, Guid EmploymentId)> SeedEmploymentAsync(
+        DateOnly? startDate = null)
+    {
+        var hired = await Hire.ExecuteAsync(
+            HireCommand(startDate: startDate ?? Clock.Today.AddDays(-30)),
+            CancellationToken.None);
+        Assert.True(hired.IsSuccess, hired.Error?.Detail);
+        return (hired.Value!.EmployeeId, hired.Value.EmploymentId);
     }
 
     public HireEmployeeCommand HireCommand(

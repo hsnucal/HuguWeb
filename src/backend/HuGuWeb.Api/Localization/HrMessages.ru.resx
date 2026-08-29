@@ -8,5 +8,30 @@
   <data name="error.employee-not-found.detail" xml:space="preserve"><value>Сотрудник не найден.</value></data>
   <data name="error.sgk-workplace-inactive.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.sgk-workplace-inactive.detail" xml:space="preserve"><value>Неактивную регистрацию рабочего места SGK нельзя выбрать заново.</value></data>
+  <data name="error.leave-type-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.leave-type-not-found.detail" xml:space="preserve"><value>Тип отпуска не найден.</value></data>
+  <data name="error.leave-type-inactive.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-type-inactive.detail" xml:space="preserve"><value>Неактивный тип отпуска нельзя использовать в новой записи.</value></data>
+  <data name="error.leave-type-code-conflict.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>Тип отпуска с этим кодом уже существует в организации.</value></data>
+  <data name="error.leave-type-has-history.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Учёт остатка нельзя изменить после появления истории по этому типу отпуска.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>Сумма начисления должна быть ненулевым кратным 0,5 дня и положительной, кроме ручной корректировки.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.detail" xml:space="preserve"><value>Движения начисления можно записывать только для типов отпуска с учётом остатка.</value></data>
+  <data name="error.leave-date-outside-employment.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-date-outside-employment.detail" xml:space="preserve"><value>Даты отпуска должны попадать в период трудовых отношений.</value></data>
+  <data name="error.leave-invalid-date-range.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-invalid-date-range.detail" xml:space="preserve"><value>Дата начала отпуска не может быть позже даты окончания.</value></data>
+  <data name="error.leave-invalid-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-invalid-amount.detail" xml:space="preserve"><value>Количество дней отпуска должно быть больше нуля и кратным 0,5.</value></data>
+  <data name="error.leave-overlap.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-overlap.detail" xml:space="preserve"><value>Этот отпуск пересекается с другой записанной записью по тем же трудовым отношениям.</value></data>
+  <data name="error.leave-record-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.leave-record-not-found.detail" xml:space="preserve"><value>Запись отпуска не найдена.</value></data>
+  <data name="error.leave-already-cancelled.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Эта запись отпуска уже отменена.</value></data>
+  <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>Необходимо указать причину отмены.</value></data>
 </root>
-

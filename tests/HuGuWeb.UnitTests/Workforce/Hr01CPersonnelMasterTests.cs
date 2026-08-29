@@ -43,6 +43,25 @@ public class Hr01CPersonnelMasterTests
     }
 
     [Fact]
+    public async Task PaymentProfile_RejectsNonTurkishIbanPrefix()
+    {
+        var harness = new WorkforceHarness();
+        var hired = await harness.HireWithProfile.ExecuteAsync(harness.HireWithProfileCommand(), CancellationToken.None);
+        Assert.True(hired.IsSuccess);
+        var useCase = new SaveEmployeePaymentProfileUseCase(harness.Store, harness.Workplace);
+        var saved = await useCase.ExecuteAsync(
+            new SaveEmployeePaymentProfileCommand(
+                hired.Value.EmployeeId,
+                "DE89370400440532013000",
+                null,
+                CanWriteSensitive: true),
+            CancellationToken.None);
+
+        Assert.False(saved.IsSuccess);
+        Assert.Equal("payment-profile-invalid-iban", saved.Error!.Code);
+    }
+
+    [Fact]
     public async Task ProfileUpdate_RecordsHistory()
     {
         var harness = new WorkforceHarness();

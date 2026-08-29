@@ -9,6 +9,7 @@ import {
   pastedDateHasOversizedYear,
   toIsoDate,
 } from './dateEntry'
+import { CalendarIcon } from './icons'
 import { FieldLabel } from './TextField'
 import styles from './TextField.module.css'
 
@@ -82,7 +83,9 @@ export function SelectField({
 type DateFieldProps = FieldChrome & {
   value: string
   onChange: (value: string) => void
-} & Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange' | 'type'>
+  calendar?: boolean
+  minDate?: string
+} & Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'value' | 'onChange' | 'type' | 'min'>
 
 export function DateField({
   id,
@@ -92,6 +95,8 @@ export function DateField({
   hint,
   error,
   required,
+  calendar = false,
+  minDate,
   onBlur,
   onFocus,
   ...inputProps
@@ -100,10 +105,13 @@ export function DateField({
   const errorId = error ? `${id}-error` : undefined
   const describedBy = [inputProps['aria-describedby'], hintId, errorId].filter(Boolean).join(' ') || undefined
   const inputRef = useRef<HTMLInputElement>(null)
+  const pickerRef = useRef<HTMLInputElement>(null)
   const caretRef = useRef<number | null>(null)
   const [focused, setFocused] = useState(false)
   const [draft, setDraft] = useState('')
-  const displayed = focused ? draft : toIsoDate(value) ? isoToDisplayDate(value) : value
+  const isoValue = toIsoDate(value)
+  const minIso = toIsoDate(minDate ?? '')
+  const displayed = focused ? draft : isoValue ? isoToDisplayDate(value) : value
   const empty = displayed === ''
 
   useLayoutEffect(() => {
@@ -138,9 +146,31 @@ export function DateField({
     onChange(formatted)
   }
 
-  return (
-    <div className={styles.field}>
-      <FieldLabel id={id} label={label} required={required} />
+  function applyIso(iso: string) {
+    if (minIso && iso < minIso) {
+      return
+    }
+
+    onChange(iso)
+    if (focused) {
+      setDraft(isoToDisplayDate(iso))
+    }
+  }
+
+  function openCalendar() {
+    const picker = pickerRef.current
+    if (!picker || inputProps.disabled) {
+      return
+    }
+
+    try {
+      picker.showPicker()
+    } catch {
+      picker.click()
+    }
+  }
+
+  const textInput = (
       <input
         {...inputProps}
         ref={inputRef}
@@ -154,6 +184,19 @@ export function DateField({
         value={displayed}
         required={required}
         aria-required={required || undefined}
+        onMouseDown={(event) => {
+          if (!calendar || inputProps.disabled || event.button !== 0) {
+            return
+          }
+
+          if (document.activeElement === inputRef.current) {
+            return
+          }
+
+          event.preventDefault()
+          inputRef.current?.focus()
+          openCalendar()
+        }}
         onFocus={(event) => {
           setDraft(displayFromValue(value))
           setFocused(true)
@@ -214,6 +257,37 @@ export function DateField({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
       />
+  )
+
+  return (
+    <div className={styles.field}>
+      <FieldLabel id={id} label={label} required={required} />
+      {calendar ? (
+        <div className={`${styles.dateControl} ${styles.dateControlHasPicker}`}>
+          {textInput}
+          <span className={styles.datePicker}>
+            <CalendarIcon />
+            <input
+              ref={pickerRef}
+              className={styles.datePickerNative}
+              type="date"
+              value={isoValue ?? ''}
+              min={minIso ?? undefined}
+              tabIndex={-1}
+              disabled={inputProps.disabled}
+              aria-label={label}
+              onChange={(event) => {
+                const iso = toIsoDate(event.target.value)
+                if (iso) {
+                  applyIso(iso)
+                }
+              }}
+            />
+          </span>
+        </div>
+      ) : (
+        textInput
+      )}
       {hint ? (
         <p className={styles.hint} id={hintId}>
           {hint}

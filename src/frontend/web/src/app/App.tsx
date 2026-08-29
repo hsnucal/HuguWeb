@@ -7,6 +7,7 @@ import { ActiveWorkforcePage } from '../workforce/ActiveWorkforcePage'
 import { DepartmentsPage } from '../workforce/DepartmentsPage'
 import { PositionsPage } from '../workforce/PositionsPage'
 import { SgkWorkplacesPage } from '../workforce/SgkWorkplacesPage'
+import { LeaveTypesPage } from '../workforce/LeaveTypesPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
 import { AuthorizationLayout } from '../authorization/AuthorizationLayout'
 import { UsersPage } from '../authorization/UsersPage'
@@ -40,6 +41,7 @@ export function App() {
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="positions" element={<PositionsPage />} />
           <Route path="official-settings" element={<SgkWorkplacesPage />} />
+          <Route path="leave-types" element={<LeaveTypesPage />} />
         </Route>
         <Route path="settings" element={<AuthorizationLayout />}>
           <Route index element={<Navigate to="users" replace />} />

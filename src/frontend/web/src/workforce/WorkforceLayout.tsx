@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
 import { Notice } from '../ui/Notice'
 import styles from './Workforce.module.css'
-import { canReadHrEmployees } from './hrAccess'
+import { canReadHrEmployees, canReadHrLeave } from './hrAccess'
 import { canReadWorkforce } from './workforceAccess'
 
 export function WorkforceLayout() {
@@ -11,15 +11,22 @@ export function WorkforceLayout() {
   const { user } = useAuthSession()
   const location = useLocation()
   const canReadHr = canReadHrEmployees(user)
+  const canReadLeave = canReadHrLeave(user)
   const canReadStructure = canReadWorkforce(user)
   const directoryCurrent = location.pathname === '/app/workforce'
 
-  if (!canReadHr && !canReadStructure) {
+  if (!canReadHr && !canReadStructure && !canReadLeave) {
     return <Notice tone="danger">{t('workforce.noAccess')}</Notice>
   }
 
-  if (directoryCurrent && !canReadHr && canReadStructure) {
-    return <Navigate to="/app/workforce/departments" replace />
+  if (directoryCurrent && !canReadHr) {
+    if (canReadLeave) {
+      return <Navigate to="/app/workforce/leave-types" replace />
+    }
+
+    if (canReadStructure) {
+      return <Navigate to="/app/workforce/departments" replace />
+    }
   }
 
   return (
@@ -36,6 +43,9 @@ export function WorkforceLayout() {
             <NavLink to="/app/workforce/positions">{t('workforce.positions')}</NavLink>
             <NavLink to="/app/workforce/official-settings">{t('workforce.officialSettings')}</NavLink>
           </>
+        ) : null}
+        {canReadLeave ? (
+          <NavLink to="/app/workforce/leave-types">{t('workforce.leaveTypes')}</NavLink>
         ) : null}
       </nav>
       <Outlet />

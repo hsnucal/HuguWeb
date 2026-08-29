@@ -49,6 +49,12 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<PersonnelExcelImportUseCase>();
         services.AddScoped<SaveEmployeePaymentProfileUseCase>();
         services.AddScoped<PersonnelProfileHistoryQuery>();
+        services.AddScoped<EnsureDefaultLeaveTypesUseCase>();
+        services.AddScoped<LeaveTypeAdminUseCase>();
+        services.AddScoped<EmployeeLeaveQuery>();
+        services.AddScoped<RecordLeaveEntitlementUseCase>();
+        services.AddScoped<RecordLeaveUseCase>();
+        services.AddScoped<CancelLeaveRecordUseCase>();
         return services;
     }
 }

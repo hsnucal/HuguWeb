@@ -39,6 +39,8 @@ authorization: {
       'hr.employee.read': 'Чтение карточки сотрудника',
       'hr.employee.manage': 'Управление персоналом',
       'hr.employee.sensitive.read': 'Чтение чувствительных данных',
+      'hr.leave.read': 'Чтение отпусков',
+      'hr.leave.manage': 'Управление отпусками',
       'room-operations.read': 'Чтение операций с номерами',
       'room-operations.manage': 'Управление операциями с номерами',
       'room-operations.inspect': 'Инспекция номеров',

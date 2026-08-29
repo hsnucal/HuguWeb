@@ -92,15 +92,17 @@ import {
 import type { DepartmentRecord, EmploymentTerminationReason, PositionRecord } from './workforceApi'
 import { endEmployment, transferEmployee } from './workforceApi'
 import { positionsForDepartment, retainedPositionId } from './assignmentOptions'
-import { compactIban } from './paymentIban'
+import { toPersistedIban } from './paymentIban'
+import { TurkishIbanField } from './TurkishIbanField'
 import {
   districtSelectOptions,
   provinceSelectOptions,
   retainedDistrict,
 } from './trProvinces'
 import { employmentStatusTone } from './workforceStatus'
+import { PersonnelLeaveTab } from './PersonnelLeaveTab'
 
-type TabId = 'general' | 'identity' | 'work' | 'official' | 'payment' | 'history'
+type TabId = 'general' | 'identity' | 'work' | 'official' | 'payment' | 'leave' | 'history'
 type CardMode = { type: 'create' } | { type: 'edit'; employeeId: string }
 
 function positionSelectPlaceholder(departmentId: string, t: (key: string) => string) {
@@ -114,6 +116,8 @@ export function PersonnelCard({
   canManage,
   canManageWorkforce,
   canReadSensitive,
+  canReadLeave = false,
+  canManageLeave = false,
   onClose,
   onSaved,
 }: {
@@ -123,6 +127,8 @@ export function PersonnelCard({
   canManage: boolean
   canManageWorkforce: boolean
   canReadSensitive: boolean
+  canReadLeave?: boolean
+  canManageLeave?: boolean
   onClose: () => void
   onSaved: (employeeId?: string) => Promise<void> | void
 }) {
@@ -152,6 +158,7 @@ export function PersonnelCard({
   const pendingFocus = useRef<string | null>(null)
   const saveLock = useRef(false)
   const createdId = useRef<string | null>(null)
+  const formLatest = useRef(form)
   const [transfer, setTransfer] = useState({
     departmentId: '',
     positionId: '',
@@ -159,6 +166,10 @@ export function PersonnelCard({
   })
   const [endDate, setEndDate] = useState(todayIsoDate())
   const [terminationReason, setTerminationReason] = useState<EmploymentTerminationReason | ''>('')
+
+  useEffect(() => {
+    formLatest.current = form
+  }, [form])
 
   useEffect(() => {
     if (mode.type !== 'edit') {
@@ -176,6 +187,7 @@ export function PersonnelCard({
 
         const next = formFromCard(detail)
         setCard(detail)
+        formLatest.current = next
         setForm(next)
         setSnapshot(snapshotOf(next))
         setTransfer({
@@ -254,7 +266,7 @@ export function PersonnelCard({
   function showFieldErrors(errors: FieldErrors) {
     setFieldErrors(errors)
     setError(t('personnel.errors.fixFields'))
-    const target = firstInvalidTarget(errors, form, mode.type === 'create')
+    const target = firstInvalidTarget(errors, formLatest.current, mode.type === 'create')
     if (!target) {
       return
     }
@@ -270,7 +282,7 @@ export function PersonnelCard({
   }
 
   function blurField(field: string) {
-    const code = validatePersonnelField(form, field, validationContext)
+    const code = validatePersonnelField(formLatest.current, field, validationContext)
     setFieldErrors((current) => {
       const next = { ...current }
       if (code) {
@@ -283,7 +295,7 @@ export function PersonnelCard({
   }
 
   function patchForm(patch: Partial<PersonnelForm>) {
-    const next = { ...form, ...patch }
+    const next = { ...formLatest.current, ...patch }
     if (patch.departmentId !== undefined) {
       next.positionId = retainedPositionId(positions, patch.departmentId, next.positionId)
     }
@@ -296,6 +308,7 @@ export function PersonnelCard({
         next.nationalIdentityNumber,
       )
     }
+    formLatest.current = next
     setForm(next)
     setSaveNotice(null)
     setFieldErrors((current) => {
@@ -316,7 +329,9 @@ export function PersonnelCard({
       if (patch.residenceCity !== undefined) {
         extra.push('residenceDistrict')
       }
-      if (patch.paymentIban !== undefined || patch.paymentBankName !== undefined) {
+      // Bank name can require IBAN immediately; IBAN keystrokes only revalidate once already errored
+      // (via Object.keys(errors)) so incomplete values do not flash until blur/save.
+      if (patch.paymentBankName !== undefined) {
         extra.push('paymentIban', 'paymentBankName')
       }
       return revalidateKnownErrors(current, next, validationContext, extra)
@@ -416,14 +431,15 @@ export function PersonnelCard({
   }
 
   async function persistPayment(employeeId: string) {
-    if (!canReadSensitive || !canManage || !hasPaymentInput(form)) {
+    const paymentForm = formLatest.current
+    if (!canReadSensitive || !canManage || !hasPaymentInput(paymentForm)) {
       return
     }
 
     await saveHrPaymentProfile(
       employeeId,
-      compactIban(form.paymentIban),
-      form.paymentBankName.trim() === '' ? null : form.paymentBankName.trim(),
+      toPersistedIban(paymentForm.paymentIban),
+      paymentForm.paymentBankName.trim() === '' ? null : paymentForm.paymentBankName.trim(),
     )
   }
 
@@ -441,7 +457,8 @@ export function PersonnelCard({
 
     setError(null)
     setSaveNotice(null)
-    const clientErrors = validatePersonnelForm(form, validationContext)
+    const draft = formLatest.current
+    const clientErrors = validatePersonnelForm(draft, validationContext)
     if (Object.keys(clientErrors).length > 0) {
       showFieldErrors(clientErrors)
       return
@@ -452,7 +469,7 @@ export function PersonnelCard({
     try {
       if (mode.type === 'create') {
         if (createdId.current === null) {
-          const created = await createHrEmployee(toHrWrite(form, true))
+          const created = await createHrEmployee(toHrWrite(draft, true))
           createdId.current = created.employeeId
         }
 
@@ -472,14 +489,14 @@ export function PersonnelCard({
           return
         }
         assignPendingPhoto(null)
-        setSnapshot(snapshotOf(form))
+        setSnapshot(snapshotOf(draft))
         setFieldErrors({})
         await onSaved()
         beginClose()
         return
       }
 
-      const updated = await updateHrEmployee(mode.employeeId, toHrWrite(form, false))
+      const updated = await updateHrEmployee(mode.employeeId, toHrWrite(draft, false))
       await persistPhoto(mode.employeeId)
       try {
         await persistPayment(mode.employeeId)
@@ -497,6 +514,7 @@ export function PersonnelCard({
       const detail = updated.hasPhoto !== undefined ? await getHrEmployee(mode.employeeId) : updated
       const next = formFromCard(detail)
       setCard(detail)
+      formLatest.current = next
       setForm(next)
       setSnapshot(snapshotOf(next))
       setFieldErrors({})
@@ -673,15 +691,20 @@ export function PersonnelCard({
 
           <div className={styles.shell}>
             <nav className={styles.nav} aria-label={title} role="tablist">
-              {([
-                ['general', t('personnel.tabGeneral'), <PersonIcon key="general" />],
-                ['identity', t('personnel.tabIdentity'), <IdCardIcon key="identity" />],
-                ['work', t('personnel.tabWork'), <BriefcaseIcon key="work" />],
-                ['official', t('personnel.tabOfficial'), <OfficialSealIcon key="official" />],
-                ['payment', t('personnel.tabPayment'), <BanknoteIcon key="payment" />],
-                ['history', t('personnel.tabHistory'), <HistoryClockIcon key="history" />],
-              ] as const).map(([id, label, icon]) => {
-                const tabInvalid = invalidTabs.has(id)
+              {(
+                [
+                  ['general', t('personnel.tabGeneral'), <PersonIcon key="general" />],
+                  ['identity', t('personnel.tabIdentity'), <IdCardIcon key="identity" />],
+                  ['work', t('personnel.tabWork'), <BriefcaseIcon key="work" />],
+                  ['official', t('personnel.tabOfficial'), <OfficialSealIcon key="official" />],
+                  ['payment', t('personnel.tabPayment'), <BanknoteIcon key="payment" />],
+                  ...(mode.type === 'edit' && canReadLeave
+                    ? ([['leave', t('personnel.leave.tab'), <CalendarIcon key="leave" />]] as const)
+                    : []),
+                  ['history', t('personnel.tabHistory'), <HistoryClockIcon key="history" />],
+                ] as const
+              ).map(([id, label, icon]) => {
+                const tabInvalid = id !== 'leave' && invalidTabs.has(id)
                 return (
                 <button
                   key={id}
@@ -789,6 +812,14 @@ export function PersonnelCard({
                     readOnly={readOnly || !canManage}
                     canReadSensitive={canReadSensitive}
                     employeeId={mode.type === 'edit' ? mode.employeeId : null}
+                  />
+                ) : null}
+
+                {tab === 'leave' && mode.type === 'edit' && canReadLeave ? (
+                  <PersonnelLeaveTab
+                    employeeId={mode.employeeId}
+                    canManage={canManageLeave}
+                    language={language}
                   />
                 ) : null}
 
@@ -1336,6 +1367,7 @@ function OfficialTab({
             label={t('personnel.graduationDate')}
             value={form.graduationDate}
             onChange={(graduationDate) => patchForm({ graduationDate })}
+            calendar
             disabled={readOnly}
           />
           <SelectField
@@ -2377,23 +2409,21 @@ function PaymentTab({
           <p className={styles.meta}>{t('personnel.paymentOptionalHint')}</p>
           <div className={styles.grid}>
             <TextField
-              id="hr-payment-iban"
-              label={t('personnel.paymentIban')}
-              value={form.paymentIban}
-              onChange={(paymentIban) => patchForm({ paymentIban })}
-              onBlur={() => blurField('paymentIban')}
-              error={fieldMessage('paymentIban')}
-              disabled={readOnly}
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <TextField
               id="hr-payment-bank"
               label={t('personnel.paymentBankName')}
               value={form.paymentBankName}
               onChange={(paymentBankName) => patchForm({ paymentBankName })}
               onBlur={() => blurField('paymentBankName')}
               error={fieldMessage('paymentBankName')}
+              disabled={readOnly}
+            />
+            <TurkishIbanField
+              id="hr-payment-iban"
+              label={t('personnel.paymentIban')}
+              value={form.paymentIban}
+              onChange={(paymentIban) => patchForm({ paymentIban })}
+              onBlur={() => blurField('paymentIban')}
+              error={fieldMessage('paymentIban')}
               disabled={readOnly}
             />
           </div>

@@ -9,6 +9,8 @@ public static class PermissionCatalog
         HrEmployeePermissions.Read,
         HrEmployeePermissions.Manage,
         HrEmployeePermissions.SensitiveRead,
+        HrLeavePermissions.Read,
+        HrLeavePermissions.Manage,
         RoomOperationsPermissions.Read,
         RoomOperationsPermissions.Manage,
         RoomOperationsPermissions.Inspect,

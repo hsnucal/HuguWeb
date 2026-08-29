@@ -39,6 +39,8 @@ authorization: {
       'hr.employee.read': 'Personnel read',
       'hr.employee.manage': 'Personnel management',
       'hr.employee.sensitive.read': 'Sensitive personnel read',
+      'hr.leave.read': 'Leave read',
+      'hr.leave.manage': 'Leave management',
       'room-operations.read': 'Room operations read',
       'room-operations.manage': 'Room operations manage',
       'room-operations.inspect': 'Room inspection',

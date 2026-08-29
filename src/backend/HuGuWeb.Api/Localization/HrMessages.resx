@@ -8,5 +8,30 @@
   <data name="error.employee-not-found.detail" xml:space="preserve"><value>The employee was not found.</value></data>
   <data name="error.sgk-workplace-inactive.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.sgk-workplace-inactive.detail" xml:space="preserve"><value>An inactive SGK workplace registration cannot be newly selected.</value></data>
+  <data name="error.leave-type-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.leave-type-not-found.detail" xml:space="preserve"><value>The leave type was not found.</value></data>
+  <data name="error.leave-type-inactive.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-type-inactive.detail" xml:space="preserve"><value>An inactive leave type cannot be used for a new record.</value></data>
+  <data name="error.leave-type-code-conflict.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>A leave type with this code already exists in the organization.</value></data>
+  <data name="error.leave-type-has-history.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Balance tracking cannot change after the leave type has historical usage.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>The entitlement amount must be a non-zero multiple of 0.5 days, and positive unless it is a manual adjustment.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.detail" xml:space="preserve"><value>Entitlement movements can only be recorded for leave types that track balance.</value></data>
+  <data name="error.leave-date-outside-employment.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-date-outside-employment.detail" xml:space="preserve"><value>Leave dates must fall within the employment period.</value></data>
+  <data name="error.leave-invalid-date-range.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-invalid-date-range.detail" xml:space="preserve"><value>The leave start date cannot be after the end date.</value></data>
+  <data name="error.leave-invalid-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-invalid-amount.detail" xml:space="preserve"><value>Leave amount must be greater than zero and a multiple of 0.5 days.</value></data>
+  <data name="error.leave-overlap.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-overlap.detail" xml:space="preserve"><value>This leave overlaps another recorded leave for the same employment.</value></data>
+  <data name="error.leave-record-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.leave-record-not-found.detail" xml:space="preserve"><value>The leave record was not found.</value></data>
+  <data name="error.leave-already-cancelled.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>This leave record is already cancelled.</value></data>
+  <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>A cancellation reason is required.</value></data>
 </root>
-

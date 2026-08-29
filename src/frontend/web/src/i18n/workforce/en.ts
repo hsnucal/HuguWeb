@@ -18,6 +18,17 @@ workforce: {
     officialSettings: 'Property official settings',
     officialSettingsIntro:
       'SGK workplace registrations for this property. Personnel cards select an existing registration; they do not type a new number.',
+    leaveTypes: 'Leave types',
+    leaveTypesIntro:
+      'Organization-owned leave types. Code cannot change after creation; inactive types cannot be selected for new records.',
+    leaveTypeCode: 'Code',
+    leaveTypeName: 'Name',
+    leaveTracksBalance: 'Track balance',
+    leaveTracksBalanceYes: 'Tracks balance',
+    leaveTracksBalanceNo: 'Does not track balance',
+    createLeaveType: 'Add custom leave type',
+    emptyLeaveTypes: 'No leave types yet.',
+    emptyLeaveTypesHint: 'Default types are created when the organization is initialized. You can add a custom type.',
     sgkWorkplace: 'SGK workplace',
     registrationNumber: 'Registration number',
     displayName: 'Label',

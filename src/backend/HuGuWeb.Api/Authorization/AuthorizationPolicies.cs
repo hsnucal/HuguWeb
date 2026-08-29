@@ -14,6 +14,8 @@ public static class AuthorizationPolicies
     public const string HrEmployeeRead = "HrEmployeeRead";
     public const string HrEmployeeManage = "HrEmployeeManage";
     public const string HrEmployeeHire = "HrEmployeeHire";
+    public const string HrLeaveRead = "HrLeaveRead";
+    public const string HrLeaveManage = "HrLeaveManage";
     public const string AuthorizationUsersManage = "AuthorizationUsersManage";
     public const string AuthorizationRolesManage = "AuthorizationRolesManage";
 }

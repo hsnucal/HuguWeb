@@ -13,6 +13,9 @@ public class ApiMessagesLocalizationTests
     [InlineData("en", "error.employee-not-found.detail", "The employee was not found.")]
     [InlineData("ru", "error.employee-not-found.detail", "Сотрудник не найден.")]
     [InlineData("tr", "error.sgk-workplace-inactive.detail", "Pasif bir SGK işyeri kaydı yeni seçilemez.")]
+    [InlineData("tr", "error.leave-overlap.detail", "Bu izin, aynı iş ilişkisindeki başka bir kayıtlı izinle çakışıyor.")]
+    [InlineData("en", "error.leave-overlap.detail", "This leave overlaps another recorded leave for the same employment.")]
+    [InlineData("ru", "error.leave-overlap.detail", "Этот отпуск пересекается с другой записанной записью по тем же трудовым отношениям.")]
     public void ErrorCodes_HaveTrEnRuResources(string culture, string key, string expected)
     {
         CultureInfo.CurrentUICulture = new CultureInfo(culture);

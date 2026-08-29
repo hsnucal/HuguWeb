@@ -9,6 +9,7 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public const string PersonnelNumberIndexName = "IX_Employees_OrganizationId_PersonnelNumber";
     public const string NationalIdentityIndexName =
         "IX_EmployeeHrProfiles_OrganizationId_Scheme_NormalizedNumber";
+    public const string LeaveTypeCodeIndexName = "IX_LeaveTypes_OrganizationId_Code";
 
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Property> Properties => Set<Property>();
@@ -34,6 +35,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<EmployeePaymentProfile> EmployeePaymentProfiles => Set<EmployeePaymentProfile>();
     public DbSet<PersonnelProfileChange> PersonnelProfileChanges => Set<PersonnelProfileChange>();
     public DbSet<PersonnelImportRun> PersonnelImportRuns => Set<PersonnelImportRun>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<LeaveEntitlement> LeaveEntitlements => Set<LeaveEntitlement>();
+    public DbSet<LeaveRecord> LeaveRecords => Set<LeaveRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +64,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new EmployeePaymentProfileConfiguration());
         modelBuilder.ApplyConfiguration(new PersonnelProfileChangeConfiguration());
         modelBuilder.ApplyConfiguration(new PersonnelImportRunConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveEntitlementConfiguration());
+        modelBuilder.ApplyConfiguration(new LeaveRecordConfiguration());
     }
 }
 
@@ -594,5 +601,96 @@ file sealed class PersonnelImportRunConfiguration : IEntityTypeConfiguration<Per
             .HasForeignKey(entity => entity.PropertyId)
             .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(entity => new { entity.OrganizationId, entity.OccurredAtUtc });
+    }
+}
+
+file sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveType>
+{
+    public void Configure(EntityTypeBuilder<LeaveType> builder)
+    {
+        builder.ToTable("LeaveTypes");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Code).HasMaxLength(LeaveType.CodeMaxLength).IsRequired();
+        builder.Property(entity => entity.Name).HasMaxLength(LeaveType.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.SystemKind).HasConversion<int>();
+        builder.Property(entity => entity.TracksBalance).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(LeaveType.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedByUserId).HasMaxLength(LeaveType.UserIdMaxLength).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.Code })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.LeaveTypeCodeIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.IsActive });
+    }
+}
+
+file sealed class LeaveEntitlementConfiguration : IEntityTypeConfiguration<LeaveEntitlement>
+{
+    public void Configure(EntityTypeBuilder<LeaveEntitlement> builder)
+    {
+        builder.ToTable("LeaveEntitlements", table =>
+        {
+            table.HasCheckConstraint("CK_LeaveEntitlements_Amount", "\"Amount\" <> 0");
+        });
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.EffectiveDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.Amount).HasPrecision(6, 1).IsRequired();
+        builder.Property(entity => entity.Source).HasConversion<int>().IsRequired();
+        builder.Property(entity => entity.Note).HasMaxLength(LeaveEntitlement.NoteMaxLength);
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(LeaveEntitlement.UserIdMaxLength).IsRequired();
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<LeaveType>()
+            .WithMany()
+            .HasForeignKey(entity => entity.LeaveTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.LeaveTypeId, entity.EffectiveDate });
+        builder.HasIndex(entity => entity.LeaveTypeId);
+    }
+}
+
+file sealed class LeaveRecordConfiguration : IEntityTypeConfiguration<LeaveRecord>
+{
+    public void Configure(EntityTypeBuilder<LeaveRecord> builder)
+    {
+        builder.ToTable("LeaveRecords", table =>
+        {
+            table.HasCheckConstraint("CK_LeaveRecords_Period", "\"EndDate\" >= \"StartDate\"");
+            table.HasCheckConstraint("CK_LeaveRecords_Amount", "\"Amount\" > 0");
+            table.HasCheckConstraint(
+                "CK_LeaveRecords_CancellationConsistency",
+                "(\"Status\" = 1) OR (\"CancelledAtUtc\" IS NULL AND \"CancelledByUserId\" IS NULL AND \"CancellationReason\" IS NULL)");
+        });
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.StartDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.EndDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.Amount).HasPrecision(6, 1).IsRequired();
+        builder.Property(entity => entity.Status).HasConversion<int>().IsRequired();
+        builder.Property(entity => entity.Note).HasMaxLength(LeaveRecord.NoteMaxLength);
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(LeaveRecord.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.CancelledAtUtc);
+        builder.Property(entity => entity.CancelledByUserId).HasMaxLength(LeaveRecord.UserIdMaxLength);
+        builder.Property(entity => entity.CancellationReason).HasMaxLength(LeaveRecord.CancellationReasonMaxLength);
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<LeaveType>()
+            .WithMany()
+            .HasForeignKey(entity => entity.LeaveTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.Status, entity.StartDate, entity.EndDate });
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.LeaveTypeId });
+        builder.HasIndex(entity => entity.LeaveTypeId);
     }
 }

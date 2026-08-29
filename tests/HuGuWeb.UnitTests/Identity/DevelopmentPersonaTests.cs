@@ -37,15 +37,9 @@ public class DevelopmentPersonaTests
 
         Assert.Equal("hr.manager@localhost", persona.Email);
         Assert.Equal(SystemRoleTemplates.HrManager, persona.RoleCode);
-        Assert.Equal(
-            [
-                WorkforcePermissions.Read,
-                WorkforcePermissions.Manage,
-                HrEmployeePermissions.Read,
-                HrEmployeePermissions.Manage,
-                HrEmployeePermissions.SensitiveRead
-            ],
-            persona.Permissions);
+        Assert.Equal(SystemRoleTemplates.HumanResourcesPermissions, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Read, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));

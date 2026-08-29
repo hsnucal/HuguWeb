@@ -19,6 +19,17 @@ workforce: {
     officialSettings: 'Tesis / Resmî ayarlar',
     officialSettingsIntro:
       'Bu tesisin SGK işyeri sicil kayıtları. Personel kartı mevcut bir kaydı seçer; yeni sicil numarası yazılmaz.',
+    leaveTypes: 'İzin türleri',
+    leaveTypesIntro:
+      'Organizasyona ait izin türleri. Kod oluşturulduktan sonra değiştirilmez; pasif türler yeni kayıtlarda seçilemez.',
+    leaveTypeCode: 'Kod',
+    leaveTypeName: 'Ad',
+    leaveTracksBalance: 'Bakiye takip et',
+    leaveTracksBalanceYes: 'Bakiye takip edilir',
+    leaveTracksBalanceNo: 'Bakiye takip edilmez',
+    createLeaveType: 'Özel izin türü ekle',
+    emptyLeaveTypes: 'Henüz izin türü yok.',
+    emptyLeaveTypesHint: 'Varsayılan türler organizasyon açılışında oluşturulur. Özel bir tür ekleyebilirsiniz.',
     sgkWorkplace: 'SGK işyeri',
     registrationNumber: 'Sicil numarası',
     displayName: 'Etiket',

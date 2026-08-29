@@ -8,5 +8,30 @@
   <data name="error.employee-not-found.detail" xml:space="preserve"><value>Personel kaydı bulunamadı.</value></data>
   <data name="error.sgk-workplace-inactive.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.sgk-workplace-inactive.detail" xml:space="preserve"><value>Pasif bir SGK işyeri kaydı yeni seçilemez.</value></data>
+  <data name="error.leave-type-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.leave-type-not-found.detail" xml:space="preserve"><value>İzin türü bulunamadı.</value></data>
+  <data name="error.leave-type-inactive.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-type-inactive.detail" xml:space="preserve"><value>Pasif bir izin türü yeni kayıtta kullanılamaz.</value></data>
+  <data name="error.leave-type-code-conflict.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>Bu kod bu organizasyonda zaten bir izin türüne ait.</value></data>
+  <data name="error.leave-type-has-history.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Bu izin türünün geçmiş kullanımı olduğu için bakiye takibi değiştirilemez.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>Hakediş miktarı 0,5 gün katı olmalı; manuel düzeltme dışında sıfır veya negatif olamaz.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-entitlement-balance-not-supported.detail" xml:space="preserve"><value>Hakediş hareketi yalnızca bakiye takip edilen izin türleri için kaydedilir.</value></data>
+  <data name="error.leave-date-outside-employment.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-date-outside-employment.detail" xml:space="preserve"><value>İzin tarihleri iş ilişkisi dönemi içinde olmalıdır.</value></data>
+  <data name="error.leave-invalid-date-range.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-invalid-date-range.detail" xml:space="preserve"><value>İzin başlangıç tarihi bitiş tarihinden sonra olamaz.</value></data>
+  <data name="error.leave-invalid-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-invalid-amount.detail" xml:space="preserve"><value>İzin miktarı sıfırdan büyük ve 0,5 gün katı olmalıdır.</value></data>
+  <data name="error.leave-overlap.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-overlap.detail" xml:space="preserve"><value>Bu izin, aynı iş ilişkisindeki başka bir kayıtlı izinle çakışıyor.</value></data>
+  <data name="error.leave-record-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.leave-record-not-found.detail" xml:space="preserve"><value>İzin kaydı bulunamadı.</value></data>
+  <data name="error.leave-already-cancelled.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Bu izin kaydı zaten iptal edilmiş.</value></data>
+  <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>İptal nedeni zorunludur.</value></data>
 </root>
-

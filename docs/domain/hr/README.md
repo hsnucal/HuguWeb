@@ -62,6 +62,8 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | Document | Purpose |
 |----------|---------|
 | [HR-04 Employment & Working Conditions](../../product/hr/HR-04-Employment-Working-Conditions.md) | Domain freeze **Accepted**. Implementation **Accepted** |
+| [HR-05A Leave Foundation](../../product/hr/HR-05A-Leave-Foundation.md) | Domain freeze **Accepted**. Does not change HR-04 or HR-DOMAIN-001/002/003 |
+| [HR-05A implementation plan](../../product/hr/HR-05A-Leave-Implementation-Plan.md) | **Accepted / Completed**. Domain freeze remains Accepted |
 | [HR product planning index](../../product/hr/README.md) | Slice-id map. Older Personel Master maps called this work HR-02 and called Documents HR-04; those Accepted texts are not rewritten |
 
 Related architecture (do not contradict):

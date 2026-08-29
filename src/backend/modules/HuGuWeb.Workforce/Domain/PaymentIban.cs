@@ -2,6 +2,10 @@ namespace HuGuWeb.Workforce.Domain;
 
 public static class PaymentIban
 {
+    public const string TurkishCountryPrefix = "TR";
+    public const int TurkishIbanBodyLength = 24;
+    public const int TurkishIbanMaxLength = 26;
+
     public static bool TryNormalize(string? input, out string normalized, out string? error)
     {
         normalized = string.Empty;
@@ -11,45 +15,51 @@ public static class PaymentIban
             return false;
         }
 
-        var compact = new string(input.Where(ch => !char.IsWhiteSpace(ch)).ToArray()).ToUpperInvariant();
-        if (compact.Length < 15 || compact.Length > EmployeePaymentProfile.IbanMaxLength)
+        var digits = ExtractTurkishIbanDigits(input, maxDigits: null);
+        if (digits.Length != TurkishIbanBodyLength)
         {
-            error = "IBAN length is invalid.";
+            error = "IBAN must be a Turkish IBAN with exactly 24 digits after TR.";
             return false;
         }
 
-        if (!compact.All(ch => char.IsAsciiLetterOrDigit(ch)))
-        {
-            error = "IBAN contains invalid characters.";
-            return false;
-        }
-
-        if (!IsValidChecksum(compact))
-        {
-            error = "IBAN checksum is invalid.";
-            return false;
-        }
-
-        normalized = compact;
+        normalized = TurkishCountryPrefix + digits;
         error = null;
         return true;
     }
 
-    private static bool IsValidChecksum(string iban)
+    /// <summary>
+    /// Digits after the fixed TR prefix (capped at 24 for UI helpers).
+    /// Strips spaces, punctuation, letters, and leading TR prefixes so paste does not produce TRTR.
+    /// </summary>
+    public static string NormalizeTurkishIbanDigits(string input) =>
+        ExtractTurkishIbanDigits(input, TurkishIbanBodyLength);
+
+    public static string ToCanonical(string input)
     {
-        var rearranged = iban[4..] + iban[..4];
-        var remainder = 0;
-        foreach (var ch in rearranged)
+        var digits = NormalizeTurkishIbanDigits(input);
+        return digits.Length == 0 ? string.Empty : TurkishCountryPrefix + digits;
+    }
+
+    private static string ExtractTurkishIbanDigits(string input, int? maxDigits)
+    {
+        var compact = new string(
+            input
+                .Where(ch => !char.IsWhiteSpace(ch))
+                .Select(char.ToUpperInvariant)
+                .Where(ch => char.IsAsciiLetterOrDigit(ch))
+                .ToArray());
+
+        while (compact.StartsWith(TurkishCountryPrefix, StringComparison.Ordinal))
         {
-            var expanded = char.IsAsciiDigit(ch)
-                ? ch.ToString()
-                : (ch - 'A' + 10).ToString();
-            foreach (var digit in expanded)
-            {
-                remainder = (remainder * 10 + (digit - '0')) % 97;
-            }
+            compact = compact[TurkishCountryPrefix.Length..];
         }
 
-        return remainder == 1;
+        var digitQuery = compact.Where(char.IsAsciiDigit);
+        if (maxDigits is int limit)
+        {
+            digitQuery = digitQuery.Take(limit);
+        }
+
+        return new string(digitQuery.ToArray());
     }
 }
