@@ -39,11 +39,43 @@ public sealed class HireEmployeeWithProfileUseCase(
             return destination.Error!;
         }
 
+        var today = clock.Today;
+        var employeeId = Guid.CreateVersion7();
+        var employment = Employment.Open(Guid.CreateVersion7(), employeeId, command.EmploymentStartDate, today);
+        if (!employment.TryApplySeniorityStartDate(command.SeniorityStartDate, out var seniorityField, out var seniorityCode))
+        {
+            return WorkforceError.InvalidFields(
+                seniorityCode ?? HrValidation.Codes.SeniorityStartDateInvalid,
+                "Seniority start date is invalid.",
+                seniorityField ?? HrValidation.Fields.SeniorityStartDate,
+                seniorityCode ?? HrValidation.Codes.SeniorityStartDateInvalid);
+        }
+
+        var workforce = EmploymentWorkforceComposer.Apply(
+            employment,
+            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
+        if (!workforce.IsSuccess)
+        {
+            return workforce.Error!;
+        }
+
+        var assignment = Assignment.StartPrimary(
+            Guid.CreateVersion7(),
+            employment.Id,
+            department.Id,
+            position.Id,
+            command.EmploymentStartDate);
+
+        if (!employment.TryEnsureAssignmentFits(assignment.Period, out _))
+        {
+            return WorkforceError.AssignmentOutsideEmployment();
+        }
+
         var personnelNumber = await store.AllocatePersonnelNumberAsync(
             workplace.Value.Organization.Id,
             cancellationToken);
         if (!Employee.TryCreate(
-                Guid.CreateVersion7(),
+                employeeId,
                 workplace.Value.Organization.Id,
                 command.GivenName,
                 command.FamilyName,
@@ -57,20 +89,6 @@ public sealed class HireEmployeeWithProfileUseCase(
                 employeeError ?? "Employee is invalid.",
                 WorkforceError.FieldForEmployeeCode(employeeError),
                 employeeError ?? "invalid-employee");
-        }
-
-        var today = clock.Today;
-        var employment = Employment.Open(Guid.CreateVersion7(), employee.Id, command.EmploymentStartDate, today);
-        var assignment = Assignment.StartPrimary(
-            Guid.CreateVersion7(),
-            employment.Id,
-            department.Id,
-            position.Id,
-            command.EmploymentStartDate);
-
-        if (!employment.TryEnsureAssignmentFits(assignment.Period, out _))
-        {
-            return WorkforceError.AssignmentOutsideEmployment();
         }
 
         var profile = await HrProfileComposer.ApplyAsync(
@@ -100,14 +118,6 @@ public sealed class HireEmployeeWithProfileUseCase(
         if (!official.IsSuccess)
         {
             return official.Error!;
-        }
-
-        var workforce = EmploymentWorkforceComposer.Apply(
-            employment,
-            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
-        if (!workforce.IsSuccess)
-        {
-            return workforce.Error!;
         }
 
         var bes = EmploymentBesComposer.Apply(
@@ -158,7 +168,8 @@ public sealed record HireEmployeeWithProfileCommand(
     bool CanWriteSensitive,
     OfficialEmploymentWriteModel? OfficialProfile = null,
     EmploymentWorkforceWriteModel? WorkforceTerms = null,
-    EmploymentBesWriteModel? BesSettings = null);
+    EmploymentBesWriteModel? BesSettings = null,
+    DateOnly? SeniorityStartDate = null);
 
 public sealed class NationalIdentityConflictException : Exception
 {

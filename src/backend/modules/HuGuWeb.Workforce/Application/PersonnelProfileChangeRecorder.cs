@@ -99,6 +99,47 @@ public static class PersonnelProfileChangeRecorder
         return changes;
     }
 
+    public sealed record EmploymentSnapshot(
+        DateOnly? SeniorityStartDate,
+        EmploymentContractType? ContractType,
+        DateOnly? ContractEndDate,
+        decimal? PartTimeMonthlyHours);
+
+    public static EmploymentSnapshot CaptureEmployment(Employment employment) =>
+        new(
+            employment.SeniorityStartDate,
+            employment.ContractType,
+            employment.ContractEndDate,
+            employment.PartTimeMonthlyHours);
+
+    public static IReadOnlyList<(string FieldCode, string? OldValue, string? NewValue)> DiffEmployment(
+        EmploymentSnapshot before,
+        EmploymentSnapshot after)
+    {
+        var changes = new List<(string, string?, string?)>();
+        AddChange(
+            changes,
+            PersonnelProfileFieldCodes.SeniorityStartDate,
+            FormatDate(before.SeniorityStartDate),
+            FormatDate(after.SeniorityStartDate));
+        AddChange(
+            changes,
+            PersonnelProfileFieldCodes.ContractType,
+            before.ContractType?.ToString(),
+            after.ContractType?.ToString());
+        AddChange(
+            changes,
+            PersonnelProfileFieldCodes.ContractEndDate,
+            FormatDate(before.ContractEndDate),
+            FormatDate(after.ContractEndDate));
+        AddChange(
+            changes,
+            PersonnelProfileFieldCodes.PartTimeMonthlyHours,
+            FormatDecimal(before.PartTimeMonthlyHours),
+            FormatDecimal(after.PartTimeMonthlyHours));
+        return changes;
+    }
+
     public static void RecordDiff(
         IWorkforceStore store,
         Guid employeeId,
@@ -213,4 +254,8 @@ public static class PersonnelProfileChangeRecorder
             changes.Add((fieldCode, oldValue, newValue));
         }
     }
+
+    private static string? FormatDate(DateOnly? value) => value?.ToString("yyyy-MM-dd");
+
+    private static string? FormatDecimal(decimal? value) => value?.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

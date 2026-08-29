@@ -52,6 +52,8 @@ public sealed class EmployeeHistoryQuery(
                 employment.StartDate,
                 employment.EndDate,
                 employment.EffectiveStatus(today),
+                employment.SeniorityStartDate,
+                employment.TerminationReason,
                 primaryAssignments));
         }
 
@@ -105,6 +107,8 @@ public sealed record EmploymentHistoryRecord(
     DateOnly StartDate,
     DateOnly? EndDate,
     EmploymentStatus Status,
+    DateOnly? SeniorityStartDate,
+    EmploymentTerminationReason? TerminationReason,
     IReadOnlyList<AssignmentHistoryRecord> PrimaryAssignments);
 
 public sealed record AssignmentHistoryRecord(

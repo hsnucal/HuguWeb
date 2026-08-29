@@ -34,3 +34,8 @@ test('backspacing formatted input stays stable', () => {
 test('ignores extra digits beyond 10', () => {
   assert.equal(normalizeTurkishMobileInput('5555555555999'), '5555555555')
 })
+
+test('employee and emergency phones share the same canonical display', () => {
+  assert.equal(formatTurkishMobile(normalizeTurkishMobileInput('0(555) 555 55 55')), '0(555) 555 55 55')
+  assert.equal(formatTurkishMobile(normalizeTurkishMobileInput('+90 555 555 55 55')), '0(555) 555 55 55')
+})

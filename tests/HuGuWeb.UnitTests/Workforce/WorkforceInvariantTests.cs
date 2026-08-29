@@ -32,9 +32,9 @@ public class WorkforceInvariantTests
     {
         var employment = Employment.Open(Guid.CreateVersion7(), Guid.CreateVersion7(), new DateOnly(2026, 8, 21), new DateOnly(2026, 8, 21));
 
-        Assert.False(employment.TryEnd(new DateOnly(2026, 8, 20), out _));
+        Assert.False(employment.TryEnd(new DateOnly(2026, 8, 20), EmploymentTerminationReason.Resignation, out _));
         Assert.False(employment.IsEnded);
-        Assert.True(employment.TryEnd(new DateOnly(2026, 8, 21), out _));
+        Assert.True(employment.TryEnd(new DateOnly(2026, 8, 21), EmploymentTerminationReason.Resignation, out _));
         Assert.True(employment.IsEnded);
         Assert.Equal(new DateOnly(2026, 8, 21), employment.EndDate);
     }
@@ -71,7 +71,7 @@ public class WorkforceInvariantTests
         Assert.Equal(2, nonEnded);
 
         var ended = await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None);
 
         Assert.False(ended.IsSuccess);
@@ -112,7 +112,7 @@ public class WorkforceInvariantTests
         var harness = new WorkforceHarness();
         var hired = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         var result = await harness.Transfer.ExecuteAsync(
@@ -137,7 +137,7 @@ public class WorkforceInvariantTests
             CancellationToken.None);
         var leaving = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(leaving.Value!.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(leaving.Value!.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None);
 
         var list = await harness.ActiveWorkforce.ExecuteAsync(CancellationToken.None);

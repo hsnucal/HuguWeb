@@ -19,6 +19,7 @@ export function MobilePhoneField({
   onUnsafePaste,
   error,
   disabled,
+  required,
 }: {
   id: string
   label: string
@@ -28,6 +29,7 @@ export function MobilePhoneField({
   onUnsafePaste: () => void
   error?: string
   disabled?: boolean
+  required?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const caretRef = useRef<number | null>(null)
@@ -62,6 +64,7 @@ export function MobilePhoneField({
       spellCheck={false}
       disabled={disabled}
       error={error}
+      required={required}
       onBlur={onBlur}
       onChange={(next, event) => {
         const caret = event.target.selectionStart ?? next.length

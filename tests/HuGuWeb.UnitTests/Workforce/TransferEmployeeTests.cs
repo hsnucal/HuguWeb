@@ -198,7 +198,10 @@ public class TransferEmployeeTests
         var harness = new WorkforceHarness();
         var hired = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new HuGuWeb.Workforce.Application.EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today),
+            new HuGuWeb.Workforce.Application.EndEmploymentCommand(
+                hired.Value!.EmployeeId,
+                harness.Clock.Today,
+                EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         var result = await harness.Transfer.ExecuteAsync(

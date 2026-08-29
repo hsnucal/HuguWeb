@@ -687,7 +687,8 @@ internal sealed class WorkforceHarness
         bool canWriteSensitive = true,
         OfficialEmploymentWriteModel? officialProfile = null,
         EmploymentWorkforceWriteModel? workforceTerms = null,
-        EmploymentBesWriteModel? besSettings = null) =>
+        EmploymentBesWriteModel? besSettings = null,
+        DateOnly? seniorityStartDate = null) =>
         new(
             "Ayşe",
             "Yılmaz",
@@ -698,7 +699,8 @@ internal sealed class WorkforceHarness
             canWriteSensitive,
             officialProfile,
             workforceTerms,
-            besSettings);
+            besSettings,
+            seniorityStartDate);
 
     public OfficialEmploymentWriteModel OfficialWrite(
         Guid? workplaceId = null,

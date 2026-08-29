@@ -107,6 +107,8 @@ workforce: {
       positionNotAvailable: 'The selected position cannot be used in this department.',
       generic: 'The workforce request could not be completed.',
       invalidSgkWorkplace: 'The SGK workplace registration is invalid.',
+      terminationReasonRequired: 'A reason for leaving is required.',
+      invalidTerminationReason: 'Choose a recognised reason for leaving.',
     },
   }
 }

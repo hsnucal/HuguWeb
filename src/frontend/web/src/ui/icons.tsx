@@ -218,6 +218,16 @@ export function CalendarIcon({ className }: IconProps) {
   )
 }
 
+export function BanknoteIcon({ className }: IconProps) {
+  return (
+    <svg className={className} {...svg}>
+      <rect x="3.5" y="6.5" width="17" height="11" rx="1.5" />
+      <circle cx="12" cy="12" r="2.2" />
+      <path d="M6 9.2h.01M18 14.8h.01" />
+    </svg>
+  )
+}
+
 export function RoleBadgeIcon({ className }: IconProps) {
   return (
     <svg className={className} {...svg}>

@@ -17,9 +17,15 @@ import { canManageHrEmployees, canReadHrSensitive } from './hrAccess'
 import {
   hrEmployeePhotoUrl,
   hrErrorKey,
+  hrListErrorKey,
   listHrEmployees,
   type HrEmployeeListItem,
 } from './hrApi'
+import {
+  asCollection,
+  asHrEmployeeList,
+  personnelEmptyKind,
+} from './personnelDirectory'
 import { listDepartments, listPositions, type DepartmentRecord, type PositionRecord } from './workforceApi'
 import { employmentStatusTone, type WorkforceView } from './workforceStatus'
 import {
@@ -65,6 +71,7 @@ export function ActiveWorkforcePage() {
   const [startFrom, setStartFrom] = useState('')
   const [startTo, setStartTo] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [card, setCard] = useState<{ type: 'create' } | { type: 'edit'; employeeId: string } | null>(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [columns, setColumns] = useState<PersonnelColumnId[]>(() => loadPersonnelColumns(canReadSensitive))
@@ -107,12 +114,15 @@ export function ActiveWorkforcePage() {
           return
         }
 
-        setDirectory(people)
-        setDepartments(departmentRows)
-        setPositions(positionRows)
+        setDirectory(asHrEmployeeList<HrEmployeeListItem>(people))
+        setDepartments(asCollection<DepartmentRecord>(departmentRows))
+        setPositions(asCollection<PositionRecord>(positionRows))
+        setError(null)
+        setLoadFailed(false)
       } catch (reason) {
         if (!cancelled) {
-          setError(t(hrErrorKey(reason)))
+          setError(t(hrListErrorKey(reason)))
+          setLoadFailed(true)
           setDirectory([])
         }
       }
@@ -124,7 +134,7 @@ export function ActiveWorkforcePage() {
     }
   }, [t])
 
-  const people = directory ?? []
+  const people = asHrEmployeeList<HrEmployeeListItem>(directory)
   const activeCount = people.filter((item) => item.employmentStatus === 'Active').length
   const scheduledCount = people.filter((item) => item.employmentStatus === 'Scheduled').length
   const formerCount = people.filter((item) => item.employmentStatus === 'Ended').length
@@ -158,12 +168,19 @@ export function ActiveWorkforcePage() {
     }
     return true
   })
+  const emptyKind = personnelEmptyKind({
+    loadFailed,
+    totalCount: people.length,
+    visibleCount: visible.length,
+  })
 
   async function reload() {
     const [staff, departmentRows, positionRows] = await fetchDirectory()
-    setDirectory(staff)
-    setDepartments(departmentRows)
-    setPositions(positionRows)
+    setDirectory(asHrEmployeeList<HrEmployeeListItem>(staff))
+    setDepartments(asCollection<DepartmentRecord>(departmentRows))
+    setPositions(asCollection<PositionRecord>(positionRows))
+    setLoadFailed(false)
+    setError(null)
   }
 
   function toggleColumn(id: PersonnelColumnId) {
@@ -215,7 +232,7 @@ export function ActiveWorkforcePage() {
               setFeedback(null)
               setCard({ type: 'create' })
             }}>
-              {t('personnel.newPersonnel')}
+              {t('personnel.addPersonnel')}
             </Button>
             <Button variant="secondary" layout="inline" onClick={() => void onExport()}>
               {t('personnel.exportExcel')}
@@ -342,17 +359,48 @@ export function ActiveWorkforcePage() {
             <span key={id}>{columnLabel(id, t)}</span>
           ))}
         </div>
-        {visible.length === 0 ? (
+        {emptyKind === 'dataset' ? (
           <EmptyState
-            title={t('workforce.emptySearch')}
-            description={t('workforce.emptySearchHint')}
+            title={t('personnel.emptyTitle')}
+            description={t('personnel.emptyHint')}
+            action={
+              canManage ? (
+                <Button layout="inline" onClick={() => {
+                  setFeedback(null)
+                  setCard({ type: 'create' })
+                }}>
+                  {t('personnel.addPersonnel')}
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : emptyKind === 'filter' ? (
+          <EmptyState
+            title={
+              query !== '' || departmentFilter !== '' || positionFilter !== '' || startFrom !== '' || startTo !== ''
+                ? t('workforce.emptySearch')
+                : view === 'active'
+                  ? t('workforce.emptyActive')
+                  : view === 'scheduled'
+                    ? t('workforce.emptyScheduled')
+                    : t('workforce.emptyFormer')
+            }
+            description={
+              query !== '' || departmentFilter !== '' || positionFilter !== '' || startFrom !== '' || startTo !== ''
+                ? t('workforce.emptySearchHint')
+                : view === 'active'
+                  ? t('workforce.emptyActiveHint')
+                  : view === 'scheduled'
+                    ? t('workforce.emptyScheduledHint')
+                    : t('workforce.emptyFormerHint')
+            }
             action={
               view === 'active' && canManage ? (
                 <Button layout="inline" onClick={() => {
                   setFeedback(null)
                   setCard({ type: 'create' })
                 }}>
-                  {t('personnel.newPersonnel')}
+                  {t('personnel.addPersonnel')}
                 </Button>
               ) : undefined
             }

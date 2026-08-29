@@ -118,6 +118,20 @@ public sealed record WorkforceError(
     public static WorkforceError InvalidEmploymentPeriod() =>
         InvalidRequest("invalid-employment-period", "Employment end date must be on or after the start date.");
 
+    public static WorkforceError TerminationReasonRequired() =>
+        InvalidFields(
+            HrValidation.Codes.TerminationReasonRequired,
+            "A termination reason is required when ending employment.",
+            HrValidation.Fields.TerminationReason,
+            HrValidation.Codes.TerminationReasonRequired);
+
+    public static WorkforceError InvalidTerminationReason() =>
+        InvalidFields(
+            HrValidation.Codes.InvalidTerminationReason,
+            "The termination reason is not a recognised HuGu employment exit reason.",
+            HrValidation.Fields.TerminationReason,
+            HrValidation.Codes.InvalidTerminationReason);
+
     public static WorkforceError InvalidAssignmentPeriod() =>
         InvalidRequest("invalid-assignment-period", "Assignment end date must be on or after the start date.");
 

@@ -45,6 +45,10 @@ public static class HrValidation
         public const string MilitaryExemptionReasonRequired = "military-exemption-reason-required";
         public const string MilitaryDefermentReasonRequired = "military-deferment-reason-required";
         public const string ContractEndDateRequired = "contract-end-date-required";
+        public const string ContractEndDateBeforeStart = "contract-end-date-before-start";
+        public const string SeniorityStartDateInvalid = "seniority-start-date-invalid";
+        public const string TerminationReasonRequired = "termination-reason-required";
+        public const string InvalidTerminationReason = "invalid-termination-reason";
         public const string PartTimeHoursRequired = "part-time-hours-required";
         public const string PartTimeHoursInvalid = "part-time-hours-invalid";
         public const string IncentiveRangeInvalid = "incentive-range-invalid";
@@ -84,6 +88,8 @@ public static class HrValidation
         public const string DutyCode = "dutyCode";
         public const string ContractType = "contractType";
         public const string ContractEndDate = "contractEndDate";
+        public const string SeniorityStartDate = "seniorityStartDate";
+        public const string TerminationReason = "terminationReason";
         public const string PartTimeMonthlyHours = "partTimeMonthlyHours";
         public const string IskurStatus = "iskurStatus";
         public const string IncentiveStartDate = "incentiveStartDate";

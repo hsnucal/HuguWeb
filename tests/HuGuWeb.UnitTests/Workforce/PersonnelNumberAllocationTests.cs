@@ -101,7 +101,7 @@ public class PersonnelNumberAllocationTests
         var harness = new WorkforceHarness();
         var first = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(first.Value!.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(first.Value!.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         var second = await harness.Hire.ExecuteAsync(harness.HireCommand(), CancellationToken.None);

@@ -202,14 +202,19 @@ file sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employment>
             table.HasCheckConstraint(
                 "CK_Employments_WorkPermitRange",
                 "\"WorkPermitEndDate\" IS NULL OR \"WorkPermitStartDate\" IS NULL OR \"WorkPermitEndDate\" >= \"WorkPermitStartDate\"");
+            table.HasCheckConstraint(
+                "CK_Employments_SeniorityStartDate",
+                "\"SeniorityStartDate\" IS NULL OR \"SeniorityStartDate\" <= \"StartDate\"");
         });
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.StartDate).HasColumnType("date").IsRequired();
         builder.Property(entity => entity.EndDate).HasColumnType("date");
+        builder.Property(entity => entity.SeniorityStartDate).HasColumnType("date");
         builder.Property(entity => entity.Status)
             .HasConversion<string>()
             .HasMaxLength(32)
             .IsRequired();
+        builder.Property(entity => entity.TerminationReason).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.ContractType).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.ContractEndDate).HasColumnType("date");
         builder.Property(entity => entity.PartTimeMonthlyHours).HasPrecision(6, 2);

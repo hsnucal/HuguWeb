@@ -1,4 +1,5 @@
 import { ApiError, apiRequest, apiUpload } from '../shared/apiClient'
+import { asHrEmployeeList } from './personnelDirectory'
 import type {
   AssignmentHistoryRecord,
   EmploymentHistoryRecord,
@@ -272,6 +273,7 @@ export type HrEmployeeWrite = {
   officialProfile: OfficialEmploymentWrite
   workforceTerms: EmploymentWorkforceWrite
   besSettings: EmploymentBesWrite
+  seniorityStartDate?: string | null
 }
 
 export function hrEmployeePhotoUrl(employeeId: string) {
@@ -279,7 +281,8 @@ export function hrEmployeePhotoUrl(employeeId: string) {
 }
 
 export async function listHrEmployees() {
-  return apiRequest<HrEmployeeListItem[]>('/api/hr/employees')
+  const payload = await apiRequest<unknown>('/api/hr/employees')
+  return asHrEmployeeList<HrEmployeeListItem>(payload)
 }
 
 export async function getHrEmployee(id: string) {
@@ -335,6 +338,10 @@ const errorKeys: Record<string, string> = {
   'invalid-employment-period': 'workforce.errors.invalidEmploymentPeriod',
   'same-assignment': 'workforce.errors.sameAssignment',
   'position-not-available-for-department': 'personnel.validation.positionNotAvailable',
+  'department-not-found': 'personnel.validation.departmentRequired',
+  'position-not-found': 'personnel.validation.positionRequired',
+  'assignment-outside-employment': 'workforce.errors.invalidEmploymentPeriod',
+  'invalid-employee': 'personnel.errors.invalidHrProfile',
   'national-identity-in-use': 'personnel.errors.nationalIdentityInUse',
   'invalid-hr-profile': 'personnel.errors.invalidHrProfile',
   'invalid-emergency-contact': 'personnel.errors.invalidEmergencyContact',
@@ -359,6 +366,11 @@ const errorKeys: Record<string, string> = {
   'bes-rate-invalid': 'personnel.validation.besRateInvalid',
   'bes-extra-amount-invalid': 'personnel.validation.besExtraInvalid',
   'kep-invalid': 'personnel.validation.kepInvalid',
+  'payment-profile-invalid-iban': 'personnel.validation.paymentIbanInvalid',
+  'seniority-start-date-invalid': 'personnel.validation.seniorityAfterStart',
+  'contract-end-date-before-start': 'personnel.validation.contractEndBeforeStart',
+  'termination-reason-required': 'workforce.errors.terminationReasonRequired',
+  'invalid-termination-reason': 'workforce.errors.invalidTerminationReason',
   'employment-not-found': 'personnel.errors.employmentNotFound',
   'employment-property-unresolved': 'personnel.errors.employmentPropertyUnresolved',
   'property-context-required': 'common.propertySelectionRequired',
@@ -370,6 +382,14 @@ export function hrErrorKey(error: unknown): string {
   }
 
   return 'personnel.errors.generic'
+}
+
+export function hrListErrorKey(error: unknown): string {
+  if (error instanceof ApiError && error.problem?.code && errorKeys[error.problem.code]) {
+    return errorKeys[error.problem.code]
+  }
+
+  return 'personnel.errors.listFailed'
 }
 
 export function hrFieldErrorsFromProblem(error: unknown): Record<string, string> {

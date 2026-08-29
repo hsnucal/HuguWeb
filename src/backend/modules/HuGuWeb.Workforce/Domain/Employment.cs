@@ -20,6 +20,8 @@ public sealed class Employment
     public DateOnly StartDate { get; private set; }
     public DateOnly? EndDate { get; private set; }
     public EmploymentStatus Status { get; private set; }
+    public DateOnly? SeniorityStartDate { get; private set; }
+    public EmploymentTerminationReason? TerminationReason { get; private set; }
     public EmploymentContractType? ContractType { get; private set; }
     public DateOnly? ContractEndDate { get; private set; }
     public decimal? PartTimeMonthlyHours { get; private set; }
@@ -33,6 +35,8 @@ public sealed class Employment
     public DatePeriod Period => new(StartDate, EndDate);
 
     public bool IsEnded => Status == EmploymentStatus.Ended;
+
+    public DateOnly EffectiveSeniorityDate => SeniorityStartDate ?? StartDate;
 
     public static Employment Open(Guid id, Guid employeeId, DateOnly startDate, DateOnly today)
     {
@@ -50,11 +54,17 @@ public sealed class Employment
         return startDateIsFuture(today) ? EmploymentStatus.Scheduled : EmploymentStatus.Active;
     }
 
-    public bool TryEnd(DateOnly endDate, out string? error)
+    public bool TryEnd(DateOnly endDate, EmploymentTerminationReason reason, out string? error)
     {
         if (IsEnded)
         {
             error = "Employment is already ended.";
+            return false;
+        }
+
+        if (!Enum.IsDefined(reason))
+        {
+            error = "Termination reason is invalid.";
             return false;
         }
 
@@ -66,7 +76,24 @@ public sealed class Employment
 
         EndDate = endDate;
         Status = EmploymentStatus.Ended;
+        TerminationReason = reason;
         error = null;
+        return true;
+    }
+
+    public bool TryApplySeniorityStartDate(DateOnly? seniorityStartDate, out string? field, out string? code)
+    {
+        field = null;
+        code = null;
+
+        if (seniorityStartDate is { } seniority && seniority > StartDate)
+        {
+            field = HrValidation.Fields.SeniorityStartDate;
+            code = HrValidation.Codes.SeniorityStartDateInvalid;
+            return false;
+        }
+
+        SeniorityStartDate = seniorityStartDate;
         return true;
     }
 
@@ -123,6 +150,13 @@ public sealed class Employment
         {
             field = HrValidation.Fields.ContractEndDate;
             code = HrValidation.Codes.ContractEndDateRequired;
+            return false;
+        }
+
+        if (contractEnd is { } contractEndDate && contractEndDate < StartDate)
+        {
+            field = HrValidation.Fields.ContractEndDate;
+            code = HrValidation.Codes.ContractEndDateBeforeStart;
             return false;
         }
 

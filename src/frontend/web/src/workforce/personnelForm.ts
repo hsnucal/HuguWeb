@@ -14,6 +14,7 @@ import type {
   MilitaryServiceStatus,
   NationalIdentityScheme,
 } from './hrApi'
+import { toIsoDate } from '../ui/dateEntry'
 import { normalizeMobileDigits } from './personnelInput'
 
 export type PersonnelForm = {
@@ -70,6 +71,9 @@ export type PersonnelForm = {
   kepAddress: string
   workPermitStartDate: string
   workPermitEndDate: string
+  seniorityStartDate: string
+  paymentIban: string
+  paymentBankName: string
 }
 
 export function emptyPersonnelForm(today: string): PersonnelForm {
@@ -127,6 +131,9 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     kepAddress: '',
     workPermitStartDate: '',
     workPermitEndDate: '',
+    seniorityStartDate: '',
+    paymentIban: '',
+    paymentBankName: '',
   }
 }
 
@@ -167,7 +174,7 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
       id: item.id,
       name: item.name,
       relationship: item.relationship ?? '',
-      phone: item.phone,
+      phone: normalizeMobileDigits(item.phone),
       isPrimary: item.isPrimary,
     })),
     sgkWorkplaceRegistrationId: card.officialProfile?.sgkWorkplaceRegistrationId ?? '',
@@ -196,6 +203,10 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
     kepAddress: profile.kepAddress ?? '',
     workPermitStartDate: terms?.workPermitStartDate ?? '',
     workPermitEndDate: terms?.workPermitEndDate ?? '',
+    seniorityStartDate:
+      card.currentEmployment?.seniorityStartDate ?? card.employments[0]?.seniorityStartDate ?? '',
+    paymentIban: card.paymentProfile?.iban ?? '',
+    paymentBankName: card.paymentProfile?.bankName ?? '',
   }
 }
 
@@ -210,6 +221,14 @@ export function isPersonnelFormDirty(form: PersonnelForm, snapshot: string): boo
 function emptyToNull(value: string): string | null {
   const trimmed = value.trim()
   return trimmed === '' ? null : trimmed
+}
+
+function isoOrNull(value: string): string | null {
+  return toIsoDate(value)
+}
+
+export function hasPaymentInput(form: PersonnelForm): boolean {
+  return form.paymentIban.trim() !== '' || form.paymentBankName.trim() !== ''
 }
 
 function emptyToNumber(value: string): number | null {
@@ -234,14 +253,14 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
     nationalIdentityNumber: emptyToNull(form.nationalIdentityNumber),
     nationality: emptyToNull(form.nationality),
     gender: form.gender === '' ? null : form.gender,
-    birthDate: emptyToNull(form.birthDate),
+    birthDate: isoOrNull(form.birthDate),
     birthPlace: emptyToNull(form.birthPlace),
     maritalStatus: form.maritalStatus === '' ? null : form.maritalStatus,
     bloodType: form.bloodType === '' ? null : form.bloodType,
     educationLevel: form.educationLevel === '' ? null : form.educationLevel,
     educationDescription: emptyToNull(form.educationDescription),
     schoolName: emptyToNull(form.schoolName),
-    graduationDate: emptyToNull(form.graduationDate),
+    graduationDate: isoOrNull(form.graduationDate),
     foreignLanguage: form.foreignLanguage === '' ? null : form.foreignLanguage,
     argeProjectCode: emptyToNull(form.argeProjectCode),
     drivingLicenceCategory: form.drivingLicenceCategory === '' ? null : form.drivingLicenceCategory,
@@ -263,7 +282,7 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
       id: item.id,
       name: item.name,
       relationship: item.relationship,
-      phone: item.phone,
+      phone: item.phone.trim() === '' ? '' : normalizeMobileDigits(item.phone),
       isPrimary: item.isPrimary,
     })),
     officialProfile: {
@@ -276,24 +295,25 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
     },
     workforceTerms: {
       contractType: form.contractType === '' ? null : form.contractType,
-      contractEndDate: form.contractType === 'FixedTerm' ? emptyToNull(form.contractEndDate) : null,
+      contractEndDate: form.contractType === 'FixedTerm' ? isoOrNull(form.contractEndDate) : null,
       partTimeMonthlyHours: form.contractType === 'PartTime' ? emptyToNumber(form.partTimeMonthlyHours) : null,
       iskurStatus: form.iskurStatus === '' ? null : form.iskurStatus,
-      incentiveStartDate: emptyToNull(form.incentiveStartDate),
-      incentiveEndDate: emptyToNull(form.incentiveEndDate),
+      incentiveStartDate: isoOrNull(form.incentiveStartDate),
+      incentiveEndDate: isoOrNull(form.incentiveEndDate),
       iskurWorkforceStatus: form.iskurWorkforceStatus === '' ? null : form.iskurWorkforceStatus,
-      workPermitStartDate: emptyToNull(form.workPermitStartDate),
-      workPermitEndDate: emptyToNull(form.workPermitEndDate),
+      workPermitStartDate: isoOrNull(form.workPermitStartDate),
+      workPermitEndDate: isoOrNull(form.workPermitEndDate),
     },
     besSettings: {
       deductionEnabled: form.besDeductionEnabled,
       ratePercent: form.besDeductionEnabled ? emptyToNumber(form.besRatePercent) : null,
       extraAmount: form.besDeductionEnabled ? emptyToNumber(form.besExtraAmount) : null,
     },
+    seniorityStartDate: isoOrNull(form.seniorityStartDate),
   }
 
   if (includeHireFields) {
-    body.employmentStartDate = form.employmentStartDate
+    body.employmentStartDate = isoOrNull(form.employmentStartDate) ?? form.employmentStartDate
     body.departmentId = form.departmentId
     body.positionId = form.positionId
   }

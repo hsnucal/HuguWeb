@@ -141,7 +141,8 @@ public static class HrEmployeeEndpoints
                 canWriteSensitive,
                 request.OfficialProfile.ToWriteModel(),
                 request.WorkforceTerms.ToWriteModel(),
-                request.BesSettings.ToWriteModel()),
+                request.BesSettings.ToWriteModel(),
+                request.SeniorityStartDate),
             cancellationToken);
         if (!hired.IsSuccess)
         {
@@ -180,7 +181,9 @@ public static class HrEmployeeEndpoints
                 request.OfficialProfile.ToWriteModel(),
                 request.WorkforceTerms.ToWriteModel(),
                 request.BesSettings.ToWriteModel(),
-                ToChangeContext(user, actorContext)),
+                ToChangeContext(user, actorContext),
+                request.SeniorityStartDate,
+                ApplySeniorityStartDate: true),
             cancellationToken);
         if (!updated.IsSuccess)
         {
@@ -338,7 +341,8 @@ public sealed record CreateHrEmployeeRequest(
     IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
     OfficialEmploymentRequest? OfficialProfile,
     EmploymentWorkforceRequest? WorkforceTerms,
-    EmploymentBesRequest? BesSettings);
+    EmploymentBesRequest? BesSettings,
+    DateOnly? SeniorityStartDate);
 
 public sealed record UpdateHrEmployeeRequest(
     string GivenName,
@@ -374,7 +378,8 @@ public sealed record UpdateHrEmployeeRequest(
     IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
     OfficialEmploymentRequest? OfficialProfile,
     EmploymentWorkforceRequest? WorkforceTerms,
-    EmploymentBesRequest? BesSettings);
+    EmploymentBesRequest? BesSettings,
+    DateOnly? SeniorityStartDate);
 
 public sealed record EmergencyContactRequest(
     Guid? Id,

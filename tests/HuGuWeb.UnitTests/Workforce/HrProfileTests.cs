@@ -327,7 +327,7 @@ public class HrProfileTests
             CancellationToken.None);
 
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         Assert.Single(harness.Store.Employees);
@@ -451,6 +451,35 @@ public class HrProfileTests
 
         Assert.Null(hidden.Value![0].NationalIdentityNumber);
         Assert.Equal("10000000146", shown.Value![0].NationalIdentityNumber);
+    }
+
+    [Fact]
+    public async Task Directory_WithZeroEmployees_SucceedsWithEmptyList()
+    {
+        var harness = new WorkforceHarness();
+
+        var result = await harness.HrDirectory.ExecuteAsync(canReadSensitive: true, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.NotNull(result.Value);
+        Assert.Empty(result.Value);
+    }
+
+    [Fact]
+    public async Task Directory_WithEmployees_StillReturnsItems()
+    {
+        var harness = new WorkforceHarness();
+        var hired = await harness.HireWithProfile.ExecuteAsync(
+            harness.HireWithProfileCommand(),
+            CancellationToken.None);
+
+        Assert.True(hired.IsSuccess, hired.Error?.Detail);
+        var result = await harness.HrDirectory.ExecuteAsync(canReadSensitive: true, CancellationToken.None);
+
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.NotNull(result.Value);
+        Assert.Single(result.Value);
+        Assert.Equal(hired.Value!.EmployeeId, result.Value[0].EmployeeId);
     }
 
     private static HrProfileWriteModel Profile(

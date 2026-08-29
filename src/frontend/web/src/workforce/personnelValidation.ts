@@ -1,7 +1,10 @@
 import type { PersonnelForm } from './personnelForm'
+import { toIsoDate } from '../ui/dateEntry'
+import { validatePaymentIban } from './paymentIban'
 import { MOBILE_DIGIT_MAX, normalizeMobileDigits } from './personnelInput'
+import { findTurkishProvince, isKnownProvinceDistrict } from './trProvinces'
 
-export type PersonnelTabId = 'general' | 'identity' | 'work' | 'official' | 'history'
+export type PersonnelTabId = 'general' | 'identity' | 'work' | 'official' | 'payment' | 'history'
 export type OfficialSectionId = 'declaration' | 'iskur' | 'bes' | 'social' | 'education'
 
 export const HrValidationCodes = {
@@ -54,6 +57,13 @@ export const HrValidationCodes = {
   besRateInvalid: 'bes-rate-invalid',
   besExtraInvalid: 'bes-extra-amount-invalid',
   kepInvalid: 'kep-invalid',
+  seniorityAfterStart: 'seniority-start-date-invalid',
+  contractEndBeforeStart: 'contract-end-date-before-start',
+  terminationReasonRequired: 'termination-reason-required',
+  dateInvalid: 'date-invalid',
+  districtNotInProvince: 'district-not-in-province',
+  paymentIbanRequired: 'payment-iban-required',
+  paymentIbanInvalid: 'payment-profile-invalid-iban',
 } as const
 
 const NAME_MAX = 100
@@ -180,6 +190,20 @@ export function validationMessageKey(code: string): string {
       return 'personnel.validation.besExtraInvalid'
     case HrValidationCodes.kepInvalid:
       return 'personnel.validation.kepInvalid'
+    case HrValidationCodes.seniorityAfterStart:
+      return 'personnel.validation.seniorityAfterStart'
+    case HrValidationCodes.contractEndBeforeStart:
+      return 'personnel.validation.contractEndBeforeStart'
+    case HrValidationCodes.terminationReasonRequired:
+      return 'personnel.validation.terminationReasonRequired'
+    case HrValidationCodes.dateInvalid:
+      return 'personnel.validation.dateInvalid'
+    case HrValidationCodes.districtNotInProvince:
+      return 'personnel.validation.districtNotInProvince'
+    case HrValidationCodes.paymentIbanRequired:
+      return 'personnel.validation.paymentIbanRequired'
+    case HrValidationCodes.paymentIbanInvalid:
+      return 'personnel.validation.paymentIbanInvalid'
     default:
       return 'personnel.errors.generic'
   }
@@ -217,9 +241,23 @@ export function validatePersonnelField(
     return value.length > PERSONNEL_NUMBER_MAX ? HrValidationCodes.personnelNumberTooLong : undefined
   }
   if (field === 'employmentStartDate') {
-    return context.createMode && form.employmentStartDate.trim() === ''
-      ? HrValidationCodes.startDateRequired
-      : undefined
+    return validateStoredDate(
+      form.employmentStartDate,
+      context.createMode,
+      HrValidationCodes.startDateRequired,
+    )
+  }
+  if (field === 'seniorityStartDate') {
+    const formatError = validateStoredDate(form.seniorityStartDate, false)
+    if (formatError) {
+      return formatError
+    }
+    const value = toIsoDate(form.seniorityStartDate)
+    if (value === null) {
+      return undefined
+    }
+    const start = toIsoDate(form.employmentStartDate)
+    return start !== null && value > start ? HrValidationCodes.seniorityAfterStart : undefined
   }
   if (field === 'departmentId') {
     return context.createMode && form.departmentId === '' ? HrValidationCodes.departmentRequired : undefined
@@ -240,6 +278,9 @@ export function validatePersonnelField(
   if (field === 'birthDate') {
     return validateBirthDate(form.birthDate, context.today)
   }
+  if (field === 'graduationDate') {
+    return validateStoredDate(form.graduationDate, false)
+  }
   if (field === 'birthPlace') {
     return optionalMax(form.birthPlace, PLACE_MAX)
   }
@@ -259,7 +300,28 @@ export function validatePersonnelField(
     return optionalMax(form.residenceCity, PLACE_MAX)
   }
   if (field === 'residenceDistrict') {
-    return optionalMax(form.residenceDistrict, PLACE_MAX)
+    const lengthError = optionalMax(form.residenceDistrict, PLACE_MAX)
+    if (lengthError) {
+      return lengthError
+    }
+    const city = form.residenceCity.trim()
+    const district = form.residenceDistrict.trim()
+    if (city === '' || district === '') {
+      return undefined
+    }
+    if (findTurkishProvince(city) && !isKnownProvinceDistrict(city, district)) {
+      return HrValidationCodes.districtNotInProvince
+    }
+    return undefined
+  }
+  if (field === 'paymentIban' || field === 'paymentBankName') {
+    const code = validatePaymentIban(form.paymentIban, form.paymentBankName)
+    if (!code) {
+      return undefined
+    }
+    return code === 'payment-iban-required'
+      ? HrValidationCodes.paymentIbanRequired
+      : HrValidationCodes.paymentIbanInvalid
   }
   if (field === 'hrNotes') {
     return optionalMax(form.hrNotes, NOTES_MAX)
@@ -272,9 +334,19 @@ export function validatePersonnelField(
     return /^\d{4}\.\d{2}$/.test(value) ? undefined : HrValidationCodes.invalidOccupation
   }
   if (field === 'contractEndDate') {
-    return form.contractType === 'FixedTerm' && form.contractEndDate.trim() === ''
-      ? HrValidationCodes.contractEndRequired
-      : undefined
+    if (form.contractType === 'FixedTerm' && form.contractEndDate.trim() === '') {
+      return HrValidationCodes.contractEndRequired
+    }
+    const formatError = validateStoredDate(form.contractEndDate, false)
+    if (formatError) {
+      return formatError
+    }
+    const start = toIsoDate(form.employmentStartDate)
+    const end = toIsoDate(form.contractEndDate)
+    if (form.contractType === 'FixedTerm' && start && end && end < start) {
+      return HrValidationCodes.contractEndBeforeStart
+    }
+    return undefined
   }
   if (field === 'partTimeMonthlyHours') {
     if (form.contractType !== 'PartTime') {
@@ -287,13 +359,31 @@ export function validatePersonnelField(
     return Number.isFinite(parsed) && parsed > 0 ? undefined : HrValidationCodes.partTimeHoursInvalid
   }
   if (field === 'incentiveStartDate' || field === 'incentiveEndDate') {
-    if (form.incentiveStartDate && form.incentiveEndDate && form.incentiveEndDate < form.incentiveStartDate) {
+    const formatError = validateStoredDate(
+      field === 'incentiveStartDate' ? form.incentiveStartDate : form.incentiveEndDate,
+      false,
+    )
+    if (formatError) {
+      return formatError
+    }
+    const start = toIsoDate(form.incentiveStartDate)
+    const end = toIsoDate(form.incentiveEndDate)
+    if (start && end && end < start) {
       return field === 'incentiveEndDate' ? HrValidationCodes.incentiveRangeInvalid : undefined
     }
     return undefined
   }
   if (field === 'workPermitStartDate' || field === 'workPermitEndDate') {
-    if (form.workPermitStartDate && form.workPermitEndDate && form.workPermitEndDate < form.workPermitStartDate) {
+    const formatError = validateStoredDate(
+      field === 'workPermitStartDate' ? form.workPermitStartDate : form.workPermitEndDate,
+      false,
+    )
+    if (formatError) {
+      return formatError
+    }
+    const start = toIsoDate(form.workPermitStartDate)
+    const end = toIsoDate(form.workPermitEndDate)
+    if (start && end && end < start) {
       return field === 'workPermitEndDate' ? HrValidationCodes.workPermitRangeInvalid : undefined
     }
     return undefined
@@ -360,7 +450,10 @@ export function validatePersonnelField(
     if (emergency[2] === 'relationship') {
       return optionalMax(contact.relationship, RELATIONSHIP_MAX)
     }
-    return validatePhone(contact.phone, true)
+    if (contact.phone.trim() === '') {
+      return HrValidationCodes.phoneRequired
+    }
+    return validateMobilePhone(contact.phone)
   }
 
   if (field === 'emergencyContacts') {
@@ -381,6 +474,31 @@ export function validatePersonnelForm(form: PersonnelForm, context: ValidationCo
     }
   }
   return errors
+}
+
+export function invalidPersonnelTabs(
+  errors: FieldErrors,
+  form: PersonnelForm,
+  createMode: boolean,
+): Set<PersonnelTabId> {
+  const tabs = new Set<PersonnelTabId>()
+  if (Object.keys(errors).length === 0) {
+    return tabs
+  }
+
+  for (const target of fieldTargets(form, createMode)) {
+    if (errors[target.field]) {
+      tabs.add(target.tab)
+    }
+  }
+
+  if (tabs.size === 0) {
+    for (const field of Object.keys(errors)) {
+      tabs.add(tabForField(field))
+    }
+  }
+
+  return tabs
 }
 
 export function firstInvalidTarget(
@@ -407,10 +525,7 @@ export function firstInvalidTarget(
 
 export function officialSectionForField(field: string): OfficialSectionId {
   if (
-    field === 'contractType'
-    || field === 'contractEndDate'
-    || field === 'partTimeMonthlyHours'
-    || field === 'iskurStatus'
+    field === 'iskurStatus'
     || field === 'incentiveStartDate'
     || field === 'incentiveEndDate'
     || field === 'iskurWorkforceStatus'
@@ -468,15 +583,24 @@ export function tabForField(field: string): PersonnelTabId {
   }
 
   if (
+    field === 'employmentStartDate'
+    || field === 'departmentId'
+    || field === 'positionId'
+    || field === 'seniorityStartDate'
+    || field === 'contractType'
+    || field === 'contractEndDate'
+    || field === 'partTimeMonthlyHours'
+  ) {
+    return 'work'
+  }
+
+  if (
     field === 'sgkWorkplaceRegistrationId'
     || field === 'documentTypeCode'
     || field === 'applicableLawCode'
     || field === 'insuranceBranchCode'
     || field === 'occupationCode'
     || field === 'dutyCode'
-    || field === 'contractType'
-    || field === 'contractEndDate'
-    || field === 'partTimeMonthlyHours'
     || field === 'iskurStatus'
     || field === 'incentiveStartDate'
     || field === 'incentiveEndDate'
@@ -500,6 +624,10 @@ export function tabForField(field: string): PersonnelTabId {
     return 'official'
   }
 
+  if (field === 'paymentIban' || field === 'paymentBankName') {
+    return 'payment'
+  }
+
   return 'general'
 }
 
@@ -518,9 +646,10 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     bloodType: 'hr-blood',
     mobilePhone: 'hr-mobile',
     email: 'hr-email',
-    employmentStartDate: 'hr-start',
-    departmentId: 'hr-department',
-    positionId: 'hr-position',
+    employmentStartDate: 'hr-work-start',
+    seniorityStartDate: 'hr-seniority-start',
+    departmentId: 'hr-work-department',
+    positionId: 'hr-work-position',
     hrNotes: 'hr-notes',
     nationalIdentityScheme: 'hr-scheme',
     nationalIdentityNumber: 'hr-id-number',
@@ -563,6 +692,8 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     graduationDate: 'hr-graduation',
     foreignLanguage: 'hr-foreign-language',
     argeProjectCode: 'hr-arge-code',
+    paymentIban: 'hr-payment-iban',
+    paymentBankName: 'hr-payment-bank',
   }
 
   return ids[field] ?? 'hr-given'
@@ -595,9 +726,9 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
 
   if (createMode) {
     general.push(
-      { field: 'employmentStartDate', tab: 'general', controlId: 'hr-start' },
-      { field: 'departmentId', tab: 'general', controlId: 'hr-department' },
-      { field: 'positionId', tab: 'general', controlId: 'hr-position' },
+      { field: 'employmentStartDate', tab: 'work', controlId: 'hr-work-start' },
+      { field: 'departmentId', tab: 'work', controlId: 'hr-work-department' },
+      { field: 'positionId', tab: 'work', controlId: 'hr-work-position' },
     )
   }
 
@@ -633,10 +764,14 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     { field: 'insuranceBranchCode', tab: 'official', controlId: 'hr-insurance-branch', officialSection: 'declaration' },
     { field: 'occupationCode', tab: 'official', controlId: 'hr-occupation', officialSection: 'declaration' },
     { field: 'dutyCode', tab: 'official', controlId: 'hr-duty-code', officialSection: 'declaration' },
-    { field: 'contractType', tab: 'official', controlId: 'hr-contract-type', officialSection: 'iskur' },
-    { field: 'contractEndDate', tab: 'official', controlId: 'hr-contract-end', officialSection: 'iskur' },
-    { field: 'partTimeMonthlyHours', tab: 'official', controlId: 'hr-part-time-hours', officialSection: 'iskur' },
+    { field: 'seniorityStartDate', tab: 'work', controlId: 'hr-seniority-start' },
+    { field: 'contractType', tab: 'work', controlId: 'hr-contract-type' },
+    { field: 'contractEndDate', tab: 'work', controlId: 'hr-contract-end' },
+    { field: 'partTimeMonthlyHours', tab: 'work', controlId: 'hr-part-time-hours' },
+    { field: 'iskurStatus', tab: 'official', controlId: 'hr-iskur-status', officialSection: 'iskur' },
     { field: 'incentiveStartDate', tab: 'official', controlId: 'hr-incentive-start', officialSection: 'iskur' },
+    { field: 'incentiveEndDate', tab: 'official', controlId: 'hr-incentive-end', officialSection: 'iskur' },
+    { field: 'iskurWorkforceStatus', tab: 'official', controlId: 'hr-iskur-workforce', officialSection: 'iskur' },
     { field: 'incentiveEndDate', tab: 'official', controlId: 'hr-incentive-end', officialSection: 'iskur' },
     { field: 'besRatePercent', tab: 'official', controlId: 'hr-bes-rate', officialSection: 'bes' },
     { field: 'besExtraAmount', tab: 'official', controlId: 'hr-bes-extra', officialSection: 'bes' },
@@ -647,7 +782,10 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     { field: 'workPermitEndDate', tab: 'official', controlId: 'hr-work-permit-end', officialSection: 'social' },
     { field: 'educationDescription', tab: 'official', controlId: 'hr-education-description', officialSection: 'education' },
     { field: 'schoolName', tab: 'official', controlId: 'hr-school', officialSection: 'education' },
+    { field: 'graduationDate', tab: 'official', controlId: 'hr-graduation', officialSection: 'education' },
     { field: 'argeProjectCode', tab: 'official', controlId: 'hr-arge-code', officialSection: 'education' },
+    { field: 'paymentIban', tab: 'payment', controlId: 'hr-payment-iban' },
+    { field: 'paymentBankName', tab: 'payment', controlId: 'hr-payment-bank' },
   ]
 }
 
@@ -712,20 +850,38 @@ function validateEmail(value: string): string | undefined {
   return undefined
 }
 
+function validateStoredDate(
+  value: string,
+  required: boolean,
+  requiredCode: string = HrValidationCodes.dateInvalid,
+): string | undefined {
+  const trimmed = value.trim()
+  if (trimmed === '') {
+    return required ? requiredCode : undefined
+  }
+  return toIsoDate(trimmed) ? undefined : HrValidationCodes.dateInvalid
+}
+
 function validateBirthDate(value: string, today: string): string | undefined {
-  if (value.trim() === '') {
+  const formatError = validateStoredDate(value, false)
+  if (formatError) {
+    return formatError
+  }
+  const iso = toIsoDate(value)
+  if (iso === null) {
     return undefined
   }
-  if (value > today) {
+  if (iso > today) {
     return HrValidationCodes.birthDateInvalid
   }
 
   const earliest = addYears(today, -120)
-  return value < earliest ? HrValidationCodes.birthDateInvalid : undefined
+  return iso < earliest ? HrValidationCodes.birthDateInvalid : undefined
 }
 
 function addYears(isoDate: string, years: number): string {
-  const [year, month, day] = isoDate.split('-').map(Number)
+  const iso = toIsoDate(isoDate) ?? isoDate
+  const [year, month, day] = iso.split('-').map(Number)
   const next = new Date(Date.UTC(year + years, (month ?? 1) - 1, day ?? 1))
   return next.toISOString().slice(0, 10)
 }

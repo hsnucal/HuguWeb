@@ -109,6 +109,8 @@ workforce: {
       positionNotAvailable: 'Seçilen pozisyon bu departmanda kullanılamaz.',
       generic: 'Personel işlemi tamamlanamadı.',
       invalidSgkWorkplace: 'SGK işyeri kaydı geçersiz.',
+      terminationReasonRequired: 'İşten ayrılış nedeni zorunludur.',
+      invalidTerminationReason: 'Geçerli bir işten ayrılış nedeni seçiniz.',
     },
   }
 }

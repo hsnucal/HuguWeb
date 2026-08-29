@@ -57,6 +57,13 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | [official-employment/](official-employment/README.md) | HR-03A Official Employment Data / Bildirge Kodları (**Accepted**) |
 | [HR-DOMAIN-003](official-employment/HR-DOMAIN-003-Official-Employment-Data.md) | Official employment decision record (**Accepted**) |
 
+**Planning extension (does not change HR-DOMAIN-001 / 002 / 003):**
+
+| Document | Purpose |
+|----------|---------|
+| [HR-04 Employment & Working Conditions](../../product/hr/HR-04-Employment-Working-Conditions.md) | Domain freeze **Accepted**. Implementation **Accepted** |
+| [HR product planning index](../../product/hr/README.md) | Slice-id map. Older Personel Master maps called this work HR-02 and called Documents HR-04; those Accepted texts are not rewritten |
+
 Related architecture (do not contradict):
 
 - [ADR-001](../../architecture/adr/ADR-001-Architecture-Style.md) — modular monolith; no premature modules in code

@@ -1,5 +1,6 @@
 using HuGuWeb.Api.Authorization;
 using HuGuWeb.Workforce.Application;
+using HuGuWeb.Workforce.Domain;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HuGuWeb.Api.Endpoints;
@@ -205,7 +206,9 @@ public static class WorkforceEndpoints
         EndEmploymentUseCase useCase,
         CancellationToken cancellationToken)
     {
-        var result = await useCase.ExecuteAsync(new EndEmploymentCommand(id, request.EndDate), cancellationToken);
+        var result = await useCase.ExecuteAsync(
+            new EndEmploymentCommand(id, request.EndDate, request.TerminationReason),
+            cancellationToken);
         return result.ToHttp();
     }
 
@@ -269,7 +272,7 @@ public sealed record HireEmployeeRequest(
 
 public sealed record TransferEmployeeRequest(Guid DepartmentId, Guid PositionId, DateOnly EffectiveDate);
 
-public sealed record EndEmploymentRequest(DateOnly EndDate);
+public sealed record EndEmploymentRequest(DateOnly EndDate, EmploymentTerminationReason TerminationReason);
 
 public sealed record CreateSgkWorkplaceRequest(string RegistrationNumber, string? DisplayName);
 

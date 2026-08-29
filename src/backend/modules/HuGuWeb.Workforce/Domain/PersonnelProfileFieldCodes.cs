@@ -22,4 +22,8 @@ public static class PersonnelProfileFieldCodes
     public const string PaymentBankName = "payment-bank-name";
     public const string Photo = "photo";
     public const string EmergencyContacts = "emergency-contacts";
+    public const string SeniorityStartDate = "seniority-start-date";
+    public const string ContractType = "contract-type";
+    public const string ContractEndDate = "contract-end-date";
+    public const string PartTimeMonthlyHours = "part-time-monthly-hours";
 }

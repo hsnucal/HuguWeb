@@ -59,8 +59,17 @@ export type EmploymentHistoryRecord = {
   startDate: string
   endDate: string | null
   status: 'Scheduled' | 'Active' | 'Ended'
+  seniorityStartDate: string | null
+  terminationReason: EmploymentTerminationReason | null
   primaryAssignments: AssignmentHistoryRecord[]
 }
+
+export type EmploymentTerminationReason =
+  | 'Resignation'
+  | 'EmployerTermination'
+  | 'ContractEnded'
+  | 'Retirement'
+  | 'Other'
 
 export type EmployeeHistory = {
   id: string
@@ -154,10 +163,14 @@ export async function transferEmployee(
   })
 }
 
-export async function endEmployment(employeeId: string, endDate: string) {
+export async function endEmployment(
+  employeeId: string,
+  endDate: string,
+  terminationReason: EmploymentTerminationReason,
+) {
   return apiRequest<unknown>(`/api/workforce/employees/${employeeId}/end-employment`, {
     method: 'POST',
-    body: JSON.stringify({ endDate }),
+    body: JSON.stringify({ endDate, terminationReason }),
   })
 }
 

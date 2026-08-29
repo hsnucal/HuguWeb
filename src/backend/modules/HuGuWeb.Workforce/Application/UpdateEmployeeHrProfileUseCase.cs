@@ -58,6 +58,23 @@ public sealed class UpdateEmployeeHrProfileUseCase(
             return employment.Error!;
         }
 
+        var employmentTermsBefore = PersonnelProfileChangeRecorder.CaptureEmployment(employment.Value);
+
+        if (command.ApplySeniorityStartDate)
+        {
+            if (!employment.Value.TryApplySeniorityStartDate(
+                    command.SeniorityStartDate,
+                    out var seniorityField,
+                    out var seniorityCode))
+            {
+                return WorkforceError.InvalidFields(
+                    seniorityCode ?? HrValidation.Codes.SeniorityStartDateInvalid,
+                    "Seniority start date is invalid.",
+                    seniorityField ?? HrValidation.Fields.SeniorityStartDate,
+                    seniorityCode ?? HrValidation.Codes.SeniorityStartDateInvalid);
+            }
+        }
+
         if (command.OfficialProfile is not null)
         {
             var official = await OfficialEmploymentComposer.ApplyAsync(
@@ -111,6 +128,9 @@ public sealed class UpdateEmployeeHrProfileUseCase(
                     snapshotBefore,
                     PersonnelProfileChangeRecorder.Capture(employee, profileAfter, paymentAfter)));
                 changes.AddRange(PersonnelProfileChangeRecorder.DiffEmergencyContacts(contactsBefore, contactsAfter));
+                changes.AddRange(PersonnelProfileChangeRecorder.DiffEmployment(
+                    employmentTermsBefore,
+                    PersonnelProfileChangeRecorder.CaptureEmployment(employment.Value)));
                 PersonnelProfileChangeRecorder.RecordDiff(
                     store,
                     command.EmployeeId,
@@ -144,4 +164,6 @@ public sealed record UpdateEmployeeHrProfileCommand(
     OfficialEmploymentWriteModel? OfficialProfile = null,
     EmploymentWorkforceWriteModel? WorkforceTerms = null,
     EmploymentBesWriteModel? BesSettings = null,
-    PersonnelChangeContext? ChangeContext = null);
+    PersonnelChangeContext? ChangeContext = null,
+    DateOnly? SeniorityStartDate = null,
+    bool ApplySeniorityStartDate = false);

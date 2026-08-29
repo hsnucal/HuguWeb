@@ -29,11 +29,24 @@ public sealed class EndEmploymentUseCase(
             return currentEmployment.Error!;
         }
 
-        if (!currentEmployment.Value!.TryEnd(command.EndDate, out var endError))
+        if (command.TerminationReason == default)
         {
-            return endError == "Employment is already ended."
-                ? WorkforceError.EmploymentEnded()
-                : WorkforceError.InvalidEmploymentPeriod();
+            return WorkforceError.TerminationReasonRequired();
+        }
+
+        if (!Enum.IsDefined(command.TerminationReason))
+        {
+            return WorkforceError.InvalidTerminationReason();
+        }
+
+        if (!currentEmployment.Value!.TryEnd(command.EndDate, command.TerminationReason, out var endError))
+        {
+            return endError switch
+            {
+                "Employment is already ended." => WorkforceError.EmploymentEnded(),
+                "Termination reason is invalid." => WorkforceError.InvalidTerminationReason(),
+                _ => WorkforceError.InvalidEmploymentPeriod()
+            };
         }
 
         var assignments = await store.ListAssignmentsAsync(currentEmployment.Value.Id, cancellationToken);
@@ -50,15 +63,20 @@ public sealed class EndEmploymentUseCase(
             currentEmployment.Value.Id,
             currentEmployment.Value.StartDate,
             currentEmployment.Value.EndDate!.Value,
-            currentEmployment.Value.Status);
+            currentEmployment.Value.Status,
+            currentEmployment.Value.TerminationReason);
     }
 }
 
-public sealed record EndEmploymentCommand(Guid EmployeeId, DateOnly EndDate);
+public sealed record EndEmploymentCommand(
+    Guid EmployeeId,
+    DateOnly EndDate,
+    EmploymentTerminationReason TerminationReason);
 
 public sealed record EndedEmployment(
     Guid EmployeeId,
     Guid EmploymentId,
     DateOnly StartDate,
     DateOnly EndDate,
-    EmploymentStatus Status);
+    EmploymentStatus Status,
+    EmploymentTerminationReason? TerminationReason);

@@ -109,6 +109,8 @@ workforce: {
       positionNotAvailable: 'Выбранная должность недоступна в этом отделе.',
       generic: 'Не удалось выполнить операцию с персоналом.',
       invalidSgkWorkplace: 'Регистрация рабочего места SGK недействительна.',
+      terminationReasonRequired: 'Укажите причину увольнения.',
+      invalidTerminationReason: 'Выберите допустимую причину увольнения.',
     },
   }
 }

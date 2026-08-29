@@ -173,10 +173,15 @@ export type Translations = {
       positionNotAvailable: string
       generic: string
       invalidSgkWorkplace: string
+      terminationReasonRequired: string
+      invalidTerminationReason: string
     }
   }
   personnel: {
     newPersonnel: string
+    addPersonnel: string
+    emptyTitle: string
+    emptyHint: string
     cardTitle: string
     cardTitleCreate: string
     close: string
@@ -207,11 +212,25 @@ export type Translations = {
     tabIdentity: string
     tabWork: string
     tabOfficial: string
+    tabPayment: string
     tabHistory: string
     sectionIdentity: string
     sectionContact: string
     sectionAddress: string
     sectionEmergency: string
+    sectionEmployment: string
+    sectionContract: string
+    sectionOrganization: string
+    sectionTermination: string
+    seniorityStartDate: string
+    seniorityHint: string
+    employmentEndDate: string
+    terminationReason: string
+    terminationResignation: string
+    terminationEmployerTermination: string
+    terminationContractEnded: string
+    terminationRetirement: string
+    terminationOther: string
     sectionDeclarationCodes: string
     sectionIskur: string
     sectionBes: string
@@ -315,6 +334,11 @@ export type Translations = {
     residenceAddress: string
     city: string
     district: string
+    selectProvince: string
+    selectDistrict: string
+    selectProvinceFirst: string
+    provinceEmpty: string
+    districtEmpty: string
     notificationAddress: string
     emergencyName: string
     emergencyRelationship: string
@@ -351,6 +375,7 @@ export type Translations = {
       occupationCode: string
       dutyCode: string
       contractType: string
+      terminationReason: string
       iskurStatus: string
       iskurWorkforceStatus: string
       drivingLicence: string
@@ -428,6 +453,8 @@ export type Translations = {
     importActionUpdate: string
     importResult: string
     paymentSection: string
+    paymentOptionalHint: string
+    paymentCreateFailed: string
     paymentIban: string
     paymentBankName: string
     savePayment: string
@@ -444,6 +471,10 @@ export type Translations = {
       'payment-iban': string
       'payment-bank-name': string
       photo: string
+      'seniority-start-date': string
+      'contract-type': string
+      'contract-end-date': string
+      'part-time-monthly-hours': string
     }
     errors: {
       nationalIdentityInUse: string
@@ -452,6 +483,7 @@ export type Translations = {
       invalidPhoto: string
       sensitiveWriteForbidden: string
       generic: string
+      listFailed: string
       fixFields: string
       sgkWorkplaceNotFound: string
       sgkWorkplaceInactive: string
@@ -505,6 +537,13 @@ export type Translations = {
       besRateInvalid: string
       besExtraInvalid: string
       kepInvalid: string
+      seniorityAfterStart: string
+      contractEndBeforeStart: string
+      terminationReasonRequired: string
+      dateInvalid: string
+      districtNotInProvince: string
+      paymentIbanRequired: string
+      paymentIbanInvalid: string
     }
   }
   roomOperations: {

@@ -28,7 +28,11 @@ public static class DevelopmentWorkforceSeeder
     {
         try
         {
-            if (!await dbContext.Organizations.AnyAsync(entity => entity.Id == OrganizationId, cancellationToken))
+            var workplaceAlreadyPresent = await dbContext.Organizations.AnyAsync(
+                entity => entity.Id == OrganizationId,
+                cancellationToken);
+
+            if (!workplaceAlreadyPresent)
             {
                 dbContext.Organizations.Add(new Organization(OrganizationId, "Demo Hotel Group"));
             }
@@ -54,7 +58,8 @@ public static class DevelopmentWorkforceSeeder
             await dbContext.SaveChangesAsync(cancellationToken);
             await RelabelDevelopmentWorkplaceAsync(dbContext, cancellationToken);
 
-            if (!await dbContext.Departments.AnyAsync(
+            if (!workplaceAlreadyPresent
+                && !await dbContext.Departments.AnyAsync(
                     entity => entity.PropertyId == PropertyId,
                     cancellationToken))
             {
@@ -91,9 +96,18 @@ public static class DevelopmentWorkforceSeeder
                 await EnsurePositionAsync(dbContext, "İK Uzmanı", "HR-OFF", cancellationToken);
             }
 
-            await TrySeedAntalyaStructureAsync(dbContext, logger, cancellationToken);
-            await TrySeedDevelopmentEmployeeAsync(dbContext, logger, cancellationToken);
-            await TrySeedPersonnelMasterDemoAsync(dbContext, logger, cancellationToken);
+            if (!workplaceAlreadyPresent)
+            {
+                await TrySeedAntalyaStructureAsync(dbContext, logger, cancellationToken);
+                await TrySeedDevelopmentEmployeeAsync(dbContext, logger, cancellationToken);
+                await TrySeedPersonnelMasterDemoAsync(dbContext, logger, cancellationToken);
+            }
+            else
+            {
+                logger.LogInformation(
+                    "Skipping development department and personnel seed because the workplace already exists.");
+            }
+
             await TrySeedPersonnelNumberSequenceAsync(dbContext, cancellationToken);
             await TrySeedPositionApplicabilityAsync(dbContext, logger, cancellationToken);
             await TrySeedOfficialEmploymentLookupsAsync(dbContext, logger, cancellationToken);
@@ -501,7 +515,7 @@ public static class DevelopmentWorkforceSeeder
         var assignment = Assignment.StartPrimary(Guid.CreateVersion7(), employment.Id, departmentId, positionId, startDate);
         if (endedOn is not null)
         {
-            if (!employment.TryEnd(endedOn.Value, out var endError))
+            if (!employment.TryEnd(endedOn.Value, EmploymentTerminationReason.Resignation, out var endError))
             {
                 throw new InvalidOperationException($"Ended employment seed is invalid: {endError}");
             }

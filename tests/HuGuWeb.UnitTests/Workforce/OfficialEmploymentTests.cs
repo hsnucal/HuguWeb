@@ -219,7 +219,7 @@ public class OfficialEmploymentTests
 
         var firstEmploymentId = hired.Value.EmploymentId;
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         var rehire = Employment.Open(
@@ -261,7 +261,7 @@ public class OfficialEmploymentTests
             CancellationToken.None)).IsSuccess);
 
         Assert.True((await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today),
+            new EndEmploymentCommand(hired.Value.EmployeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None)).IsSuccess);
 
         var card = await harness.HrCard.ExecuteAsync(hired.Value.EmployeeId, true, CancellationToken.None);

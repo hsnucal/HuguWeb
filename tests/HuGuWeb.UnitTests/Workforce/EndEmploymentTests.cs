@@ -16,7 +16,7 @@ public class EndEmploymentTests
         var assignmentId = hired.Value.AssignmentId;
 
         var result = await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(employeeId, harness.Clock.Today),
+            new EndEmploymentCommand(employeeId, harness.Clock.Today, EmploymentTerminationReason.Resignation),
             CancellationToken.None);
 
         Assert.True(result.IsSuccess, result.Error?.Detail);
@@ -46,7 +46,7 @@ public class EndEmploymentTests
             CancellationToken.None);
 
         var result = await harness.EndEmployment.ExecuteAsync(
-            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today.AddDays(-1)),
+            new EndEmploymentCommand(hired.Value!.EmployeeId, harness.Clock.Today.AddDays(-1), EmploymentTerminationReason.Resignation),
             CancellationToken.None);
 
         Assert.False(result.IsSuccess);
