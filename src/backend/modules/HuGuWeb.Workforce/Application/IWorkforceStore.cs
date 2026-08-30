@@ -144,6 +144,35 @@ public interface IWorkforceStore
     void AddLeaveEntitlement(LeaveEntitlement entitlement);
     void AddLeaveRecord(LeaveRecord record);
 
+    Task<Assignment?> GetAssignmentAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<IReadOnlyList<ShiftDefinition>> ListShiftDefinitionsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken);
+    Task<ShiftDefinition?> GetShiftDefinitionAsync(Guid id, CancellationToken cancellationToken);
+    Task<ShiftDefinition?> FindShiftDefinitionByCodeAsync(
+        Guid propertyId,
+        string normalizedCode,
+        CancellationToken cancellationToken);
+    Task<bool> ShiftDefinitionHasUsageAsync(Guid shiftDefinitionId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Guid>> ListShiftDefinitionIdsWithUsageAsync(
+        IReadOnlyCollection<Guid> shiftDefinitionIds,
+        CancellationToken cancellationToken);
+    void AddShiftDefinition(ShiftDefinition definition);
+
+    Task<ScheduleEntry?> GetScheduleEntryAsync(
+        Guid employmentId,
+        DateOnly scheduleDate,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<ScheduleEntry>> ListScheduleEntriesAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken);
+    void AddScheduleEntry(ScheduleEntry entry);
+    void RemoveScheduleEntry(ScheduleEntry entry);
+    void AddScheduleEntryChange(ScheduleEntryChange change);
+
     Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);

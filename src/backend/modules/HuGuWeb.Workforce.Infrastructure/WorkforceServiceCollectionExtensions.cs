@@ -55,6 +55,14 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<RecordLeaveEntitlementUseCase>();
         services.AddScoped<RecordLeaveUseCase>();
         services.AddScoped<CancelLeaveRecordUseCase>();
+        services.AddScoped<ShiftDefinitionAdminUseCase>();
+        services.AddScoped<UpsertScheduleEntryUseCase>();
+        services.AddScoped<ClearScheduleEntryUseCase>();
+        services.AddScoped<GetScheduleStateQuery>();
+        services.AddScoped<GetScheduleRangeQuery>();
+        services.AddScoped<GetScheduleWeekQuery>();
+        services.AddScoped<BulkScheduleUseCase>();
+        services.AddScoped<CopyScheduleWeekUseCase>();
         return services;
     }
 }

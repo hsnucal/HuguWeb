@@ -349,4 +349,120 @@ public sealed record WorkforceError(
             LeaveValidation.Codes.LeaveAlreadyCancelled,
             "Leave record is already cancelled.",
             "A cancelled leave record cannot be cancelled again.");
+
+    public static WorkforceError ShiftDefinitionNotFound() =>
+        NotFound(ScheduleValidation.Codes.ShiftDefinitionNotFound, "The shift definition was not found.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [ScheduleValidation.Fields.ShiftDefinitionId] = [ScheduleValidation.Codes.ShiftDefinitionNotFound]
+            }
+        };
+
+    public static WorkforceError ShiftDefinitionCodeExists() =>
+        Conflict(
+            ScheduleValidation.Codes.ShiftDefinitionCodeExists,
+            "Shift definition code is already in use.",
+            "This shift definition code already exists for the property, including inactive definitions.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [ScheduleValidation.Fields.Code] = [ScheduleValidation.Codes.ShiftDefinitionCodeExists]
+            }
+        };
+
+    public static WorkforceError ShiftDefinitionInactive() =>
+        InvalidFields(
+            ScheduleValidation.Codes.ShiftDefinitionInactive,
+            "An inactive shift definition cannot be newly assigned.",
+            ScheduleValidation.Fields.ShiftDefinitionId,
+            ScheduleValidation.Codes.ShiftDefinitionInactive);
+
+    public static WorkforceError ScheduleValidationField(string field, string code, string detail) =>
+        InvalidFields(code, detail, field, code);
+
+    public static WorkforceError ScheduleEmploymentNotCoveringDate() =>
+        InvalidFields(
+            ScheduleValidation.Codes.ScheduleEmploymentNotCoveringDate,
+            "No employment covers the requested schedule date.",
+            ScheduleValidation.Fields.ScheduleDate,
+            ScheduleValidation.Codes.ScheduleEmploymentNotCoveringDate);
+
+    public static WorkforceError ScheduleAssignmentNotFound() =>
+        InvalidFields(
+            ScheduleValidation.Codes.ScheduleAssignmentNotFound,
+            "No primary assignment covers the requested schedule date.",
+            ScheduleValidation.Fields.ScheduleDate,
+            ScheduleValidation.Codes.ScheduleAssignmentNotFound);
+
+    public static WorkforceError ScheduleCrossPropertyShift() =>
+        InvalidFields(
+            ScheduleValidation.Codes.ScheduleCrossPropertyShift,
+            "The shift definition belongs to a different property than the assignment on this date.",
+            ScheduleValidation.Fields.ShiftDefinitionId,
+            ScheduleValidation.Codes.ScheduleCrossPropertyShift);
+
+    public static WorkforceError SchedulePropertyAccessDenied() =>
+        Forbidden(
+            ScheduleValidation.Codes.SchedulePropertyAccessDenied,
+            "This schedule date belongs to a property outside the current workplace scope.");
+
+    public static WorkforceError ScheduleEntryConflict() =>
+        Conflict(
+            ScheduleValidation.Codes.ScheduleEntryConflict,
+            "Schedule entry conflict.",
+            "An authoritative schedule entry already exists for this employment and date.");
+
+    public static WorkforceError ScheduleBulkOperationFailed(
+        int operationIndex,
+        Guid employeeId,
+        DateOnly scheduleDate,
+        WorkforceError inner) =>
+        new(
+            ScheduleValidation.Codes.ScheduleBulkFailed,
+            "Bulk schedule operation failed.",
+            $"Operation {operationIndex} for employee {employeeId:D} on {scheduleDate:yyyy-MM-dd} failed: {inner.Detail}",
+            inner.StatusCode,
+            MergeBulkErrors(operationIndex, employeeId, scheduleDate, inner.Errors, inner.Code));
+
+    public static WorkforceError ScheduleCopyWeekBlocked(CopyScheduleWeekPreviewDto preview) =>
+        InvalidRequest(
+            ScheduleValidation.Codes.ScheduleCopyWeekBlocked,
+            $"{preview.InvalidCount} target operation(s) cannot be applied. Copy was not started.") with
+        {
+            Errors = new Dictionary<string, string[]>
+            {
+                [ScheduleValidation.Fields.Operations] =
+                [
+                    .. preview.Invalid.Select(item =>
+                        $"{item.EmployeeId:D}|{item.TargetDate:yyyy-MM-dd}|{item.Code}")
+                ]
+            }
+        };
+
+    private static IReadOnlyDictionary<string, string[]> MergeBulkErrors(
+        int operationIndex,
+        Guid employeeId,
+        DateOnly scheduleDate,
+        IReadOnlyDictionary<string, string[]>? innerErrors,
+        string innerCode)
+    {
+        var errors = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["operationIndex"] = [operationIndex.ToString()],
+            ["employeeId"] = [employeeId.ToString("D")],
+            [ScheduleValidation.Fields.ScheduleDate] = [scheduleDate.ToString("yyyy-MM-dd")],
+            ["reason"] = [innerCode]
+        };
+
+        if (innerErrors is not null)
+        {
+            foreach (var (key, values) in innerErrors)
+            {
+                errors[key] = values.ToArray();
+            }
+        }
+
+        return errors;
+    }
 }

@@ -19,9 +19,11 @@ import {
   listAuthorizationRoles,
   listAuthorizationUsers,
   removeRole,
+  replaceMembershipDepartmentScopes,
   setMembershipActive,
 } from './authorizationApi'
 import { permissionLabel } from './permissionLabel'
+import { listDepartments, type DepartmentRecord } from '../workforce/workforceApi'
 
 export function UsersPage() {
   const { t } = useTranslation()
@@ -149,6 +151,7 @@ export function UsersPage() {
               </Button>
               {openId === row.id && membership ? (
                 <UserMembershipEditor
+                  key={`${membership.id}:${(membership.departmentIds ?? []).join(',')}`}
                   user={row}
                   membershipId={membership.id}
                   roles={roles}
@@ -180,9 +183,43 @@ function UserMembershipEditor({
   const { t } = useTranslation()
   const membership = user.memberships.find((item) => item.id === membershipId)
   const [roleId, setRoleId] = useState(roles[0]?.id ?? '')
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([])
+  const [scopeMode, setScopeMode] = useState<'property' | 'selected'>(
+    (membership?.departmentIds.length ?? 0) > 0 ? 'selected' : 'property',
+  )
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>(
+    membership?.departmentIds ?? [],
+  )
+
+  useEffect(() => {
+    if (!membership?.propertyId) {
+      return
+    }
+    let cancelled = false
+    void listDepartments()
+      .then((rows) => {
+        if (!cancelled) {
+          setDepartments(rows.filter((item) => item.propertyId === membership.propertyId && item.isActive))
+        }
+      })
+      .catch((reason) => {
+        if (!cancelled) {
+          onError(t(authorizationErrorKey(reason)))
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [membership?.propertyId, onError, t])
 
   if (!membership) {
     return null
+  }
+
+  function toggleDepartment(id: string) {
+    setSelectedDepartmentIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    )
   }
 
   return (
@@ -244,6 +281,68 @@ function UserMembershipEditor({
           )
         })}
       </ul>
+      {membership.propertyId ? (
+        <fieldset className={styles.choiceSet}>
+          <legend className={styles.choiceLegend}>{t('authorization.departmentScopes')}</legend>
+          <div className={styles.choiceList}>
+            <label className={styles.choiceOption} htmlFor={`dept-scope-property-${membership.id}`}>
+              <input
+                id={`dept-scope-property-${membership.id}`}
+                type="radio"
+                name={`dept-scope-${membership.id}`}
+                checked={scopeMode === 'property'}
+                onChange={() => {
+                  setScopeMode('property')
+                  setSelectedDepartmentIds([])
+                }}
+              />
+              {t('authorization.propertyWideAccess')}
+            </label>
+            <label className={styles.choiceOption} htmlFor={`dept-scope-selected-${membership.id}`}>
+              <input
+                id={`dept-scope-selected-${membership.id}`}
+                type="radio"
+                name={`dept-scope-${membership.id}`}
+                checked={scopeMode === 'selected'}
+                onChange={() => setScopeMode('selected')}
+              />
+              {t('authorization.selectedDepartments')}
+            </label>
+          </div>
+          {scopeMode === 'selected' ? (
+            <div className={styles.choiceList}>
+              {departments.map((item) => (
+                <label
+                  key={item.id}
+                  className={styles.choiceOption}
+                  htmlFor={`dept-scope-item-${membership.id}-${item.id}`}
+                >
+                  <input
+                    id={`dept-scope-item-${membership.id}-${item.id}`}
+                    type="checkbox"
+                    checked={selectedDepartmentIds.includes(item.id)}
+                    onChange={() => toggleDepartment(item.id)}
+                  />
+                  {item.name}
+                </label>
+              ))}
+            </div>
+          ) : null}
+          <div className={styles.formFooter}>
+            <Button
+              layout="inline"
+              onClick={() => {
+                const departmentIds = scopeMode === 'property' ? [] : selectedDepartmentIds
+                void replaceMembershipDepartmentScopes(membershipId, departmentIds)
+                  .then(onChanged)
+                  .catch((reason) => onError(t(authorizationErrorKey(reason))))
+              }}
+            >
+              {t('authorization.saveDepartmentScopes')}
+            </Button>
+          </div>
+        </fieldset>
+      ) : null}
     </div>
   )
 }

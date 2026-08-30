@@ -23,6 +23,8 @@ public interface IAuthorizationStore
     Task<IReadOnlyList<string>> ListUserIdsForRoleAsync(Guid roleId, CancellationToken cancellationToken);
 
     void AddMembership(UserMembership membership);
+    void AddDepartmentScope(UserMembershipDepartmentScope scope);
+    void RemoveDepartmentScope(UserMembershipDepartmentScope scope);
     void AddRole(AuthorizationRole role);
     void AddPermission(RolePermission permission);
     void RemovePermission(RolePermission permission);
@@ -41,17 +43,20 @@ public sealed class EfAuthorizationStore(AppIdentityDbContext dbContext) : IAuth
         CancellationToken cancellationToken) =>
         await dbContext.UserMemberships
             .Include(item => item.RoleAssignments)
+            .Include(item => item.DepartmentScopes)
             .Where(item => item.UserId == userId)
             .ToListAsync(cancellationToken);
 
     public Task<UserMembership?> GetMembershipAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.UserMemberships
             .Include(item => item.RoleAssignments)
+            .Include(item => item.DepartmentScopes)
             .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<UserMembership>> ListMembershipsAsync(CancellationToken cancellationToken) =>
         await dbContext.UserMemberships
             .Include(item => item.RoleAssignments)
+            .Include(item => item.DepartmentScopes)
             .ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<UserMembership>> ListMembershipsForOrganizationAsync(
@@ -59,6 +64,7 @@ public sealed class EfAuthorizationStore(AppIdentityDbContext dbContext) : IAuth
         CancellationToken cancellationToken) =>
         await dbContext.UserMemberships
             .Include(item => item.RoleAssignments)
+            .Include(item => item.DepartmentScopes)
             .Where(item => item.OrganizationId == organizationId)
             .ToListAsync(cancellationToken);
 
@@ -120,6 +126,12 @@ public sealed class EfAuthorizationStore(AppIdentityDbContext dbContext) : IAuth
             .ToListAsync(cancellationToken);
 
     public void AddMembership(UserMembership membership) => dbContext.UserMemberships.Add(membership);
+
+    public void AddDepartmentScope(UserMembershipDepartmentScope scope) =>
+        dbContext.UserMembershipDepartmentScopes.Add(scope);
+
+    public void RemoveDepartmentScope(UserMembershipDepartmentScope scope) =>
+        dbContext.UserMembershipDepartmentScopes.Remove(scope);
 
     public void AddRole(AuthorizationRole role) => dbContext.AuthorizationRoles.Add(role);
 

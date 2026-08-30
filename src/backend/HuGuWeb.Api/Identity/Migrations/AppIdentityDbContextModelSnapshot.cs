@@ -33,15 +33,15 @@ namespace HuGuWeb.Api.Identity.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<string>("ActorUserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<Guid?>("ActorOrganizationId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("ActorPropertyId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ActorUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("Details")
                         .HasMaxLength(2000)
@@ -200,6 +200,33 @@ namespace HuGuWeb.Api.Identity.Migrations
                         .HasFilter("\"PropertyId\" IS NOT NULL");
 
                     b.ToTable("UserMemberships", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Api.Authorization.UserMembershipDepartmentScope", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserMembershipId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("IX_UserMembershipDepartmentScopes_DepartmentId");
+
+                    b.HasIndex("UserMembershipId", "DepartmentId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserMembershipDepartmentScopes_Membership_Department");
+
+                    b.ToTable("UserMembershipDepartmentScopes", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Api.Authorization.UserRoleAssignment", b =>
@@ -436,6 +463,17 @@ namespace HuGuWeb.Api.Identity.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("HuGuWeb.Api.Authorization.UserMembershipDepartmentScope", b =>
+                {
+                    b.HasOne("HuGuWeb.Api.Authorization.UserMembership", "Membership")
+                        .WithMany("DepartmentScopes")
+                        .HasForeignKey("UserMembershipId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Membership");
+                });
+
             modelBuilder.Entity("HuGuWeb.Api.Authorization.UserRoleAssignment", b =>
                 {
                     b.HasOne("HuGuWeb.Api.Authorization.UserMembership", "Membership")
@@ -515,6 +553,8 @@ namespace HuGuWeb.Api.Identity.Migrations
 
             modelBuilder.Entity("HuGuWeb.Api.Authorization.UserMembership", b =>
                 {
+                    b.Navigation("DepartmentScopes");
+
                     b.Navigation("RoleAssignments");
                 });
 #pragma warning restore 612, 618

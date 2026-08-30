@@ -20,6 +20,7 @@ public static class AuthorizationAuditActions
     public const string MembershipCreated = "membership-created";
     public const string MembershipDeactivated = "membership-deactivated";
     public const string MembershipActivated = "membership-activated";
+    public const string MembershipDepartmentScopesChanged = "membership-department-scopes-changed";
     public const string RoleAssigned = "role-assigned";
     public const string RoleRemoved = "role-removed";
     public const string RolePermissionChanged = "role-permission-changed";

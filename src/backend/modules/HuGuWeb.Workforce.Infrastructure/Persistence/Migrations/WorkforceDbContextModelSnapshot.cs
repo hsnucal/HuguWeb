@@ -1027,6 +1027,110 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("Properties", (string)null);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ScheduleEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateOnly>("ScheduleDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("ShiftDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("ShiftDefinitionId");
+
+                    b.HasIndex("EmploymentId", "ScheduleDate")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ScheduleEntries_EmploymentId_ScheduleDate");
+
+                    b.ToTable("ScheduleEntries", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ScheduleEntries_KindShiftDefinition", "(\"Kind\" = 1 AND \"ShiftDefinitionId\" IS NOT NULL) OR (\"Kind\" = 2 AND \"ShiftDefinitionId\" IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ScheduleEntryChange", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ChangedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("NewKind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("NewShiftDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int?>("PreviousKind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("PreviousShiftDefinitionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("ScheduleDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("ScheduleEntryId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NewShiftDefinitionId");
+
+                    b.HasIndex("PreviousShiftDefinitionId");
+
+                    b.HasIndex("EmploymentId", "ScheduleDate", "ChangedAtUtc")
+                        .HasDatabaseName("IX_ScheduleEntryChanges_EmploymentId_ScheduleDate_ChangedAtUtc");
+
+                    b.ToTable("ScheduleEntryChanges", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkDocumentType", b =>
                 {
                     b.Property<string>("Code")
@@ -1118,6 +1222,70 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasIndex("PropertyId", "IsActive");
 
                     b.ToTable("SgkWorkplaceRegistrations", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ShiftDefinition", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("BreakMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<TimeOnly>("EndLocalTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("EndsNextDay")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly>("StartLocalTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ShiftDefinitions_PropertyId_Code");
+
+                    b.HasIndex("PropertyId", "IsActive");
+
+                    b.ToTable("ShiftDefinitions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ShiftDefinitions_BreakMinutes", "\"BreakMinutes\" >= 0");
+                        });
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Assignment", b =>
@@ -1375,7 +1543,45 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ScheduleEntry", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Assignment", null)
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.ShiftDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("ShiftDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ScheduleEntryChange", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.SgkWorkplaceRegistration", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Property", null)
+                        .WithMany()
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.ShiftDefinition", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Property", null)
                         .WithMany()

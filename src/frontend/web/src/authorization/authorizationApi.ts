@@ -9,6 +9,7 @@ export type MembershipSummary = {
   isActive: boolean
   scopeType: string
   roleIds: string[]
+  departmentIds: string[]
 }
 
 export type AuthorizationUser = {
@@ -75,6 +76,16 @@ export function removeRole(membershipId: string, roleId: string) {
   return apiRequest<void>(`/api/authorization/users/memberships/${membershipId}/roles/${roleId}`, {
     method: 'DELETE',
   })
+}
+
+export function replaceMembershipDepartmentScopes(membershipId: string, departmentIds: string[]) {
+  return apiRequest<MembershipSummary>(
+    `/api/authorization/users/memberships/${membershipId}/department-scopes`,
+    {
+      method: 'PUT',
+      body: JSON.stringify({ departmentIds }),
+    },
+  )
 }
 
 export function listAuthorizationRoles() {

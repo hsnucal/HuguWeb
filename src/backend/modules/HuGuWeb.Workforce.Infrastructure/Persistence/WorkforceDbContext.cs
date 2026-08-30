@@ -10,6 +10,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public const string NationalIdentityIndexName =
         "IX_EmployeeHrProfiles_OrganizationId_Scheme_NormalizedNumber";
     public const string LeaveTypeCodeIndexName = "IX_LeaveTypes_OrganizationId_Code";
+    public const string ShiftDefinitionCodeIndexName = "IX_ShiftDefinitions_PropertyId_Code";
+    public const string ScheduleEntryUniqueIndexName = "IX_ScheduleEntries_EmploymentId_ScheduleDate";
+    public const string ScheduleEntryChangeIndexName = "IX_ScheduleEntryChanges_EmploymentId_ScheduleDate_ChangedAtUtc";
 
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Property> Properties => Set<Property>();
@@ -38,6 +41,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
     public DbSet<LeaveEntitlement> LeaveEntitlements => Set<LeaveEntitlement>();
     public DbSet<LeaveRecord> LeaveRecords => Set<LeaveRecord>();
+    public DbSet<ShiftDefinition> ShiftDefinitions => Set<ShiftDefinition>();
+    public DbSet<ScheduleEntry> ScheduleEntries => Set<ScheduleEntry>();
+    public DbSet<ScheduleEntryChange> ScheduleEntryChanges => Set<ScheduleEntryChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +73,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new LeaveTypeConfiguration());
         modelBuilder.ApplyConfiguration(new LeaveEntitlementConfiguration());
         modelBuilder.ApplyConfiguration(new LeaveRecordConfiguration());
+        modelBuilder.ApplyConfiguration(new ShiftDefinitionConfiguration());
+        modelBuilder.ApplyConfiguration(new ScheduleEntryConfiguration());
+        modelBuilder.ApplyConfiguration(new ScheduleEntryChangeConfiguration());
     }
 }
 
@@ -692,5 +701,97 @@ file sealed class LeaveRecordConfiguration : IEntityTypeConfiguration<LeaveRecor
         builder.HasIndex(entity => new { entity.EmploymentId, entity.Status, entity.StartDate, entity.EndDate });
         builder.HasIndex(entity => new { entity.EmploymentId, entity.LeaveTypeId });
         builder.HasIndex(entity => entity.LeaveTypeId);
+    }
+}
+
+file sealed class ShiftDefinitionConfiguration : IEntityTypeConfiguration<ShiftDefinition>
+{
+    public void Configure(EntityTypeBuilder<ShiftDefinition> builder)
+    {
+        builder.ToTable("ShiftDefinitions", table =>
+        {
+            table.HasCheckConstraint("CK_ShiftDefinitions_BreakMinutes", "\"BreakMinutes\" >= 0");
+        });
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Code).HasMaxLength(ShiftDefinition.CodeMaxLength).IsRequired();
+        builder.Property(entity => entity.Name).HasMaxLength(ShiftDefinition.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.StartLocalTime).HasColumnType("time").IsRequired();
+        builder.Property(entity => entity.EndLocalTime).HasColumnType("time").IsRequired();
+        builder.Property(entity => entity.EndsNextDay).IsRequired();
+        builder.Property(entity => entity.BreakMinutes).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(ShiftDefinition.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedByUserId).HasMaxLength(ShiftDefinition.UserIdMaxLength).IsRequired();
+        builder.HasOne<Property>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PropertyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.PropertyId, entity.Code })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.ShiftDefinitionCodeIndexName);
+        builder.HasIndex(entity => new { entity.PropertyId, entity.IsActive });
+    }
+}
+
+file sealed class ScheduleEntryConfiguration : IEntityTypeConfiguration<ScheduleEntry>
+{
+    public void Configure(EntityTypeBuilder<ScheduleEntry> builder)
+    {
+        builder.ToTable("ScheduleEntries", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_ScheduleEntries_KindShiftDefinition",
+                "(\"Kind\" = 1 AND \"ShiftDefinitionId\" IS NOT NULL) OR (\"Kind\" = 2 AND \"ShiftDefinitionId\" IS NULL)");
+        });
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.ScheduleDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.Kind).HasConversion<int>().IsRequired();
+        builder.Property(entity => entity.Note).HasMaxLength(ScheduleEntry.NoteMaxLength);
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(ScheduleEntry.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedByUserId).HasMaxLength(ScheduleEntry.UserIdMaxLength).IsRequired();
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Assignment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.AssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<ShiftDefinition>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ShiftDefinitionId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.ScheduleDate })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.ScheduleEntryUniqueIndexName);
+        builder.HasIndex(entity => entity.AssignmentId);
+        builder.HasIndex(entity => entity.ShiftDefinitionId);
+    }
+}
+
+file sealed class ScheduleEntryChangeConfiguration : IEntityTypeConfiguration<ScheduleEntryChange>
+{
+    public void Configure(EntityTypeBuilder<ScheduleEntryChange> builder)
+    {
+        builder.ToTable("ScheduleEntryChanges");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.ScheduleDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.PreviousKind).HasConversion<int>();
+        builder.Property(entity => entity.NewKind).HasConversion<int>();
+        builder.Property(entity => entity.ChangedAtUtc).IsRequired();
+        builder.Property(entity => entity.ChangedByUserId).HasMaxLength(ScheduleEntryChange.UserIdMaxLength).IsRequired();
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.ScheduleDate, entity.ChangedAtUtc })
+            .HasDatabaseName(WorkforceDbContext.ScheduleEntryChangeIndexName);
+        builder.HasIndex(entity => entity.PreviousShiftDefinitionId);
+        builder.HasIndex(entity => entity.NewShiftDefinitionId);
     }
 }

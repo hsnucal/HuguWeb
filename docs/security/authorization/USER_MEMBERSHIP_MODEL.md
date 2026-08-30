@@ -9,10 +9,13 @@ A membership means: **this user may operate inside this organization, and option
 ```text
 ApplicationUser
   └── UserMembership* (OrganizationId, PropertyId?, IsActive)
-        └── UserRoleAssignment* (RoleId)
+        ├── UserRoleAssignment* (RoleId)
+        └── UserMembershipDepartmentScope* (DepartmentId)  // AUTH-02 — see DEPARTMENT_MEMBERSHIP_SCOPE.md
 ```
 
 A user may belong to multiple properties, and later multiple organizations. `ApplicationUser` itself has no `PropertyId`.
+
+Property memberships may optionally carry **DepartmentScopes** (zero rows = property-wide). This is not `AuthorizationScopeType.Department`. Details: [DEPARTMENT_MEMBERSHIP_SCOPE.md](DEPARTMENT_MEMBERSHIP_SCOPE.md).
 
 ## Shape
 

@@ -8,6 +8,7 @@ public sealed class AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> 
     : IdentityDbContext<ApplicationUser>(options)
 {
     public DbSet<UserMembership> UserMemberships => Set<UserMembership>();
+    public DbSet<UserMembershipDepartmentScope> UserMembershipDepartmentScopes => Set<UserMembershipDepartmentScope>();
     public DbSet<AuthorizationRole> AuthorizationRoles => Set<AuthorizationRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<UserRoleAssignment> UserRoleAssignments => Set<UserRoleAssignment>();
@@ -46,6 +47,22 @@ public sealed class AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> 
                 .WithOne(item => item.Membership)
                 .HasForeignKey(item => item.MembershipId)
                 .OnDelete(DeleteBehavior.Restrict);
+            entity.HasMany(item => item.DepartmentScopes)
+                .WithOne(item => item.Membership)
+                .HasForeignKey(item => item.UserMembershipId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<UserMembershipDepartmentScope>(entity =>
+        {
+            entity.ToTable("UserMembershipDepartmentScopes");
+            entity.HasKey(item => item.Id);
+            entity.Property(item => item.CreatedAtUtc).IsRequired();
+            entity.HasIndex(item => new { item.UserMembershipId, item.DepartmentId })
+                .IsUnique()
+                .HasDatabaseName("IX_UserMembershipDepartmentScopes_Membership_Department");
+            entity.HasIndex(item => item.DepartmentId)
+                .HasDatabaseName("IX_UserMembershipDepartmentScopes_DepartmentId");
         });
 
         builder.Entity<AuthorizationRole>(entity =>

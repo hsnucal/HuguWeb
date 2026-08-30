@@ -34,4 +34,54 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Эта запись отпуска уже отменена.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>Необходимо указать причину отмены.</value></data>
+  <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>Определение смены не найдено.</value></data>
+  <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.shift-definition-code-exists.detail" xml:space="preserve"><value>Определение смены с этим кодом уже существует для объекта.</value></data>
+  <data name="error.shift-definition-code-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-code-required.detail" xml:space="preserve"><value>Код определения смены обязателен.</value></data>
+  <data name="error.shift-definition-code-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-code-too-long.detail" xml:space="preserve"><value>Код определения смены слишком длинный.</value></data>
+  <data name="error.shift-definition-name-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-name-required.detail" xml:space="preserve"><value>Название определения смены обязательно.</value></data>
+  <data name="error.shift-definition-name-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-name-too-long.detail" xml:space="preserve"><value>Название определения смены слишком длинное.</value></data>
+  <data name="error.shift-definition-invalid-time.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-invalid-time.detail" xml:space="preserve"><value>Время начала/окончания смены или признак перехода на следующий день некорректны.</value></data>
+  <data name="error.shift-definition-invalid-break.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-invalid-break.detail" xml:space="preserve"><value>Минуты перерыва должны быть нулём или больше и меньше общей длительности смены.</value></data>
+  <data name="error.shift-definition-inactive.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-inactive.detail" xml:space="preserve"><value>Неактивное определение смены нельзя назначить заново.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.detail" xml:space="preserve"><value>Время смены нельзя изменить после использования определения в расписании.</value></data>
+  <data name="error.schedule-employment-not-covering-date.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-employment-not-covering-date.detail" xml:space="preserve"><value>Нет трудовых отношений, покрывающих запрошенную дату расписания.</value></data>
+  <data name="error.schedule-assignment-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-assignment-not-found.detail" xml:space="preserve"><value>Нет основного назначения, покрывающего запрошенную дату расписания.</value></data>
+  <data name="error.schedule-cross-property-shift.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-cross-property-shift.detail" xml:space="preserve"><value>Определение смены относится к другому объекту, чем назначение на эту дату.</value></data>
+  <data name="error.schedule-invalid-kind.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-invalid-kind.detail" xml:space="preserve"><value>Тип записи расписания должен быть Shift или RestDay.</value></data>
+  <data name="error.schedule-entry-conflict.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.schedule-entry-conflict.detail" xml:space="preserve"><value>Авторитетная запись расписания для этих трудовых отношений и даты уже существует.</value></data>
+  <data name="error.schedule-note-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-note-too-long.detail" xml:space="preserve"><value>Примечание к расписанию слишком длинное.</value></data>
+  <data name="error.schedule-invalid-range.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-invalid-range.detail" xml:space="preserve"><value>Дата окончания диапазона расписания должна быть не раньше даты начала.</value></data>
+  <data name="error.schedule-shift-definition-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-shift-definition-required.detail" xml:space="preserve"><value>При типе Shift необходимо указать определение смены.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.detail" xml:space="preserve"><value>Выходной день не может ссылаться на определение смены.</value></data>
+  <data name="error.schedule-property-access-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.schedule-property-access-denied.detail" xml:space="preserve"><value>Эта дата расписания относится к объекту вне текущего рабочего охвата.</value></data>
+  <data name="error.schedule-week-start-invalid.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.schedule-week-start-invalid.detail" xml:space="preserve"><value>Начало недели должно быть понедельником.</value></data>
+  <data name="error.schedule-department-filter-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.schedule-department-filter-denied.detail" xml:space="preserve"><value>Выбранное подразделение недоступно в текущем охвате расписания.</value></data>
+  <data name="error.schedule-bulk-failed.title" xml:space="preserve"><value>Пакетное изменение расписания не выполнено.</value></data>
+  <data name="error.schedule-bulk-failed.detail" xml:space="preserve"><value>Одна или несколько операций расписания не выполнены. Изменения не применены.</value></data>
+  <data name="error.schedule-copy-week-blocked.title" xml:space="preserve"><value>Копирование недели заблокировано.</value></data>
+  <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>Одна или несколько целевых операций не могут быть применены. Копирование не начато.</value></data>
+  <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Нечего копировать.</value></data>
+  <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>В предыдущей неделе нет записей Shift или RestDay для копирования.</value></data>
 </root>

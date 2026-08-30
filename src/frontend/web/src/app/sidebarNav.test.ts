@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { buildPrimaryNav, buildSettingsNav } from './sidebarNav.ts'
+import { buildPrimaryNav, buildSettingsNav, resolveWorkforceNavTo } from './sidebarNav.ts'
 import { resolveSidebarChrome } from './sidebarChrome.ts'
 
 function destinationIds(options: Parameters<typeof buildPrimaryNav>[0]) {
@@ -45,6 +45,31 @@ test('workforce without HR read still appears and routes to departments', () => 
   assert.equal(workforce.destination.kind, 'link')
   if (workforce.destination.kind === 'link') {
     assert.equal(workforce.destination.to, '/app/workforce/departments')
+  }
+})
+
+test('schedule-only users get Workforce nav routed to shift plan', () => {
+  assert.equal(
+    resolveWorkforceNavTo({
+      canReadHrEmployees: false,
+      canReadWorkforce: false,
+      canReadHrSchedule: true,
+    }),
+    '/app/workforce/shift-plan',
+  )
+
+  const items = buildPrimaryNav({
+    canReadRoomOperations: false,
+    canReadMaintenance: false,
+    canReadHrEmployees: false,
+    canReadWorkforce: false,
+    canReadHrSchedule: true,
+  })
+  const workforce = items.find((item) => item.id === 'workforce')
+  assert.ok(workforce)
+  assert.equal(workforce.destination.kind, 'link')
+  if (workforce.destination.kind === 'link') {
+    assert.equal(workforce.destination.to, '/app/workforce/shift-plan')
   }
 })
 

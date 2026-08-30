@@ -13,4 +13,5 @@ public sealed class UserMembership
         PropertyId is null ? AuthorizationScopeType.Organization : AuthorizationScopeType.Property;
 
     public ICollection<UserRoleAssignment> RoleAssignments { get; set; } = [];
+    public ICollection<UserMembershipDepartmentScope> DepartmentScopes { get; set; } = [];
 }

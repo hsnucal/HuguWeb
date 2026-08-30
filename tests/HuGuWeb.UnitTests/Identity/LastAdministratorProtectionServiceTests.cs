@@ -207,6 +207,8 @@ public class LastAdministratorProtectionServiceTests
             throw new NotSupportedException();
 
         public void AddMembership(UserMembership membership) => throw new NotSupportedException();
+        public void AddDepartmentScope(UserMembershipDepartmentScope scope) => throw new NotSupportedException();
+        public void RemoveDepartmentScope(UserMembershipDepartmentScope scope) => throw new NotSupportedException();
         public void AddRole(AuthorizationRole roleRow) => throw new NotSupportedException();
         public void AddPermission(RolePermission permission) => throw new NotSupportedException();
         public void RemovePermission(RolePermission permission) => throw new NotSupportedException();

@@ -196,6 +196,22 @@ function headingFor(pathname: string, t: (key: string) => string) {
     }
   }
 
+  if (pathname.startsWith('/app/workforce/shift-definitions')) {
+    return {
+      kicker: t('workforce.title'),
+      title: t('workforce.shiftDefinitions'),
+      subtitle: t('workforce.shiftDefinitionsIntro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/workforce/shift-plan')) {
+    return {
+      kicker: t('workforce.title'),
+      title: t('workforce.shiftPlan'),
+      subtitle: t('workforce.shiftPlanIntro'),
+    }
+  }
+
   if (pathname.startsWith('/app/workforce/official-settings')) {
     return {
       kicker: t('workforce.title'),

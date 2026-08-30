@@ -34,4 +34,54 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>This leave record is already cancelled.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>A cancellation reason is required.</value></data>
+  <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>The shift definition was not found.</value></data>
+  <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.shift-definition-code-exists.detail" xml:space="preserve"><value>A shift definition with this code already exists for the property.</value></data>
+  <data name="error.shift-definition-code-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-code-required.detail" xml:space="preserve"><value>Shift definition code is required.</value></data>
+  <data name="error.shift-definition-code-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-code-too-long.detail" xml:space="preserve"><value>Shift definition code is too long.</value></data>
+  <data name="error.shift-definition-name-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-name-required.detail" xml:space="preserve"><value>Shift definition name is required.</value></data>
+  <data name="error.shift-definition-name-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-name-too-long.detail" xml:space="preserve"><value>Shift definition name is too long.</value></data>
+  <data name="error.shift-definition-invalid-time.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-invalid-time.detail" xml:space="preserve"><value>Shift start/end times or next-day flag are invalid.</value></data>
+  <data name="error.shift-definition-invalid-break.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-invalid-break.detail" xml:space="preserve"><value>Break minutes must be zero or more and less than the total shift duration.</value></data>
+  <data name="error.shift-definition-inactive.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-inactive.detail" xml:space="preserve"><value>An inactive shift definition cannot be newly assigned.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.detail" xml:space="preserve"><value>Shift times cannot change after the definition has been used on a schedule.</value></data>
+  <data name="error.schedule-employment-not-covering-date.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-employment-not-covering-date.detail" xml:space="preserve"><value>No employment covers the requested schedule date.</value></data>
+  <data name="error.schedule-assignment-not-found.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-assignment-not-found.detail" xml:space="preserve"><value>No primary assignment covers the requested schedule date.</value></data>
+  <data name="error.schedule-cross-property-shift.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-cross-property-shift.detail" xml:space="preserve"><value>The shift definition belongs to a different property than the assignment on this date.</value></data>
+  <data name="error.schedule-invalid-kind.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-invalid-kind.detail" xml:space="preserve"><value>Schedule kind must be Shift or RestDay.</value></data>
+  <data name="error.schedule-entry-conflict.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.schedule-entry-conflict.detail" xml:space="preserve"><value>An authoritative schedule entry already exists for this employment and date.</value></data>
+  <data name="error.schedule-note-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-note-too-long.detail" xml:space="preserve"><value>Schedule note is too long.</value></data>
+  <data name="error.schedule-invalid-range.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-invalid-range.detail" xml:space="preserve"><value>Schedule range end date must be on or after the start date.</value></data>
+  <data name="error.schedule-shift-definition-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-shift-definition-required.detail" xml:space="preserve"><value>A shift definition is required when kind is Shift.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.detail" xml:space="preserve"><value>Rest day cannot reference a shift definition.</value></data>
+  <data name="error.schedule-property-access-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.schedule-property-access-denied.detail" xml:space="preserve"><value>This schedule date belongs to a property outside the current workplace scope.</value></data>
+  <data name="error.schedule-week-start-invalid.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.schedule-week-start-invalid.detail" xml:space="preserve"><value>Week start must be a Monday.</value></data>
+  <data name="error.schedule-department-filter-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.schedule-department-filter-denied.detail" xml:space="preserve"><value>The selected department is not available in the current schedule scope.</value></data>
+  <data name="error.schedule-bulk-failed.title" xml:space="preserve"><value>Bulk schedule operation failed.</value></data>
+  <data name="error.schedule-bulk-failed.detail" xml:space="preserve"><value>One or more schedule operations failed. No changes were applied.</value></data>
+  <data name="error.schedule-copy-week-blocked.title" xml:space="preserve"><value>Copy week blocked.</value></data>
+  <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>One or more target operations cannot be applied. Copy was not started.</value></data>
+  <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Nothing to copy.</value></data>
+  <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>No Shift or RestDay entries are available to copy from the previous week.</value></data>
 </root>

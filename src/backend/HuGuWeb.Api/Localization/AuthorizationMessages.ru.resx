@@ -24,5 +24,11 @@
   <data name="error.property-not-accessible.detail" xml:space="preserve"><value>Выбранный объект недоступен в текущем членстве.</value></data>
   <data name="error.property-not-in-organization.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.property-not-in-organization.detail" xml:space="preserve"><value>Объект не принадлежит организации членства.</value></data>
+  <data name="error.department-scopes-require-property.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.department-scopes-require-property.detail" xml:space="preserve"><value>Ограничения по подразделениям можно настроить только для членства объекта.</value></data>
+  <data name="error.department-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.department-not-found.detail" xml:space="preserve"><value>Одно или несколько подразделений не найдены.</value></data>
+  <data name="error.department-not-in-membership-property.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.department-not-in-membership-property.detail" xml:space="preserve"><value>Подразделение должно принадлежать объекту и организации членства.</value></data>
 </root>
 

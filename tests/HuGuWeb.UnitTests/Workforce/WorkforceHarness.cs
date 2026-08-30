@@ -51,6 +51,9 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<LeaveType> LeaveTypes { get; } = [];
     public List<LeaveEntitlement> LeaveEntitlements { get; } = [];
     public List<LeaveRecord> LeaveRecords { get; } = [];
+    public List<ShiftDefinition> ShiftDefinitions { get; } = [];
+    public List<ScheduleEntry> ScheduleEntries { get; } = [];
+    public List<ScheduleEntryChange> ScheduleEntryChanges { get; } = [];
 
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Organizations.FirstOrDefault(item => item.Id == id));
@@ -165,6 +168,9 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
         CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Assignment>>(
             Assignments.Where(item => employmentIds.Contains(item.EmploymentId)).ToArray());
+
+    public Task<Assignment?> GetAssignmentAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Assignments.FirstOrDefault(item => item.Id == id));
 
     public void AddDepartment(Department department) => Departments.Add(department);
 
@@ -376,6 +382,85 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
 
     public void AddLeaveRecord(LeaveRecord record) => LeaveRecords.Add(record);
 
+    public Task<IReadOnlyList<ShiftDefinition>> ListShiftDefinitionsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ShiftDefinition>>(
+            ShiftDefinitions.Where(item => item.PropertyId == propertyId).OrderBy(item => item.Name).ToArray());
+
+    public Task<ShiftDefinition?> GetShiftDefinitionAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(ShiftDefinitions.FirstOrDefault(item => item.Id == id));
+
+    public Task<ShiftDefinition?> FindShiftDefinitionByCodeAsync(
+        Guid propertyId,
+        string normalizedCode,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(ShiftDefinitions.FirstOrDefault(item =>
+            item.PropertyId == propertyId && item.Code == normalizedCode));
+
+    public Task<bool> ShiftDefinitionHasUsageAsync(Guid shiftDefinitionId, CancellationToken cancellationToken) =>
+        Task.FromResult(
+            ScheduleEntries.Any(item => item.ShiftDefinitionId == shiftDefinitionId)
+            || ScheduleEntryChanges.Any(item =>
+                item.PreviousShiftDefinitionId == shiftDefinitionId
+                || item.NewShiftDefinitionId == shiftDefinitionId));
+
+    public Task<IReadOnlyList<Guid>> ListShiftDefinitionIdsWithUsageAsync(
+        IReadOnlyCollection<Guid> shiftDefinitionIds,
+        CancellationToken cancellationToken)
+    {
+        if (shiftDefinitionIds.Count == 0)
+        {
+            return Task.FromResult<IReadOnlyList<Guid>>([]);
+        }
+
+        var live = ScheduleEntries
+            .Where(item => item.ShiftDefinitionId is Guid id && shiftDefinitionIds.Contains(id))
+            .Select(item => item.ShiftDefinitionId!.Value);
+        var history = ScheduleEntryChanges
+            .SelectMany(item => new Guid?[] { item.PreviousShiftDefinitionId, item.NewShiftDefinitionId })
+            .Where(id => id is Guid value && shiftDefinitionIds.Contains(value))
+            .Select(id => id!.Value);
+
+        return Task.FromResult<IReadOnlyList<Guid>>(live.Concat(history).Distinct().ToArray());
+    }
+
+    public void AddShiftDefinition(ShiftDefinition definition) => ShiftDefinitions.Add(definition);
+
+    public Task<ScheduleEntry?> GetScheduleEntryAsync(
+        Guid employmentId,
+        DateOnly scheduleDate,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(ScheduleEntries.FirstOrDefault(item =>
+            item.EmploymentId == employmentId && item.ScheduleDate == scheduleDate));
+
+    public Task<IReadOnlyList<ScheduleEntry>> ListScheduleEntriesAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return Task.FromResult<IReadOnlyList<ScheduleEntry>>([]);
+        }
+
+        return Task.FromResult<IReadOnlyList<ScheduleEntry>>(
+            ScheduleEntries
+                .Where(item =>
+                    employmentIds.Contains(item.EmploymentId)
+                    && item.ScheduleDate >= from
+                    && item.ScheduleDate <= to)
+                .OrderBy(item => item.ScheduleDate)
+                .ToArray());
+    }
+
+    public void AddScheduleEntry(ScheduleEntry entry) => ScheduleEntries.Add(entry);
+
+    public void RemoveScheduleEntry(ScheduleEntry entry) => ScheduleEntries.Remove(entry);
+
+    public void AddScheduleEntryChange(ScheduleEntryChange change) => ScheduleEntryChanges.Add(change);
+
     public Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
         if (_transactionSnapshot is not null)
@@ -428,6 +513,22 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
         if (duplicateIdentity)
         {
             throw new NationalIdentityConflictException();
+        }
+
+        var duplicateShiftCode = ShiftDefinitions
+            .GroupBy(item => (item.PropertyId, item.Code))
+            .Any(group => group.Count() > 1);
+        if (duplicateShiftCode)
+        {
+            throw new InvalidOperationException("Duplicate shift definition code for property.");
+        }
+
+        var duplicateScheduleEntry = ScheduleEntries
+            .GroupBy(item => (item.EmploymentId, item.ScheduleDate))
+            .Any(group => group.Count() > 1);
+        if (duplicateScheduleEntry)
+        {
+            throw new InvalidOperationException("Schedule conflict: duplicate entry for employment and date.");
         }
 
         return Task.CompletedTask;
@@ -492,6 +593,9 @@ internal sealed class InMemoryWorkforceSnapshot
     private readonly List<LeaveType> _leaveTypes;
     private readonly List<LeaveEntitlement> _leaveEntitlements;
     private readonly List<LeaveRecord> _leaveRecords;
+    private readonly List<ShiftDefinition> _shiftDefinitions;
+    private readonly List<ScheduleEntry> _scheduleEntries;
+    private readonly List<ScheduleEntryChange> _scheduleEntryChanges;
     private readonly Dictionary<Guid, PersonnelNumberSequence> _sequences;
 
     private InMemoryWorkforceSnapshot(
@@ -520,6 +624,9 @@ internal sealed class InMemoryWorkforceSnapshot
         List<LeaveType> leaveTypes,
         List<LeaveEntitlement> leaveEntitlements,
         List<LeaveRecord> leaveRecords,
+        List<ShiftDefinition> shiftDefinitions,
+        List<ScheduleEntry> scheduleEntries,
+        List<ScheduleEntryChange> scheduleEntryChanges,
         Dictionary<Guid, PersonnelNumberSequence> sequences)
     {
         _organizations = organizations;
@@ -547,6 +654,9 @@ internal sealed class InMemoryWorkforceSnapshot
         _leaveTypes = leaveTypes;
         _leaveEntitlements = leaveEntitlements;
         _leaveRecords = leaveRecords;
+        _shiftDefinitions = shiftDefinitions;
+        _scheduleEntries = scheduleEntries;
+        _scheduleEntryChanges = scheduleEntryChanges;
         _sequences = sequences;
     }
 
@@ -577,6 +687,9 @@ internal sealed class InMemoryWorkforceSnapshot
             [.. store.LeaveTypes],
             [.. store.LeaveEntitlements],
             [.. store.LeaveRecords],
+            [.. store.ShiftDefinitions],
+            [.. store.ScheduleEntries],
+            [.. store.ScheduleEntryChanges],
             store.Sequences.ToDictionary(item => item.Key, item => item.Value));
 
     public void Restore(InMemoryWorkforceStore store)
@@ -606,6 +719,9 @@ internal sealed class InMemoryWorkforceSnapshot
         Replace(store.LeaveTypes, _leaveTypes);
         Replace(store.LeaveEntitlements, _leaveEntitlements);
         Replace(store.LeaveRecords, _leaveRecords);
+        Replace(store.ShiftDefinitions, _shiftDefinitions);
+        Replace(store.ScheduleEntries, _scheduleEntries);
+        Replace(store.ScheduleEntryChanges, _scheduleEntryChanges);
         store.Sequences.Clear();
         foreach (var (key, value) in _sequences)
         {
@@ -682,7 +798,17 @@ internal sealed class WorkforceHarness
     public RecordLeaveEntitlementUseCase RecordLeaveEntitlement { get; }
     public RecordLeaveUseCase RecordLeave { get; }
     public CancelLeaveRecordUseCase CancelLeaveRecord { get; }
+    public ShiftDefinitionAdminUseCase ShiftDefinitionAdmin { get; }
+    public UpsertScheduleEntryUseCase UpsertSchedule { get; }
+    public ClearScheduleEntryUseCase ClearSchedule { get; }
+    public GetScheduleStateQuery GetScheduleState { get; }
+    public GetScheduleRangeQuery GetScheduleRange { get; }
+    public GetScheduleWeekQuery GetScheduleWeek { get; }
+    public BulkScheduleUseCase BulkSchedule { get; }
+    public CopyScheduleWeekUseCase CopyScheduleWeek { get; }
     public Guid OtherPropertyId { get; } = Guid.CreateVersion7();
+    public Guid OtherPropertyDepartmentId { get; } = Guid.CreateVersion7();
+    public Guid OtherPropertyPositionId { get; } = Guid.CreateVersion7();
 
     public WorkforceHarness()
     {
@@ -732,6 +858,23 @@ internal sealed class WorkforceHarness
         }
 
         Store.Properties.Add(new Property(OtherPropertyId, OrganizationId, "Other Property", "UTC"));
+        Assert.True(Department.TryCreate(
+            OtherPropertyDepartmentId,
+            OtherPropertyId,
+            "Other Property Dept",
+            code: null,
+            out var otherDept,
+            out _));
+        Store.Departments.Add(otherDept!);
+        Assert.True(Position.TryCreate(
+            OtherPropertyPositionId,
+            OtherPropertyId,
+            "Other Property Position",
+            code: null,
+            out var otherPos,
+            out _));
+        Store.Positions.Add(otherPos!);
+        AddApplicability(OtherPropertyDepartmentId, OtherPropertyPositionId);
 
         Hire = new HireEmployeeUseCase(Store, Clock, Workplace);
         HireWithProfile = new HireEmployeeWithProfileUseCase(Store, Clock, Workplace);
@@ -752,6 +895,14 @@ internal sealed class WorkforceHarness
         RecordLeaveEntitlement = new RecordLeaveEntitlementUseCase(Store, Clock, Workplace, LeaveQuery);
         RecordLeave = new RecordLeaveUseCase(Store, Clock, Workplace, LeaveQuery);
         CancelLeaveRecord = new CancelLeaveRecordUseCase(Store, Clock, Workplace, LeaveQuery);
+        ShiftDefinitionAdmin = new ShiftDefinitionAdminUseCase(Store, Clock, Workplace);
+        UpsertSchedule = new UpsertScheduleEntryUseCase(Store, Clock, Workplace);
+        ClearSchedule = new ClearScheduleEntryUseCase(Store, Clock, Workplace);
+        GetScheduleState = new GetScheduleStateQuery(Store, Workplace);
+        GetScheduleRange = new GetScheduleRangeQuery(Store, Workplace);
+        GetScheduleWeek = new GetScheduleWeekQuery(Store, Workplace);
+        BulkSchedule = new BulkScheduleUseCase(Store, UpsertSchedule, ClearSchedule);
+        CopyScheduleWeek = new CopyScheduleWeekUseCase(Store, Workplace, GetScheduleWeek, BulkSchedule);
     }
 
     public async Task<Guid> SeedDefaultLeaveTypesAsync()

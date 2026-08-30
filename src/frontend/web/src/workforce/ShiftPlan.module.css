@@ -1,0 +1,346 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.weekNav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.weekLabel {
+  min-width: 11rem;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(12rem, 16rem) minmax(12rem, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+  flex: 1 1 20rem;
+}
+
+@media (max-width: 720px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toolbarActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.bulkBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-m);
+  background: var(--color-brand-mist);
+}
+
+.bulkCount {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-primary);
+}
+
+.bulkActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.gridScroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-l);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-s);
+}
+
+.grid {
+  display: grid;
+  min-width: 52rem;
+  grid-template-columns: minmax(11rem, 14rem) repeat(7, minmax(5.25rem, 1fr));
+}
+
+.headCell,
+.employeeCell,
+.dayCell,
+.groupRow {
+  border-bottom: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.headCell {
+  padding: 0.55rem 0.5rem;
+  font-size: var(--type-kicker-size);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--type-kicker-tracking);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  background: var(--color-surface-subtle);
+  text-align: center;
+}
+
+.headCellEmployee {
+  text-align: left;
+  padding-left: 0.75rem;
+}
+
+.headDow {
+  display: block;
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: var(--font-size-sm);
+}
+
+.headDate {
+  display: block;
+  margin-top: 0.15rem;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+}
+
+.groupRow {
+  grid-column: 1 / -1;
+  padding: 0.45rem 0.75rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-brand-primary);
+  background: var(--color-brand-mist);
+}
+
+.employeeCell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.1rem;
+  padding: 0.45rem 0.75rem;
+  min-height: 2.6rem;
+}
+
+.employeeName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.employeeMeta {
+  font-size: var(--type-supporting-size);
+  color: var(--color-text-muted);
+}
+
+.dayCell {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  min-height: 2.6rem;
+  padding: 0.2rem;
+  background: var(--color-surface-elevated);
+}
+
+.cellButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  width: 100%;
+  min-height: 2.55rem;
+  margin: 0;
+  padding: 0.22rem 0.18rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.cellPrimary {
+  display: block;
+  max-width: 100%;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.cellSecondary {
+  display: block;
+  max-width: 100%;
+  font-size: 0.68rem;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.cellButton:hover:not(:disabled) {
+  background: var(--color-interaction-hover);
+}
+
+.cellButton:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.cellButton:disabled {
+  cursor: default;
+  color: var(--color-text-disabled);
+}
+
+.cellShift {
+  color: var(--color-text-primary);
+  background: var(--color-surface-subtle);
+  border-color: var(--color-border-subtle);
+}
+
+.cellRest {
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--color-surface-subtle) 70%, transparent);
+  border-color: transparent;
+}
+
+.cellRest .cellPrimary {
+  font-weight: var(--font-weight-medium);
+  font-size: var(--type-supporting-size);
+  letter-spacing: 0.02em;
+}
+
+.cellEmpty {
+  color: var(--color-text-muted);
+}
+
+.cellEmpty .cellPrimary {
+  font-weight: var(--font-weight-regular);
+}
+
+.cellMuted {
+  color: var(--color-text-disabled);
+  background: color-mix(in srgb, var(--color-surface-subtle) 55%, transparent);
+}
+
+.cellSelected {
+  border-color: var(--color-brand-primary);
+  box-shadow: inset 0 0 0 1px var(--color-brand-primary);
+  background: var(--color-brand-soft);
+}
+
+.cellMenu {
+  position: fixed;
+  z-index: 36;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 12rem;
+  max-width: min(20rem, calc(100vw - 1rem));
+  margin: 0;
+  padding: 0.35rem;
+  overflow: auto;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-elevated);
+  box-shadow: var(--shadow-m), 0 12px 28px color-mix(in srgb, black 12%, transparent);
+}
+
+.cellMenuItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cellMenuItem:hover,
+.cellMenuItem:focus-visible {
+  background: var(--color-brand-mist);
+  outline: none;
+}
+
+.cellMenuItemDanger {
+  color: var(--color-danger);
+}
+
+.cellMenuTitle {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.cellMenuMeta {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--type-supporting-size);
+}
+
+.copySummary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  font-size: var(--font-size-sm);
+}
+
+.copyStats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--color-text-primary);
+}
+
+.copyList {
+  margin: 0;
+  padding-left: 1.1rem;
+  max-height: min(10rem, 30vh);
+  overflow: auto;
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.readOnlyHint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}

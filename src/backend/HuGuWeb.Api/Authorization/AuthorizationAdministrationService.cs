@@ -441,6 +441,80 @@ public sealed class AuthorizationAdministrationService(
         return AuthorizationResult.Success();
     }
 
+    /// <summary>
+    /// Replaces department narrowing scopes for a Property membership.
+    /// Empty <paramref name="departmentIds"/> clears all rows (= Property-wide).
+    /// </summary>
+    public async Task<AuthorizationResult<UserMembership>> ReplaceDepartmentScopesAsync(
+        Guid membershipId,
+        IReadOnlyList<Guid> departmentIds,
+        string? actorUserId,
+        Guid? actorOrganizationId,
+        Guid? actorPropertyId,
+        CancellationToken cancellationToken)
+    {
+        var membership = await store.GetMembershipAsync(membershipId, cancellationToken);
+        if (membership is null)
+        {
+            return AuthorizationError.MembershipNotFound();
+        }
+
+        if (membership.PropertyId is null)
+        {
+            return AuthorizationError.DepartmentScopesRequirePropertyMembership();
+        }
+
+        var uniqueIds = departmentIds.Distinct().ToArray();
+        foreach (var departmentId in uniqueIds)
+        {
+            var department = await workforce.GetDepartmentAsync(departmentId, cancellationToken);
+            if (department is null)
+            {
+                return AuthorizationError.DepartmentNotFound();
+            }
+
+            var property = await workforce.GetPropertyAsync(department.PropertyId, cancellationToken);
+            if (property is null
+                || property.OrganizationId != membership.OrganizationId
+                || department.PropertyId != membership.PropertyId)
+            {
+                return AuthorizationError.DepartmentNotInMembershipProperty();
+            }
+        }
+
+        foreach (var existing in membership.DepartmentScopes.ToArray())
+        {
+            store.RemoveDepartmentScope(existing);
+        }
+
+        foreach (var departmentId in uniqueIds)
+        {
+            store.AddDepartmentScope(new UserMembershipDepartmentScope
+            {
+                Id = Guid.CreateVersion7(),
+                UserMembershipId = membership.Id,
+                DepartmentId = departmentId,
+                CreatedAtUtc = time.GetUtcNow()
+            });
+        }
+
+        AddAudit(
+            actorUserId,
+            actorOrganizationId,
+            actorPropertyId,
+            AuthorizationAuditActions.MembershipDepartmentScopesChanged,
+            membership.UserId,
+            membership.Id,
+            details: uniqueIds.Length == 0
+                ? "property-wide"
+                : string.Join(',', uniqueIds.Select(id => id.ToString())));
+        await store.SaveChangesAsync(cancellationToken);
+        await stampRefresh.RefreshAsync(membership.UserId);
+
+        var refreshed = await store.GetMembershipAsync(membershipId, cancellationToken);
+        return AuthorizationResult<UserMembership>.Success(refreshed!);
+    }
+
     private void AddAudit(
         string? actorUserId,
         Guid? actorOrganizationId,

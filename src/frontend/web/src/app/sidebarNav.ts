@@ -23,11 +23,44 @@ const futureNav: ReadonlyArray<Pick<SidebarNavItem, 'id' | 'icon' | 'labelKey'>>
   { id: 'tasks', icon: 'tasks', labelKey: 'navigation.tasks' },
 ]
 
+export function resolveWorkforceNavTo(options: {
+  canReadHrEmployees: boolean
+  canReadWorkforce: boolean
+  canReadHrLeave?: boolean
+  canReadHrShiftDefinitions?: boolean
+  canReadHrSchedule?: boolean
+}): string | null {
+  if (options.canReadHrEmployees) {
+    return '/app/workforce'
+  }
+
+  if (options.canReadHrLeave) {
+    return '/app/workforce/leave-types'
+  }
+
+  if (options.canReadHrShiftDefinitions) {
+    return '/app/workforce/shift-definitions'
+  }
+
+  if (options.canReadHrSchedule) {
+    return '/app/workforce/shift-plan'
+  }
+
+  if (options.canReadWorkforce) {
+    return '/app/workforce/departments'
+  }
+
+  return null
+}
+
 export function buildPrimaryNav(options: {
   canReadRoomOperations: boolean
   canReadMaintenance: boolean
   canReadHrEmployees: boolean
   canReadWorkforce: boolean
+  canReadHrLeave?: boolean
+  canReadHrShiftDefinitions?: boolean
+  canReadHrSchedule?: boolean
 }): SidebarNavItem[] {
   const items: SidebarNavItem[] = [
     {
@@ -56,14 +89,15 @@ export function buildPrimaryNav(options: {
     })
   }
 
-  if (options.canReadHrEmployees || options.canReadWorkforce) {
+  const workforceTo = resolveWorkforceNavTo(options)
+  if (workforceTo) {
     items.push({
       id: 'workforce',
       icon: 'people',
       labelKey: 'navigation.workforce',
       destination: {
         kind: 'link',
-        to: options.canReadHrEmployees ? '/app/workforce' : '/app/workforce/departments',
+        to: workforceTo,
       },
     })
   }

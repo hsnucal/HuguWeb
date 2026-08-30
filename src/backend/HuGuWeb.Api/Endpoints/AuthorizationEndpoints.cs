@@ -33,6 +33,9 @@ public static class AuthorizationEndpoints
         users.MapDelete("/memberships/{membershipId:guid}/roles/{roleId:guid}", RemoveRole)
             .WithName("RemoveAuthorizationRole")
             .AddEndpointFilter<ValidateAntiforgeryFilter>();
+        users.MapPut("/memberships/{membershipId:guid}/department-scopes", ReplaceDepartmentScopes)
+            .WithName("ReplaceAuthorizationMembershipDepartmentScopes")
+            .AddEndpointFilter<ValidateAntiforgeryFilter>();
 
         var roles = endpoints.MapGroup("/api/authorization/roles")
             .WithTags("Authorization Roles")
@@ -212,6 +215,29 @@ public static class AuthorizationEndpoints
         return result.IsSuccess ? Results.NoContent() : result.Error!.ToHttp();
     }
 
+    private static async Task<IResult> ReplaceDepartmentScopes(
+        Guid membershipId,
+        ClaimsPrincipal actor,
+        [FromBody] ReplaceDepartmentScopesRequest request,
+        AuthorizationAdministrationService administration,
+        IWorkforceStore workforce,
+        CancellationToken cancellationToken)
+    {
+        var result = await administration.ReplaceDepartmentScopesAsync(
+            membershipId,
+            request.DepartmentIds ?? [],
+            ActorUserId(actor),
+            TryGuid(actor, AuthorizationClaims.OrganizationId),
+            TryGuid(actor, AuthorizationClaims.PropertyId),
+            cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return result.Error!.ToHttp();
+        }
+
+        return Results.Ok(await ToMembershipAsync(result.Value!, workforce, cancellationToken));
+    }
+
     private static async Task<IResult> ListRoles(
         ClaimsPrincipal actor,
         IAuthorizationStore store,
@@ -323,13 +349,18 @@ public static class AuthorizationEndpoints
             propertyName = property?.Name;
         }
 
-        return ToMembership(membership, organization?.Name, propertyName);
+        return ToMembership(
+            membership,
+            organization?.Name,
+            propertyName,
+            membership.DepartmentScopes.Select(item => item.DepartmentId).OrderBy(id => id).ToArray());
     }
 
     private static MembershipSummary ToMembership(
         UserMembership membership,
         string? organizationName = null,
-        string? propertyName = null) =>
+        string? propertyName = null,
+        IReadOnlyList<Guid>? departmentIds = null) =>
         new(
             membership.Id,
             membership.OrganizationId,
@@ -338,7 +369,8 @@ public static class AuthorizationEndpoints
             propertyName,
             membership.IsActive,
             membership.ScopeType.ToString(),
-            membership.RoleAssignments.Select(item => item.RoleId).ToArray());
+            membership.RoleAssignments.Select(item => item.RoleId).ToArray(),
+            departmentIds ?? membership.DepartmentScopes.Select(item => item.DepartmentId).OrderBy(id => id).ToArray());
 
     private static RoleResponse ToRole(AuthorizationRole role) =>
         new(
@@ -368,7 +400,8 @@ public sealed record MembershipSummary(
     string? PropertyName,
     bool IsActive,
     string ScopeType,
-    IReadOnlyList<Guid> RoleIds);
+    IReadOnlyList<Guid> RoleIds,
+    IReadOnlyList<Guid> DepartmentIds);
 
 public sealed record RoleResponse(
     Guid Id,
@@ -391,6 +424,8 @@ public sealed record SetActiveRequest(bool IsActive);
 public sealed record CreateRoleRequest(Guid OrganizationId, string Name, string Code, string ScopeType);
 
 public sealed record ReplacePermissionsRequest(IReadOnlyList<string> PermissionCodes);
+
+public sealed record ReplaceDepartmentScopesRequest(IReadOnlyList<Guid>? DepartmentIds);
 
 internal static class AuthorizationHttpResults
 {

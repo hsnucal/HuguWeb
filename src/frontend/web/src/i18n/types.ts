@@ -96,6 +96,109 @@ export type Translations = {
     createLeaveType: string
     emptyLeaveTypes: string
     emptyLeaveTypesHint: string
+    shiftDefinitions: string
+    shiftDefinitionsIntro: string
+    shiftCode: string
+    shiftName: string
+    shiftStartTime: string
+    shiftEndTime: string
+    endsNextDay: string
+    endsNextDayShort: string
+    shiftBreakMinutes: string
+    shiftBreakNone: string
+    shiftBreakValue: string
+    shiftPlannedNet: string
+    shiftNetHours: string
+    shiftNetHoursMinutes: string
+    shiftNetMinutes: string
+    definedShifts: string
+    shiftColumnName: string
+    shiftColumnHours: string
+    shiftColumnNet: string
+    shiftColumnActions: string
+    semanticFieldsLockedHint: string
+    overnightInconsistent: string
+    createShiftDefinition: string
+    editShiftDefinition: string
+    emptyShiftDefinitions: string
+    emptyShiftDefinitionsHint: string
+    shiftPlan: string
+    shiftPlanIntro: string
+    shiftPlanWeekNav: string
+    shiftPlanThisWeek: string
+    shiftPlanPrevWeek: string
+    shiftPlanNextWeek: string
+    shiftPlanWeekdayMon: string
+    shiftPlanWeekdayTue: string
+    shiftPlanWeekdayWed: string
+    shiftPlanWeekdayThu: string
+    shiftPlanWeekdayFri: string
+    shiftPlanWeekdaySat: string
+    shiftPlanWeekdaySun: string
+    shiftPlanBulkMode: string
+    shiftPlanBulkBar: string
+    shiftPlanSelectedCount: string
+    shiftPlanClearSelection: string
+    shiftPlanRestDay: string
+    shiftPlanRestDayShort: string
+    shiftPlanClear: string
+    shiftPlanUnscheduled: string
+    shiftPlanOutOfScope: string
+    shiftPlanOutOfScopeDetail: string
+    shiftPlanNotEmployed: string
+    shiftPlanMutedCell: string
+    shiftPlanUnscheduledShort: string
+    shiftPlanBreakPrefix: string
+    shiftPlanNetPrefix: string
+    shiftPlanCellAria: string
+    shiftPlanAssignMenu: string
+    shiftPlanReadOnly: string
+    shiftPlanSelectDepartment: string
+    shiftPlanEmpty: string
+    shiftPlanEmptyHint: string
+    shiftPlanCopyPreviousWeek: string
+    shiftPlanCopyTitle: string
+    shiftPlanCopySubtitle: string
+    shiftPlanCopyCount: string
+    shiftPlanOverwriteCount: string
+    shiftPlanInvalidCount: string
+    shiftPlanCopyOverwriteWarning: string
+    shiftPlanCopyBlocked: string
+    shiftPlanCopyConfirm: string
+    shiftPlanOverwriteTitle: string
+    shiftPlanOverwriteBody: string
+    shiftPlanOverwriteHint: string
+    shiftPlanOverwriteConfirm: string
+    scheduleErrors: {
+      generic: string
+      notFound: string
+      codeExists: string
+      codeRequired: string
+      codeTooLong: string
+      nameRequired: string
+      nameTooLong: string
+      invalidTime: string
+      invalidBreak: string
+      inactive: string
+      semanticFieldsLocked: string
+      employmentNotCoveringDate: string
+      assignmentNotFound: string
+      crossPropertyShift: string
+      invalidKind: string
+      entryConflict: string
+      noteTooLong: string
+      invalidRange: string
+      shiftDefinitionRequired: string
+      shiftDefinitionMustBeNull: string
+      propertyAccessDenied: string
+      workplaceNotConfigured: string
+      propertyContextRequired: string
+      weekStartInvalid: string
+      departmentFilterDenied: string
+      bulkFailed: string
+      copyWeekBlocked: string
+      copyWeekEmpty: string
+    }
     sgkWorkplace: string
     registrationNumber: string
     displayName: string
@@ -806,6 +909,10 @@ export type Translations = {
     none: string
     organization: string
     organizationWide: string
+    departmentScopes: string
+    propertyWideAccess: string
+    selectedDepartments: string
+    saveDepartmentScopes: string
     rolesOwnedByOrganization: string
     groupHr: string
     groupRoomOperations: string
@@ -819,6 +926,10 @@ export type Translations = {
       'hr.employee.sensitive.read': string
       'hr.leave.read': string
       'hr.leave.manage': string
+      'hr.schedule.read': string
+      'hr.schedule.manage': string
+      'hr.shift-definition.read': string
+      'hr.shift-definition.manage': string
       'room-operations.read': string
       'room-operations.manage': string
       'room-operations.inspect': string

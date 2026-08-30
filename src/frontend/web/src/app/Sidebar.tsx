@@ -11,7 +11,12 @@ import { BrandMark } from '../ui/BrandMark'
 import { Button } from '../ui/Button'
 import { LanguageSelect } from '../ui/LanguageSelect'
 import { Tooltip } from '../ui/Tooltip'
-import { canReadHrEmployees } from '../workforce/hrAccess'
+import {
+  canReadHrEmployees,
+  canReadHrLeave,
+  canReadHrSchedule,
+  canReadHrShiftDefinitions,
+} from '../workforce/hrAccess'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import {
   CloseIcon,
@@ -68,6 +73,9 @@ export function Sidebar({
     canReadMaintenance: canReadMaintenance(user),
     canReadHrEmployees: canReadHrEmployees(user),
     canReadWorkforce: canReadWorkforce(user),
+    canReadHrLeave: canReadHrLeave(user),
+    canReadHrShiftDefinitions: canReadHrShiftDefinitions(user),
+    canReadHrSchedule: canReadHrSchedule(user),
   })
   const settingsNav = buildSettingsNav(canOpenSettings(user))
   const hiddenFromTree = isDrawer && !drawerOpen

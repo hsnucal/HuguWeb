@@ -45,6 +45,7 @@ public static class SecurityExtensions
         builder.Services.AddScoped<LastAdministratorProtectionService>();
         builder.Services.AddScoped<PropertyAccessService>();
         builder.Services.AddScoped<AuthorizationAdministrationService>();
+        builder.Services.AddScoped<MembershipDepartmentAccess>();
         builder.Services.AddScoped<EmployeeTenantGuard>();
         builder.Services.AddScoped<ICurrentTenantContext, CurrentTenantContext>();
         builder.Services.AddScoped<IRequestActorContext, RequestActorContext>();
@@ -161,6 +162,28 @@ public static class SecurityExtensions
             options.AddPolicy(
                 AuthorizationPolicies.HrLeaveManage,
                 policy => policy.RequireClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrScheduleRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrSchedulePermissions.ClaimType, HrSchedulePermissions.Read)
+                    || context.User.HasClaim(HrSchedulePermissions.ClaimType, HrSchedulePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrScheduleManage,
+                policy => policy.RequireClaim(HrSchedulePermissions.ClaimType, HrSchedulePermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrShiftDefinitionRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrShiftDefinitionPermissions.ClaimType, HrShiftDefinitionPermissions.Read)
+                    || context.User.HasClaim(HrShiftDefinitionPermissions.ClaimType, HrShiftDefinitionPermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrShiftDefinitionManage,
+                policy => policy.RequireClaim(
+                    HrShiftDefinitionPermissions.ClaimType,
+                    HrShiftDefinitionPermissions.Manage));
 
             options.AddPolicy(
                 AuthorizationPolicies.AuthorizationUsersManage,

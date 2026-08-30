@@ -34,4 +34,54 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Bu izin kaydı zaten iptal edilmiş.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>İptal nedeni zorunludur.</value></data>
+  <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>Vardiya tanımı bulunamadı.</value></data>
+  <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.shift-definition-code-exists.detail" xml:space="preserve"><value>Bu kod bu tesis için zaten bir vardiya tanımına ait.</value></data>
+  <data name="error.shift-definition-code-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-code-required.detail" xml:space="preserve"><value>Vardiya tanımı kodu zorunludur.</value></data>
+  <data name="error.shift-definition-code-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-code-too-long.detail" xml:space="preserve"><value>Vardiya tanımı kodu çok uzun.</value></data>
+  <data name="error.shift-definition-name-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-name-required.detail" xml:space="preserve"><value>Vardiya tanımı adı zorunludur.</value></data>
+  <data name="error.shift-definition-name-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-name-too-long.detail" xml:space="preserve"><value>Vardiya tanımı adı çok uzun.</value></data>
+  <data name="error.shift-definition-invalid-time.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-invalid-time.detail" xml:space="preserve"><value>Vardiya başlangıç/bitiş saatleri veya ertesi güne geçiş bilgisi geçersiz.</value></data>
+  <data name="error.shift-definition-invalid-break.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-invalid-break.detail" xml:space="preserve"><value>Mola dakikası sıfır veya daha fazla olmalı ve toplam vardiya süresinden kısa olmalıdır.</value></data>
+  <data name="error.shift-definition-inactive.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-inactive.detail" xml:space="preserve"><value>Pasif bir vardiya tanımı yeni atamada kullanılamaz.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.shift-definition-semantic-fields-locked.detail" xml:space="preserve"><value>Vardiya tanımı çizelgede kullanıldıktan sonra saatleri değiştirilemez.</value></data>
+  <data name="error.schedule-employment-not-covering-date.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-employment-not-covering-date.detail" xml:space="preserve"><value>İstenen çizelge tarihini kapsayan bir iş ilişkisi yok.</value></data>
+  <data name="error.schedule-assignment-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-assignment-not-found.detail" xml:space="preserve"><value>İstenen çizelge tarihini kapsayan birincil bir atama yok.</value></data>
+  <data name="error.schedule-cross-property-shift.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-cross-property-shift.detail" xml:space="preserve"><value>Vardiya tanımı, bu tarihteki atamanın tesisinden farklı bir tesise aittir.</value></data>
+  <data name="error.schedule-invalid-kind.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-invalid-kind.detail" xml:space="preserve"><value>Çizelge türü Shift veya RestDay olmalıdır.</value></data>
+  <data name="error.schedule-entry-conflict.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.schedule-entry-conflict.detail" xml:space="preserve"><value>Bu iş ilişkisi ve tarih için yetkili bir çizelge kaydı zaten var.</value></data>
+  <data name="error.schedule-note-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-note-too-long.detail" xml:space="preserve"><value>Çizelge notu çok uzun.</value></data>
+  <data name="error.schedule-invalid-range.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-invalid-range.detail" xml:space="preserve"><value>Çizelge aralığının bitiş tarihi başlangıç tarihinden önce olamaz.</value></data>
+  <data name="error.schedule-shift-definition-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-shift-definition-required.detail" xml:space="preserve"><value>Tür Shift olduğunda vardiya tanımı zorunludur.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-shift-definition-must-be-null.detail" xml:space="preserve"><value>Dinlenme günü bir vardiya tanımına bağlanamaz.</value></data>
+  <data name="error.schedule-property-access-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.schedule-property-access-denied.detail" xml:space="preserve"><value>Bu çizelge tarihi, mevcut işyeri kapsamı dışındaki bir tesise aittir.</value></data>
+  <data name="error.schedule-week-start-invalid.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.schedule-week-start-invalid.detail" xml:space="preserve"><value>Hafta başlangıcı Pazartesi olmalıdır.</value></data>
+  <data name="error.schedule-department-filter-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.schedule-department-filter-denied.detail" xml:space="preserve"><value>Seçilen departman mevcut çizelge kapsamında değil.</value></data>
+  <data name="error.schedule-bulk-failed.title" xml:space="preserve"><value>Toplu çizelge işlemi başarısız.</value></data>
+  <data name="error.schedule-bulk-failed.detail" xml:space="preserve"><value>Bir veya daha fazla çizelge işlemi başarısız oldu. Hiçbir değişiklik uygulanmadı.</value></data>
+  <data name="error.schedule-copy-week-blocked.title" xml:space="preserve"><value>Hafta kopyalama engellendi.</value></data>
+  <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>Bir veya daha fazla hedef işlem uygulanamıyor. Kopyalama başlatılmadı.</value></data>
+  <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Kopyalanacak kayıt yok.</value></data>
+  <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>Önceki haftadan kopyalanacak Shift veya RestDay kaydı yok.</value></data>
 </root>

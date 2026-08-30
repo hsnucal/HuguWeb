@@ -455,6 +455,113 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void AddLeaveRecord(LeaveRecord record) => dbContext.LeaveRecords.Add(record);
 
+    public Task<Assignment?> GetAssignmentAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.Assignments.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<ShiftDefinition>> ListShiftDefinitionsAsync(
+        Guid propertyId,
+        CancellationToken cancellationToken) =>
+        await dbContext.ShiftDefinitions
+            .Where(entity => entity.PropertyId == propertyId)
+            .OrderBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<ShiftDefinition?> GetShiftDefinitionAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.ShiftDefinitions.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public Task<ShiftDefinition?> FindShiftDefinitionByCodeAsync(
+        Guid propertyId,
+        string normalizedCode,
+        CancellationToken cancellationToken) =>
+        dbContext.ShiftDefinitions.FirstOrDefaultAsync(
+            entity => entity.PropertyId == propertyId && entity.Code == normalizedCode,
+            cancellationToken);
+
+    public Task<bool> ShiftDefinitionHasUsageAsync(Guid shiftDefinitionId, CancellationToken cancellationToken) =>
+        AnyShiftDefinitionUsageAsync(shiftDefinitionId, cancellationToken);
+
+    public async Task<IReadOnlyList<Guid>> ListShiftDefinitionIdsWithUsageAsync(
+        IReadOnlyCollection<Guid> shiftDefinitionIds,
+        CancellationToken cancellationToken)
+    {
+        if (shiftDefinitionIds.Count == 0)
+        {
+            return [];
+        }
+
+        var live = await dbContext.ScheduleEntries
+            .Where(entity => entity.ShiftDefinitionId != null && shiftDefinitionIds.Contains(entity.ShiftDefinitionId.Value))
+            .Select(entity => entity.ShiftDefinitionId!.Value)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+        var history = await dbContext.ScheduleEntryChanges
+            .Where(entity =>
+                (entity.PreviousShiftDefinitionId != null
+                 && shiftDefinitionIds.Contains(entity.PreviousShiftDefinitionId.Value))
+                || (entity.NewShiftDefinitionId != null
+                    && shiftDefinitionIds.Contains(entity.NewShiftDefinitionId.Value)))
+            .Select(entity => new { entity.PreviousShiftDefinitionId, entity.NewShiftDefinitionId })
+            .ToListAsync(cancellationToken);
+
+        var historyIds = history
+            .SelectMany(item => new Guid?[] { item.PreviousShiftDefinitionId, item.NewShiftDefinitionId })
+            .Where(id => id is not null)
+            .Select(id => id!.Value);
+
+        return live.Concat(historyIds).Distinct().ToArray();
+    }
+
+    private async Task<bool> AnyShiftDefinitionUsageAsync(Guid shiftDefinitionId, CancellationToken cancellationToken)
+    {
+        if (await dbContext.ScheduleEntries.AnyAsync(
+                entity => entity.ShiftDefinitionId == shiftDefinitionId,
+                cancellationToken))
+        {
+            return true;
+        }
+
+        return await dbContext.ScheduleEntryChanges.AnyAsync(
+            entity => entity.PreviousShiftDefinitionId == shiftDefinitionId
+                || entity.NewShiftDefinitionId == shiftDefinitionId,
+            cancellationToken);
+    }
+
+    public void AddShiftDefinition(ShiftDefinition definition) => dbContext.ShiftDefinitions.Add(definition);
+
+    public Task<ScheduleEntry?> GetScheduleEntryAsync(
+        Guid employmentId,
+        DateOnly scheduleDate,
+        CancellationToken cancellationToken) =>
+        dbContext.ScheduleEntries.FirstOrDefaultAsync(
+            entity => entity.EmploymentId == employmentId && entity.ScheduleDate == scheduleDate,
+            cancellationToken);
+
+    public async Task<IReadOnlyList<ScheduleEntry>> ListScheduleEntriesAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.ScheduleEntries
+            .Where(entity =>
+                employmentIds.Contains(entity.EmploymentId)
+                && entity.ScheduleDate >= from
+                && entity.ScheduleDate <= to)
+            .OrderBy(entity => entity.ScheduleDate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddScheduleEntry(ScheduleEntry entry) => dbContext.ScheduleEntries.Add(entry);
+
+    public void RemoveScheduleEntry(ScheduleEntry entry) => dbContext.ScheduleEntries.Remove(entry);
+
+    public void AddScheduleEntryChange(ScheduleEntryChange change) => dbContext.ScheduleEntryChanges.Add(change);
+
     public async Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
         var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);

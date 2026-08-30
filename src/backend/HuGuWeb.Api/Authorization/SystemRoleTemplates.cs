@@ -37,7 +37,23 @@ public static class SystemRoleTemplates
         HrEmployeePermissions.Manage,
         HrEmployeePermissions.SensitiveRead,
         HrLeavePermissions.Read,
-        HrLeavePermissions.Manage
+        HrLeavePermissions.Manage,
+        HrSchedulePermissions.Read,
+        HrSchedulePermissions.Manage,
+        HrShiftDefinitionPermissions.Read,
+        HrShiftDefinitionPermissions.Manage
+    ];
+
+    /// <summary>
+    /// Typical department operational scheduler: assign schedules + read definitions.
+    /// Does not grant ShiftDefinition catalogue management. Not bound to a system role until
+    /// Department membership scope exists in the authorization schema.
+    /// </summary>
+    public static readonly IReadOnlyList<string> DepartmentSchedulerPermissions =
+    [
+        HrSchedulePermissions.Read,
+        HrSchedulePermissions.Manage,
+        HrShiftDefinitionPermissions.Read
     ];
 
     public static IReadOnlyList<SystemRoleTemplate> All { get; } =

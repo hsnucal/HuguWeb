@@ -24,5 +24,11 @@
   <data name="error.property-not-accessible.detail" xml:space="preserve"><value>Seçilen tesis, etkin üyelik kapsamında değil.</value></data>
   <data name="error.property-not-in-organization.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.property-not-in-organization.detail" xml:space="preserve"><value>Tesis, üyeliğin organizasyonuna ait değil.</value></data>
+  <data name="error.department-scopes-require-property.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.department-scopes-require-property.detail" xml:space="preserve"><value>Departman kapsamları yalnızca tesis üyeliğinde yapılandırılabilir.</value></data>
+  <data name="error.department-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.department-not-found.detail" xml:space="preserve"><value>Bir veya daha fazla departman bulunamadı.</value></data>
+  <data name="error.department-not-in-membership-property.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.department-not-in-membership-property.detail" xml:space="preserve"><value>Departman kapsamı, üyeliğin tesisi ve organizasyonuna ait olmalıdır.</value></data>
 </root>
 

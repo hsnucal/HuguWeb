@@ -397,6 +397,84 @@
   border-top: 1px solid var(--color-border-subtle);
 }
 
+.formFooterEnd {
+  justify-content: flex-end;
+}
+
+.formOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  justify-content: flex-start;
+  padding-top: 1.55rem;
+}
+
+.shiftListSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.shiftDefinitionRow {
+  grid-template-columns:
+    minmax(6.5rem, 1.1fr)
+    minmax(4rem, 0.55fr)
+    minmax(7.5rem, 1.15fr)
+    minmax(3.5rem, 0.45fr)
+    minmax(4rem, 0.55fr)
+    auto
+    auto;
+  column-gap: var(--space-3);
+  align-items: start;
+  padding-block: 0.7rem;
+}
+
+.shiftDefinitionEdit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.shiftIdentity,
+.shiftHoursCell,
+.shiftStatusCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.shiftClockRange {
+  font-variant-numeric: tabular-nums;
+}
+
+.shiftOvernightHint {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+}
+
+.shiftNet {
+  font-variant-numeric: tabular-nums;
+}
+
+.shiftStatusBadge {
+  width: fit-content;
+  max-width: max-content;
+  justify-self: start;
+}
+
+.shiftStatusCell .shiftStatusBadge,
+.shiftActions .shiftStatusBadge {
+  display: inline-flex;
+}
+
+.shiftActions {
+  justify-content: flex-end;
+  justify-self: end;
+  align-items: center;
+}
+
 .sectionTitle {
   font-size: var(--type-section-title-size);
   font-weight: var(--font-weight-semibold);
@@ -484,6 +562,8 @@
   .row,
   .structureRow,
   .directoryRow,
+  .shiftDefinitionRow,
+  .shiftDefinitionEdit,
   .hero {
     grid-template-columns: 1fr;
     align-items: start;
@@ -505,6 +585,11 @@
 
   .directoryRow > :nth-child(4) {
     display: grid;
+  }
+
+  .shiftActions {
+    justify-self: stretch;
+    justify-content: flex-start;
   }
 
   .segments {

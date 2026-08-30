@@ -50,6 +50,25 @@ public sealed class EmployeeTenantGuard(IWorkforceStore store, IWorkforceClock c
         return await IsAssignedToPropertyAsync(employeeId, propertyId.Value, cancellationToken);
     }
 
+    /// <summary>
+    /// Organization membership only. Property-scoped schedule access is enforced per schedule date
+    /// via effective Assignment → Property (no current-property fallback).
+    /// </summary>
+    public async Task<bool> AllowsEmployeeInOrganizationAsync(
+        ClaimsPrincipal user,
+        Guid employeeId,
+        CancellationToken cancellationToken)
+    {
+        var employee = await store.GetEmployeeAsync(employeeId, cancellationToken);
+        if (employee is null)
+        {
+            return false;
+        }
+
+        return Guid.TryParse(user.FindFirstValue(AuthorizationClaims.OrganizationId), out var organizationId)
+            && employee.OrganizationId == organizationId;
+    }
+
     public async Task<bool> IsAssignedToPropertyAsync(
         Guid employeeId,
         Guid propertyId,

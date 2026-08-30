@@ -83,6 +83,19 @@ public sealed record AuthorizationError(
         InvalidRequest(
             "property-not-in-organization",
             "The Property does not belong to the membership organization.");
+
+    public static AuthorizationError DepartmentScopesRequirePropertyMembership() =>
+        InvalidRequest(
+            "department-scopes-require-property",
+            "Department scopes can only be configured on a Property membership.");
+
+    public static AuthorizationError DepartmentNotFound() =>
+        InvalidRequest("department-not-found", "One or more departments were not found.");
+
+    public static AuthorizationError DepartmentNotInMembershipProperty() =>
+        InvalidRequest(
+            "department-not-in-membership-property",
+            "Department scope must belong to the membership Property and Organization.");
 }
 
 public sealed class AuthorizationResult<T>
