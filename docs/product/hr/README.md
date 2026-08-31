@@ -13,7 +13,7 @@ Slice identifiers are product/planning labels. Older Accepted Personel Master te
 | Documents (Belgeler / Evraklar) | Later personnel-file slice — **not** this HR-04 | sketched as **HR-04** in Personel Master planning |
 | Temporary assignment / promotion | Later Assignment UI | sketched as **HR-05** in Personel Master planning |
 | **HR-05A** | **Leave Management Foundation / İzin Yönetimi Temeli** | sketched inside **HR-06–08** leave / shift / puantaj in Personel Master planning |
-| HR-05B | Leave request / approval (not started) | same older leave bucket |
+| **HR-05B** | **Leave Request & Approval** — Accepted / Completed | same older leave bucket |
 | **HR-06** | **Shift & Work Schedule / Vardiya & Çalışma Planı** — Accepted / Completed | sketched inside **HR-06–08** leave / shift / puantaj in Personel Master planning |
 | **HR-06A** | **Shift & Schedule Foundation** — Accepted / Completed | part of HR-06 |
 | **HR-06B** | **Weekly Shift Planning** — Accepted / Completed | part of HR-06 |
@@ -23,6 +23,8 @@ Current Accepted freeze: [HR-04-Employment-Working-Conditions.md](HR-04-Employme
 Current Accepted freeze: [HR-05A-Leave-Foundation.md](HR-05A-Leave-Foundation.md) — domain **Accepted**. Does not supersede HR-04 or HR-DOMAIN-001/002/003.
 
 Implementation: [HR-05A-Leave-Implementation-Plan.md](HR-05A-Leave-Implementation-Plan.md) — **Accepted / Completed**. Domain freeze remains Accepted. Product Owner manual acceptance completed (2026-08-29).
+
+Leave request domain: [HR-05B-Leave-Request-Approval.md](HR-05B-Leave-Request-Approval.md) — domain freeze **Accepted / Frozen** (2026-08-31). Plan: [HR-05B-Leave-Request-Approval-Implementation-Plan.md](HR-05B-Leave-Request-Approval-Implementation-Plan.md) — **Accepted / Completed**. Product Owner runtime acceptance completed (2026-08-31). Personnel Card Talepler remains deferred as a follow-up surface, not a blocker for HR-05B completion.
 
 Current Accepted freeze: [HR-06-Shift-Work-Schedule.md](HR-06-Shift-Work-Schedule.md) — domain **Accepted**. Does not supersede HR-05A or earlier HR domains. WebİK remains reference only. Product Owner acceptance completed (2026-08-30): HR-06 overall **Accepted / Completed**.
 

@@ -52,7 +52,8 @@ public sealed class LeaveTypeAdminUseCase(IWorkforceStore store, IWorkforceClock
                 clock.UtcNow,
                 out var leaveType,
                 out var field,
-                out var errorCode))
+                out var errorCode,
+                command.DefaultRequestAmount))
         {
             return WorkforceError.LeaveValidationField(field!, errorCode!, "Leave type is invalid.");
         }
@@ -102,6 +103,22 @@ public sealed class LeaveTypeAdminUseCase(IWorkforceStore store, IWorkforceClock
             }
         }
 
+        if (command.DefaultRequestAmountSpecified)
+        {
+            if (!leaveType.TrySetDefaultRequestAmount(
+                    command.DefaultRequestAmount,
+                    command.ActorUserId,
+                    clock.UtcNow,
+                    out var defaultField,
+                    out var defaultError))
+            {
+                return WorkforceError.LeaveValidationField(
+                    defaultField!,
+                    defaultError!,
+                    "Default request amount is invalid.");
+            }
+        }
+
         if (command.IsActive is { } isActive)
         {
             leaveType.SetActive(isActive, command.ActorUserId, clock.UtcNow);
@@ -112,14 +129,21 @@ public sealed class LeaveTypeAdminUseCase(IWorkforceStore store, IWorkforceClock
     }
 }
 
-public sealed record CreateLeaveTypeCommand(string? Code, string? Name, bool TracksBalance, string ActorUserId);
+public sealed record CreateLeaveTypeCommand(
+    string? Code,
+    string? Name,
+    bool TracksBalance,
+    string ActorUserId,
+    decimal? DefaultRequestAmount = null);
 
 public sealed record UpdateLeaveTypeCommand(
     Guid LeaveTypeId,
     string? Name,
     bool? TracksBalance,
     bool? IsActive,
-    string ActorUserId);
+    string ActorUserId,
+    decimal? DefaultRequestAmount = null,
+    bool DefaultRequestAmountSpecified = false);
 
 public sealed record LeaveTypeDto(
     Guid Id,
@@ -127,7 +151,8 @@ public sealed record LeaveTypeDto(
     string Name,
     LeaveTypeSystemKind? SystemKind,
     bool TracksBalance,
-    bool IsActive)
+    bool IsActive,
+    decimal? DefaultRequestAmount)
 {
     public static LeaveTypeDto From(LeaveType leaveType) =>
         new(
@@ -136,5 +161,6 @@ public sealed record LeaveTypeDto(
             leaveType.Name,
             leaveType.SystemKind,
             leaveType.TracksBalance,
-            leaveType.IsActive);
+            leaveType.IsActive,
+            leaveType.DefaultRequestAmount);
 }

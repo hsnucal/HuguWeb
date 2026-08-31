@@ -22,6 +22,7 @@ navigation: {
     workforce: 'Персонал',
     roomOperations: 'Операции по номерам',
     technicalService: 'Техническая служба',
+    myLeave: 'Мои отпуска',
     openMenu: 'Открыть меню',
     closeMenu: 'Закрыть меню',
   },

@@ -22,6 +22,7 @@ navigation: {
     workforce: 'Personel',
     roomOperations: 'Oda Operasyonları',
     technicalService: 'Teknik Servis',
+    myLeave: 'İzinlerim',
     openMenu: 'Menüyü aç',
     closeMenu: 'Menüyü kapat',
   },

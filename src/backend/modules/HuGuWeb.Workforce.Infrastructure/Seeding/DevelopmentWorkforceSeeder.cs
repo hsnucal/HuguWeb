@@ -15,19 +15,32 @@ public static class DevelopmentWorkforceSeeder
     public const string DevelopmentPersonnelNumber = "DEV-2001";
     public const string DevelopmentTimeZoneId = "Europe/Istanbul";
 
-    private static readonly Guid HumanResourcesId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000101");
-    private static readonly Guid HousekeepingId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000102");
-    private static readonly Guid FrontOfficeId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000103");
-    private static readonly Guid TechnicalId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000104");
-    private static readonly Guid FoodBeverageId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000105");
+    public static readonly Guid HumanResourcesDepartmentId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000101");
+    public static readonly Guid HousekeepingDepartmentId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000102");
+    public static readonly Guid FrontOfficeDepartmentId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000103");
+    public static readonly Guid TechnicalDepartmentId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000104");
+    public static readonly Guid FoodBeverageDepartmentId = Guid.Parse("a1e1c0de-0001-4000-8000-000000000105");
+
+    private static readonly Guid HumanResourcesId = HumanResourcesDepartmentId;
+    private static readonly Guid HousekeepingId = HousekeepingDepartmentId;
+    private static readonly Guid FrontOfficeId = FrontOfficeDepartmentId;
+    private static readonly Guid TechnicalId = TechnicalDepartmentId;
+    private static readonly Guid FoodBeverageId = FoodBeverageDepartmentId;
 
     public static async Task TrySeedAsync(
         WorkforceDbContext dbContext,
         ILogger logger,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool isDevelopment = true)
     {
         try
         {
+            if (!isDevelopment)
+            {
+                throw new InvalidOperationException(
+                    "DevelopmentWorkforceSeeder.TrySeedAsync is blocked outside Development.");
+            }
+
             var workplaceAlreadyPresent = await dbContext.Organizations.AnyAsync(
                 entity => entity.Id == OrganizationId,
                 cancellationToken);
@@ -58,8 +71,7 @@ public static class DevelopmentWorkforceSeeder
             await dbContext.SaveChangesAsync(cancellationToken);
             await RelabelDevelopmentWorkplaceAsync(dbContext, cancellationToken);
 
-            if (!workplaceAlreadyPresent
-                && !await dbContext.Departments.AnyAsync(
+            if (!await dbContext.Departments.AnyAsync(
                     entity => entity.PropertyId == PropertyId,
                     cancellationToken))
             {
@@ -96,17 +108,12 @@ public static class DevelopmentWorkforceSeeder
                 await EnsurePositionAsync(dbContext, "İK Uzmanı", "HR-OFF", cancellationToken);
             }
 
-            if (!workplaceAlreadyPresent)
-            {
-                await TrySeedAntalyaStructureAsync(dbContext, logger, cancellationToken);
-                await TrySeedDevelopmentEmployeeAsync(dbContext, logger, cancellationToken);
-                await TrySeedPersonnelMasterDemoAsync(dbContext, logger, cancellationToken);
-            }
-            else
-            {
-                logger.LogInformation(
-                    "Skipping development department and personnel seed because the workplace already exists.");
-            }
+            await TrySeedAntalyaStructureAsync(dbContext, logger, cancellationToken);
+            await DevelopmentPersonaEmployeeSeeder.EnsureAsync(
+                dbContext,
+                logger,
+                isDevelopment: true,
+                cancellationToken);
 
             await TrySeedPersonnelNumberSequenceAsync(dbContext, cancellationToken);
             await TrySeedPositionApplicabilityAsync(dbContext, logger, cancellationToken);
@@ -198,52 +205,12 @@ public static class DevelopmentWorkforceSeeder
             AddPosition(dbContext, AntalyaPropertyId, "İK Uzmanı", "HR-OFF");
             AddPosition(dbContext, AntalyaPropertyId, "Kat Görevlisi", "HK-ATT");
             AddPosition(dbContext, AntalyaPropertyId, "Resepsiyon Görevlisi", "FO-REC");
+            AddPosition(dbContext, AntalyaPropertyId, "Teknisyen", "ENG-TECH");
+            AddPosition(dbContext, AntalyaPropertyId, "Kat Hizmetleri Sorumlusu", "HK-SUP");
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var antalyaEmployeeId = Guid.Parse("a1e1c0de-0003-4000-8000-000000000301");
-        if (await dbContext.Employees.AnyAsync(item => item.Id == antalyaEmployeeId, cancellationToken))
-        {
-            return;
-        }
-
-        var position = await dbContext.Positions.FirstOrDefaultAsync(
-            item => item.PropertyId == AntalyaPropertyId && item.Code == "HK-ATT",
-            cancellationToken);
-        if (position is null)
-        {
-            logger.LogWarning("Antalya demo employee was not seeded because HK-ATT is missing.");
-            return;
-        }
-
-        if (!Employee.TryCreate(
-                antalyaEmployeeId,
-                OrganizationId,
-                "Elif",
-                "Demir",
-                "2002",
-                out var employee,
-                out var error)
-            || employee is null)
-        {
-            logger.LogWarning("Antalya demo employee seed is invalid: {Error}", error);
-            return;
-        }
-
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var startDate = new DateOnly(2026, 3, 1);
-        var employment = Employment.Open(Guid.Parse("a1e1c0de-0003-4000-8000-000000000302"), employee.Id, startDate, today);
-        var assignment = Assignment.StartPrimary(
-            Guid.Parse("a1e1c0de-0003-4000-8000-000000000303"),
-            employment.Id,
-            hkId,
-            position.Id,
-            startDate);
-        dbContext.Employees.Add(employee);
-        dbContext.Employments.Add(employment);
-        dbContext.Assignments.Add(assignment);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        logger.LogInformation("Antalya Hotel demo employee is available.");
+        logger.LogInformation("Antalya Hotel workplace structure is available.");
     }
 
     private static async Task TrySeedDevelopmentEmployeeAsync(

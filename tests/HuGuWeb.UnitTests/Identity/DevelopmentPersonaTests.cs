@@ -38,8 +38,12 @@ public class DevelopmentPersonaTests
         Assert.Equal("hr.manager@localhost", persona.Email);
         Assert.Equal(SystemRoleTemplates.HrManager, persona.RoleCode);
         Assert.Equal(SystemRoleTemplates.HumanResourcesPermissions, persona.Permissions);
+        Assert.Contains(SystemRoleTemplates.EmployeeLeaveSelfService, persona.AssignedRoleCodes);
+        Assert.Equal(DevelopmentPersonaEmployeeFixtures.HrManagerEmployeeId, persona.LinkedEmployeeId);
+        Assert.Equal(DevelopmentPersonaEmployeeFixtures.HrManagerLinkId, persona.LinkedAccountLinkId);
         Assert.Contains(HrLeavePermissions.Read, persona.Permissions);
         Assert.Contains(HrLeavePermissions.Manage, persona.Permissions);
+        Assert.DoesNotContain(HrLeavePermissions.Request, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));
@@ -90,12 +94,18 @@ public class DevelopmentPersonaTests
     }
 
     [Fact]
-    public void MaintenanceTechnician_HasReadAndResolve_NoManageOrOtherDomains()
+    public void MaintenanceTechnician_HasMaintenanceResolveAndLeaveSelfService()
     {
         var persona = DevelopmentPersonaCatalog.MaintenanceTechnician;
 
         Assert.Equal("maintenance.technician@localhost", persona.Email);
-        Assert.Equal([MaintenancePermissions.Read, MaintenancePermissions.Resolve], persona.Permissions);
+        Assert.Equal(SystemRoleTemplates.MaintenanceTechnician, persona.RoleCode);
+        Assert.Contains(SystemRoleTemplates.EmployeeLeaveSelfService, persona.AssignedRoleCodes);
+        Assert.Equal(DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianEmployeeId, persona.LinkedEmployeeId);
+        Assert.Equal(DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianLinkId, persona.LinkedAccountLinkId);
+        Assert.Contains(MaintenancePermissions.Read, persona.Permissions);
+        Assert.Contains(MaintenancePermissions.Resolve, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Request, persona.Permissions);
         Assert.DoesNotContain(MaintenancePermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
@@ -104,14 +114,57 @@ public class DevelopmentPersonaTests
     }
 
     [Fact]
-    public void MaintenanceManager_HasFullMaintenance_NoWorkforceOrRoomOperations()
+    public void EmployeePersonas_HaveDistinctLinkedEmployees()
+    {
+        var linked = DevelopmentPersonaCatalog.AdditionalPersonas
+            .Where(item => item.LinkedEmployeeId.HasValue)
+            .Select(item => item.LinkedEmployeeId!.Value)
+            .ToList();
+
+        Assert.Equal(linked.Count, linked.Distinct().Count());
+        Assert.NotEqual(
+            DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianEmployeeId,
+            DevelopmentPersonaEmployeeFixtures.HrManagerEmployeeId);
+        Assert.DoesNotContain(
+            DevelopmentWorkforceSeeder.DevelopmentEmployeeId,
+            linked);
+    }
+
+    [Fact]
+    public void NonEmployeePersonas_HaveNoEmployeeAccountLink()
+    {
+        Assert.Null(DevelopmentPersonaCatalog.Broad(null).LinkedEmployeeId);
+        Assert.Null(DevelopmentPersonaCatalog.CorporateHumanResources.LinkedEmployeeId);
+    }
+
+    [Fact]
+    public void PersonaEmployeeFixtures_MatchCatalogLinks()
+    {
+        foreach (var fixture in DevelopmentPersonaEmployeeFixtures.All)
+        {
+            var persona = DevelopmentPersonaCatalog.AdditionalPersonas.Single(item =>
+                item.Email.Equals(fixture.PersonaEmail, StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(fixture.EmployeeId, persona.LinkedEmployeeId);
+            Assert.Equal(fixture.AccountLinkId, persona.LinkedAccountLinkId);
+        }
+    }
+
+    [Fact]
+    public void MaintenanceManager_HasFullMaintenance_AndDepartmentLeaveApprover()
     {
         var persona = DevelopmentPersonaCatalog.MaintenanceManager;
 
         Assert.Equal("maintenance.manager@localhost", persona.Email);
-        Assert.Equal(
-            [MaintenancePermissions.Read, MaintenancePermissions.Manage, MaintenancePermissions.Resolve],
-            persona.Permissions);
+        Assert.Equal(SystemRoleTemplates.MaintenanceManager, persona.RoleCode);
+        Assert.Contains(SystemRoleTemplates.DepartmentLeaveApprover, persona.AssignedRoleCodes);
+        Assert.Contains(SystemRoleTemplates.EmployeeLeaveSelfService, persona.AssignedRoleCodes);
+        Assert.Equal(["ENG"], persona.DepartmentScopeCodes);
+        Assert.Contains(MaintenancePermissions.Read, persona.Permissions);
+        Assert.Contains(MaintenancePermissions.Manage, persona.Permissions);
+        Assert.Contains(MaintenancePermissions.Resolve, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Read, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Approve, persona.Permissions);
+        Assert.DoesNotContain(HrLeavePermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));

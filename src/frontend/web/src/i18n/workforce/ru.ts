@@ -22,8 +22,13 @@ workforce: {
     leaveTypes: 'Типы отпусков',
     leaveTypesIntro:
       'Типы отпусков организации. Код нельзя изменить после создания; неактивные типы нельзя выбрать для новых записей.',
+    leaveManagement: 'Управление отпусками',
+    leaveManagementIntro:
+      'Просматривайте и управляйте заявками на отпуск.',
     leaveTypeCode: 'Код',
     leaveTypeName: 'Название',
+    leaveTypeDefaultRequestAmount: 'Продолжительность запроса по умолчанию',
+    leaveTypeDefaultRequestAmountHint: 'Необязательно. В днях, шаг 0,5.',
     leaveTracksBalance: 'Вести остаток',
     leaveTracksBalanceYes: 'Остаток учитывается',
     leaveTracksBalanceNo: 'Остаток не учитывается',

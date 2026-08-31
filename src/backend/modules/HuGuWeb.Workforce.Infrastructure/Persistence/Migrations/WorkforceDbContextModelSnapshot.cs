@@ -690,6 +690,9 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid?>("SourceLeaveRequestId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
@@ -699,6 +702,11 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("LeaveTypeId");
+
+                    b.HasIndex("SourceLeaveRequestId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_LeaveRecords_SourceLeaveRequestId")
+                        .HasFilter("\"SourceLeaveRequestId\" IS NOT NULL");
 
                     b.HasIndex("EmploymentId", "LeaveTypeId");
 
@@ -712,6 +720,104 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
 
                             t.HasCheckConstraint("CK_LeaveRecords_Period", "\"EndDate\" >= \"StartDate\"");
                         });
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.LeaveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ApprovalStage")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("LeaveTypeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<decimal>("RequestedAmount")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignmentId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.HasIndex("EmploymentId", "ApprovalStage", "Status");
+
+                    b.HasIndex("EmploymentId", "Status", "StartDate", "EndDate");
+
+                    b.ToTable("LeaveRequests", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveRequests_Period", "\"EndDate\" >= \"StartDate\"");
+
+                            t.HasCheckConstraint("CK_LeaveRequests_RequestedAmount", "\"RequestedAmount\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.LeaveRequestDecision", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActorUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<int>("Decision")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("DecisionAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LeaveRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Stage")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaveRequestId", "DecisionAtUtc");
+
+                    b.ToTable("LeaveRequestDecisions", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.LeaveType", b =>
@@ -732,6 +838,10 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
+
+                    b.Property<decimal?>("DefaultRequestAmount")
+                        .HasPrecision(6, 1)
+                        .HasColumnType("numeric(6,1)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -766,7 +876,10 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OrganizationId", "IsActive");
 
-                    b.ToTable("LeaveTypes", (string)null);
+                    b.ToTable("LeaveTypes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_LeaveTypes_DefaultRequestAmount", "\"DefaultRequestAmount\" IS NULL OR (\"DefaultRequestAmount\" > 0 AND (\"DefaultRequestAmount\" * 2) = TRUNC(\"DefaultRequestAmount\" * 2))");
+                        });
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.OfficialEmploymentProfile", b =>
@@ -1434,6 +1547,41 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasOne("HuGuWeb.Workforce.Domain.LeaveType", null)
                         .WithMany()
                         .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("SourceLeaveRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.LeaveRequest", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Assignment", null)
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.LeaveType", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.LeaveRequestDecision", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.LeaveRequest", null)
+                        .WithMany()
+                        .HasForeignKey("LeaveRequestId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

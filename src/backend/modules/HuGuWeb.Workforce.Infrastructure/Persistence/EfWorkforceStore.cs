@@ -145,6 +145,9 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
             .Where(entity => entity.EmployeeId == employeeId)
             .ToListAsync(cancellationToken);
 
+    public Task<Employment?> GetEmploymentAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.Employments.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
     public async Task<IReadOnlyList<Employment>> ListEmploymentsForEmployeesAsync(
         IReadOnlyCollection<Guid> employeeIds,
         CancellationToken cancellationToken)
@@ -451,9 +454,65 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
     public Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.LeaveRecords.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
+    public Task<LeaveRecord?> FindLeaveRecordBySourceLeaveRequestIdAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken) =>
+        dbContext.LeaveRecords.FirstOrDefaultAsync(
+            entity => entity.SourceLeaveRequestId == leaveRequestId,
+            cancellationToken);
+
     public void AddLeaveEntitlement(LeaveEntitlement entitlement) => dbContext.LeaveEntitlements.Add(entitlement);
 
     public void AddLeaveRecord(LeaveRecord record) => dbContext.LeaveRecords.Add(record);
+
+    public async Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        await dbContext.LeaveRequests
+            .Where(entity => entity.EmploymentId == employmentId)
+            .OrderByDescending(entity => entity.StartDate)
+            .ThenByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsForEmployeeAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken)
+    {
+        var employmentIds = await dbContext.Employments
+            .Where(entity => entity.EmployeeId == employeeId)
+            .Select(entity => entity.Id)
+            .ToListAsync(cancellationToken);
+        if (employmentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.LeaveRequests
+            .Where(entity => employmentIds.Contains(entity.EmploymentId))
+            .OrderByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<LeaveRequest>> ListAllLeaveRequestsAsync(CancellationToken cancellationToken) =>
+        await dbContext.LeaveRequests
+            .OrderByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public Task<LeaveRequest?> GetLeaveRequestAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.LeaveRequests.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<LeaveRequestDecision>> ListLeaveRequestDecisionsAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken) =>
+        await dbContext.LeaveRequestDecisions
+            .Where(entity => entity.LeaveRequestId == leaveRequestId)
+            .OrderBy(entity => entity.DecisionAtUtc)
+            .ToListAsync(cancellationToken);
+
+    public void AddLeaveRequest(LeaveRequest request) => dbContext.LeaveRequests.Add(request);
+
+    public void AddLeaveRequestDecision(LeaveRequestDecision decision) =>
+        dbContext.LeaveRequestDecisions.Add(decision);
 
     public Task<Assignment?> GetAssignmentAsync(Guid id, CancellationToken cancellationToken) =>
         dbContext.Assignments.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);

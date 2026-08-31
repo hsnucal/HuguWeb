@@ -9,6 +9,7 @@ import { StatusBadge } from '../ui/StatusBadge'
 import { TextField } from '../ui/TextField'
 import styles from './Workforce.module.css'
 import { canManageHrLeave } from './hrAccess'
+import { formatLeaveAmount, isPositiveHalfDayAmount, parseLeaveAmount } from './leaveAmount'
 import {
   createHrLeaveType,
   hrLeaveErrorKey,
@@ -35,6 +36,7 @@ export function LeaveTypesPage() {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [tracksBalance, setTracksBalance] = useState(false)
+  const [defaultRequestAmount, setDefaultRequestAmount] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,11 +69,22 @@ export function LeaveTypesPage() {
 
   async function onCreate() {
     setError(null)
+    const trimmedDefault = defaultRequestAmount.trim()
+    if (trimmedDefault && !isPositiveHalfDayAmount(trimmedDefault)) {
+      setError(t('personnel.leave.errors.invalidAmount'))
+      return
+    }
     try {
-      await createHrLeaveType({ code, name, tracksBalance })
+      await createHrLeaveType({
+        code,
+        name,
+        tracksBalance,
+        defaultRequestAmount: trimmedDefault ? parseLeaveAmount(trimmedDefault) : null,
+      })
       setCode('')
       setName('')
       setTracksBalance(false)
+      setDefaultRequestAmount('')
       await reload()
     } catch (reason) {
       setError(t(hrLeaveErrorKey(reason)))
@@ -81,7 +94,11 @@ export function LeaveTypesPage() {
   async function onSave(row: LeaveTypeRecord) {
     setError(null)
     try {
-      await updateHrLeaveType(row.id, { name: row.name, tracksBalance: row.tracksBalance })
+      await updateHrLeaveType(row.id, {
+        name: row.name,
+        tracksBalance: row.tracksBalance,
+        defaultRequestAmount: row.defaultRequestAmount,
+      })
       setEditingId(null)
       await reload()
     } catch (reason) {
@@ -131,6 +148,13 @@ export function LeaveTypesPage() {
               onChange={setName}
               required
             />
+            <TextField
+              id="leave-type-default-amount"
+              label={t('workforce.leaveTypeDefaultRequestAmount')}
+              value={defaultRequestAmount}
+              onChange={setDefaultRequestAmount}
+              hint={t('workforce.leaveTypeDefaultRequestAmountHint')}
+            />
           </div>
           <label className={styles.choiceOption} htmlFor="leave-type-tracks">
             <input
@@ -167,6 +191,29 @@ export function LeaveTypesPage() {
                       )
                     }
                   />
+                  <TextField
+                    id={`leave-type-default-${row.id}`}
+                    label={t('workforce.leaveTypeDefaultRequestAmount')}
+                    value={
+                      row.defaultRequestAmount == null ? '' : formatLeaveAmount(row.defaultRequestAmount)
+                    }
+                    onChange={(value) =>
+                      setRows((current) =>
+                        sortedTypes(
+                          (current ?? []).map((item) =>
+                            item.id === row.id
+                              ? {
+                                  ...item,
+                                  defaultRequestAmount:
+                                    value.trim() === '' ? null : parseLeaveAmount(value),
+                                }
+                              : item,
+                          ),
+                        ),
+                      )
+                    }
+                    hint={t('workforce.leaveTypeDefaultRequestAmountHint')}
+                  />
                   <label className={styles.choiceOption} htmlFor={`leave-type-tracks-${row.id}`}>
                     <input
                       id={`leave-type-tracks-${row.id}`}
@@ -191,6 +238,9 @@ export function LeaveTypesPage() {
                   <span className={styles.muted}>{row.code}</span>
                   <span className={styles.muted}>
                     {row.tracksBalance ? t('workforce.leaveTracksBalanceYes') : t('workforce.leaveTracksBalanceNo')}
+                    {row.defaultRequestAmount != null
+                      ? ` · ${formatLeaveAmount(row.defaultRequestAmount)} ${t('personnel.leave.dayUnit')}`
+                      : ''}
                   </span>
                 </>
               )}

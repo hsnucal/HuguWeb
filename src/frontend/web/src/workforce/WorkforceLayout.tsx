@@ -34,7 +34,7 @@ export function WorkforceLayout() {
 
   if (directoryCurrent && !canReadHr) {
     if (canReadLeave) {
-      return <Navigate to="/app/workforce/leave-types" replace />
+      return <Navigate to="/app/workforce/leave-management" replace />
     }
 
     if (canReadShiftDefinitions) {
@@ -66,7 +66,10 @@ export function WorkforceLayout() {
           </>
         ) : null}
         {canReadLeave ? (
-          <NavLink to="/app/workforce/leave-types">{t('workforce.leaveTypes')}</NavLink>
+          <>
+            <NavLink to="/app/workforce/leave-management">{t('workforce.leaveManagement')}</NavLink>
+            <NavLink to="/app/workforce/leave-types">{t('workforce.leaveTypes')}</NavLink>
+          </>
         ) : null}
         {canReadShiftDefinitions ? (
           <NavLink to="/app/workforce/shift-definitions">{t('workforce.shiftDefinitions')}</NavLink>

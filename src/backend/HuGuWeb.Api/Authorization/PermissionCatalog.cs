@@ -11,6 +11,8 @@ public static class PermissionCatalog
         HrEmployeePermissions.SensitiveRead,
         HrLeavePermissions.Read,
         HrLeavePermissions.Manage,
+        HrLeavePermissions.Request,
+        HrLeavePermissions.Approve,
         HrSchedulePermissions.Read,
         HrSchedulePermissions.Manage,
         HrShiftDefinitionPermissions.Read,

@@ -13,6 +13,7 @@ public static class LeaveValidation
         public const string LeaveTypeNameTooLong = "leave-type-name-too-long";
         public const string LeaveTypeHasHistory = "leave-type-has-history";
         public const string LeaveTypeSystemImmutable = "leave-type-system-immutable";
+        public const string LeaveTypeInvalidDefaultRequestAmount = "leave-type-invalid-default-request-amount";
         public const string LeaveEntitlementInvalidAmount = "leave-entitlement-invalid-amount";
         public const string LeaveEntitlementBalanceNotSupported = "leave-entitlement-balance-not-supported";
         public const string LeaveEntitlementNoteRequired = "leave-entitlement-note-required";
@@ -25,6 +26,24 @@ public static class LeaveValidation
         public const string LeaveAlreadyCancelled = "leave-already-cancelled";
         public const string LeaveCancellationReasonRequired = "leave-cancellation-reason-required";
         public const string LeaveNoteTooLong = "leave-note-too-long";
+        public const string LeaveRequestDateOutsideEmployment = "leave-request-date-outside-employment";
+        public const string LeaveRequestAssignmentNotFound = "leave-request-assignment-not-found";
+        public const string LeaveRequestCrossAssignmentRange = "leave-request-cross-assignment-range";
+        public const string LeaveRequestTypeInactive = "leave-request-type-inactive";
+        public const string LeaveRequestInvalidAmount = "leave-request-invalid-amount";
+        public const string LeaveRequestOverlap = "leave-request-overlap";
+        public const string LeaveRequestNotPending = "leave-request-not-pending";
+        public const string LeaveRequestInvalidApprovalStage = "leave-request-invalid-approval-stage";
+        public const string LeaveRequestAlreadyFinalized = "leave-request-already-finalized";
+        public const string LeaveRequestRecordConflict = "leave-request-record-conflict";
+        public const string LeaveRequestNotFound = "leave-request-not-found";
+        public const string LeaveRequestReasonTooLong = "leave-request-reason-too-long";
+        public const string LeaveRequestAccountLinkRequired = "leave-request-account-link-required";
+        public const string LeaveRequestCurrentEmploymentNotFound = "leave-request-current-employment-not-found";
+        public const string LeaveRequestNotOwned = "leave-request-not-owned";
+        public const string LeaveRequestDepartmentAccessDenied = "leave-request-department-access-denied";
+        public const string LeaveRequestApprovalPermissionDenied = "leave-request-approval-permission-denied";
+        public const string LeaveRequestInvalidFinalAmount = "leave-request-invalid-final-amount";
     }
 
     public static class Fields
@@ -33,12 +52,17 @@ public static class LeaveValidation
         public const string Code = "code";
         public const string Name = "name";
         public const string TracksBalance = "tracksBalance";
+        public const string DefaultRequestAmount = "defaultRequestAmount";
         public const string EffectiveDate = "effectiveDate";
         public const string Amount = "amount";
+        public const string RequestedAmount = "requestedAmount";
+        public const string FinalAmount = "finalAmount";
         public const string Source = "source";
         public const string StartDate = "startDate";
         public const string EndDate = "endDate";
         public const string Note = "note";
+        public const string Reason = "reason";
         public const string CancellationReason = "cancellationReason";
+        public const string LeaveRequestId = "leaveRequestId";
     }
 }

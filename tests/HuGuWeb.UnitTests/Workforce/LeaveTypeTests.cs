@@ -169,4 +169,66 @@ public class LeaveTypeTests
 
         Assert.False(leaveType.IsActive);
     }
+
+    [Fact]
+    public void CreateSystemDefault_PersistsDefaultRequestAmount()
+    {
+        var leaveType = LeaveType.CreateSystemDefault(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "paternity",
+            "Babalık İzni",
+            LeaveTypeSystemKind.Paternity,
+            tracksBalance: false,
+            "system",
+            Now,
+            defaultRequestAmount: 10.0m);
+
+        Assert.Equal(10.0m, leaveType.DefaultRequestAmount);
+    }
+
+    [Fact]
+    public void TrySetDefaultRequestAmount_RejectsNonPositiveOrNonQuantum()
+    {
+        var leaveType = LeaveType.CreateSystemDefault(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            "paternity",
+            "Babalık İzni",
+            LeaveTypeSystemKind.Paternity,
+            tracksBalance: false,
+            "system",
+            Now);
+
+        Assert.False(leaveType.TrySetDefaultRequestAmount(0m, "actor", Now, out var field, out var code));
+        Assert.Equal(LeaveValidation.Fields.DefaultRequestAmount, field);
+        Assert.Equal(LeaveValidation.Codes.LeaveTypeInvalidDefaultRequestAmount, code);
+
+        Assert.False(leaveType.TrySetDefaultRequestAmount(1.25m, "actor", Now, out _, out _));
+        Assert.True(leaveType.TrySetDefaultRequestAmount(3.0m, "actor", Now, out _, out _));
+        Assert.Equal(3.0m, leaveType.DefaultRequestAmount);
+        Assert.True(leaveType.TrySetDefaultRequestAmount(null, "actor", Now, out _, out _));
+        Assert.Null(leaveType.DefaultRequestAmount);
+    }
+
+    [Fact]
+    public void TryCreateCustom_CanCarryDefaultRequestAmount_WithoutSystemKind()
+    {
+        var created = LeaveType.TryCreateCustom(
+            Guid.CreateVersion7(),
+            Guid.CreateVersion7(),
+            LeaveTypeDefaults.OptionalCustom.BirthdayCode,
+            LeaveTypeDefaults.OptionalCustom.BirthdayDefaultName,
+            tracksBalance: false,
+            "actor",
+            Now,
+            out var leaveType,
+            out _,
+            out _,
+            LeaveTypeDefaults.OptionalCustom.BirthdayDefaultRequestAmount);
+
+        Assert.True(created);
+        Assert.Null(leaveType!.SystemKind);
+        Assert.Equal(1.0m, leaveType.DefaultRequestAmount);
+    }
 }

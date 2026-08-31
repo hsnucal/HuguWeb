@@ -42,6 +42,7 @@ public interface IWorkforceStore
     Task<string> AllocatePersonnelNumberAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<IReadOnlyList<Employee>> ListEmployeesAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<IReadOnlyList<Employment>> ListEmploymentsAsync(Guid employeeId, CancellationToken cancellationToken);
+    Task<Employment?> GetEmploymentAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<Employment>> ListEmploymentsForEmployeesAsync(
         IReadOnlyCollection<Guid> employeeIds,
         CancellationToken cancellationToken);
@@ -141,8 +142,23 @@ public interface IWorkforceStore
         CancellationToken cancellationToken);
     Task<IReadOnlyList<LeaveRecord>> ListLeaveRecordsAsync(Guid employmentId, CancellationToken cancellationToken);
     Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken);
+    Task<LeaveRecord?> FindLeaveRecordBySourceLeaveRequestIdAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken);
     void AddLeaveEntitlement(LeaveEntitlement entitlement);
     void AddLeaveRecord(LeaveRecord record);
+
+    Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsAsync(Guid employmentId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsForEmployeeAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<LeaveRequest>> ListAllLeaveRequestsAsync(CancellationToken cancellationToken);
+    Task<LeaveRequest?> GetLeaveRequestAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<LeaveRequestDecision>> ListLeaveRequestDecisionsAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken);
+    void AddLeaveRequest(LeaveRequest request);
+    void AddLeaveRequestDecision(LeaveRequestDecision decision);
 
     Task<Assignment?> GetAssignmentAsync(Guid id, CancellationToken cancellationToken);
 

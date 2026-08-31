@@ -16,6 +16,8 @@ public static class AuthorizationPolicies
     public const string HrEmployeeHire = "HrEmployeeHire";
     public const string HrLeaveRead = "HrLeaveRead";
     public const string HrLeaveManage = "HrLeaveManage";
+    public const string HrLeaveRequest = "HrLeaveRequest";
+    public const string HrLeaveApprove = "HrLeaveApprove";
     public const string HrScheduleRead = "HrScheduleRead";
     public const string HrScheduleManage = "HrScheduleManage";
     public const string HrShiftDefinitionRead = "HrShiftDefinitionRead";

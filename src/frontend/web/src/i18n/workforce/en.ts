@@ -21,8 +21,13 @@ workforce: {
     leaveTypes: 'Leave types',
     leaveTypesIntro:
       'Organization-owned leave types. Code cannot change after creation; inactive types cannot be selected for new records.',
+    leaveManagement: 'Leave Management',
+    leaveManagementIntro:
+      'Review and manage employee leave requests.',
     leaveTypeCode: 'Code',
     leaveTypeName: 'Name',
+    leaveTypeDefaultRequestAmount: 'Default request duration',
+    leaveTypeDefaultRequestAmountHint: 'Optional. Days, in 0.5 increments.',
     leaveTracksBalance: 'Track balance',
     leaveTracksBalanceYes: 'Tracks balance',
     leaveTracksBalanceNo: 'Does not track balance',

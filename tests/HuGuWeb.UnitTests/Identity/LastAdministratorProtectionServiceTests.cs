@@ -215,6 +215,7 @@ public class LastAdministratorProtectionServiceTests
         public void AddAssignment(UserRoleAssignment assignment) => throw new NotSupportedException();
         public void RemoveAssignment(UserRoleAssignment assignment) => throw new NotSupportedException();
         public void AddLink(EmployeeAccountLink link) => throw new NotSupportedException();
+        public void RemoveLink(EmployeeAccountLink link) => throw new NotSupportedException();
         public void AddAudit(AuthorizationAuditRecord record) => throw new NotSupportedException();
         public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }

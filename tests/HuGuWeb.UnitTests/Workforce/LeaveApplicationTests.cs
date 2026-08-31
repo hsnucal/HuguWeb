@@ -13,12 +13,19 @@ public class LeaveApplicationTests
         var first = await harness.EnsureDefaultLeaveTypes.ExecuteAsync(harness.OrganizationId, CancellationToken.None);
         var second = await harness.EnsureDefaultLeaveTypes.ExecuteAsync(harness.OrganizationId, CancellationToken.None);
 
-        Assert.Equal(LeaveTypeDefaults.All.Count, first);
+        Assert.Equal(LeaveTypeDefaults.All.Count + 1, first);
         Assert.Equal(0, second);
-        Assert.Equal(LeaveTypeDefaults.All.Count, harness.Store.LeaveTypes.Count);
+        Assert.Equal(LeaveTypeDefaults.All.Count + 1, harness.Store.LeaveTypes.Count);
         var annual = harness.Store.LeaveTypes.Single(item => item.Code == "annual");
         Assert.True(annual.TracksBalance);
         Assert.Equal(LeaveTypeSystemKind.Annual, annual.SystemKind);
+        var paternity = harness.Store.LeaveTypes.Single(item => item.Code == "paternity");
+        Assert.Equal(10.0m, paternity.DefaultRequestAmount);
+        var bereavement = harness.Store.LeaveTypes.Single(item => item.Code == "bereavement");
+        Assert.Equal(3.0m, bereavement.DefaultRequestAmount);
+        var birthday = harness.Store.LeaveTypes.Single(item => item.Code == LeaveTypeDefaults.OptionalCustom.BirthdayCode);
+        Assert.Null(birthday.SystemKind);
+        Assert.Equal(1.0m, birthday.DefaultRequestAmount);
         Assert.All(
             harness.Store.LeaveTypes.Where(item => item.Code != "annual"),
             item => Assert.False(item.TracksBalance));
@@ -319,13 +326,13 @@ public class LeaveApplicationTests
         var first = await harness.EnsureDefaultLeaveTypes.ExecuteForAllOrganizationsAsync(CancellationToken.None);
         var second = await harness.EnsureDefaultLeaveTypes.ExecuteForAllOrganizationsAsync(CancellationToken.None);
 
-        Assert.Equal(LeaveTypeDefaults.All.Count * 2, first);
+        Assert.Equal((LeaveTypeDefaults.All.Count + 1) * 2, first);
         Assert.Equal(0, second);
         Assert.Equal(
-            LeaveTypeDefaults.All.Count,
+            LeaveTypeDefaults.All.Count + 1,
             harness.Store.LeaveTypes.Count(item => item.OrganizationId == harness.OrganizationId));
         Assert.Equal(
-            LeaveTypeDefaults.All.Count,
+            LeaveTypeDefaults.All.Count + 1,
             harness.Store.LeaveTypes.Count(item => item.OrganizationId == secondOrg));
     }
 

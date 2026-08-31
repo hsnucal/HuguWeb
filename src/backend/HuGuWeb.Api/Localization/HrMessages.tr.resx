@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -16,6 +16,8 @@
   <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>Bu kod bu organizasyonda zaten bir izin türüne ait.</value></data>
   <data name="error.leave-type-has-history.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Bu izin türünün geçmiş kullanımı olduğu için bakiye takibi değiştirilemez.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.detail" xml:space="preserve"><value>Varsayılan talep süresi sıfırdan büyük olmalı ve 0,5 gün katı olmalıdır.</value></data>
   <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>Hakediş miktarı 0,5 gün katı olmalı; manuel düzeltme dışında sıfır veya negatif olamaz.</value></data>
   <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
@@ -34,6 +36,42 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Bu izin kaydı zaten iptal edilmiş.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>İptal nedeni zorunludur.</value></data>
+  <data name="error.leave-request-date-outside-employment.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-date-outside-employment.detail" xml:space="preserve"><value>İzin talebi tarihleri iş ilişkisi dönemi içinde olmalıdır.</value></data>
+  <data name="error.leave-request-assignment-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-assignment-not-found.detail" xml:space="preserve"><value>İzin talebi başlangıç tarihini kapsayan birincil atama bulunamadı.</value></data>
+  <data name="error.leave-request-cross-assignment-range.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-cross-assignment-range.detail" xml:space="preserve"><value>İzin talebi tarih aralığı tek bir birincil atama içinde kalmalıdır. Ayrı talepler oluşturun.</value></data>
+  <data name="error.leave-request-type-inactive.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-type-inactive.detail" xml:space="preserve"><value>Pasif bir izin türü yeni talepte kullanılamaz.</value></data>
+  <data name="error.leave-request-invalid-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-invalid-amount.detail" xml:space="preserve"><value>İzin talebi miktarı sıfırdan büyük ve 0,5 gün katı olmalıdır.</value></data>
+  <data name="error.leave-request-overlap.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-request-overlap.detail" xml:space="preserve"><value>Başka bir bekleyen/onaylı talep veya kayıtlı izin bu tarihlerle çakışıyor.</value></data>
+  <data name="error.leave-request-not-pending.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-request-not-pending.detail" xml:space="preserve"><value>Bu işlem yalnızca bekleyen izin talebi için geçerlidir.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.detail" xml:space="preserve"><value>Bu işlem mevcut onay aşaması için geçerli değildir.</value></data>
+  <data name="error.leave-request-already-finalized.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-request-already-finalized.detail" xml:space="preserve"><value>Onaylanmış, reddedilmiş veya iptal edilmiş izin talebi değiştirilemez.</value></data>
+  <data name="error.leave-request-record-conflict.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>
+  <data name="error.leave-request-record-conflict.detail" xml:space="preserve"><value>Bu talep için izin kaydı zaten var veya iptal için bağlanamıyor.</value></data>
+  <data name="error.leave-request-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.leave-request-not-found.detail" xml:space="preserve"><value>İzin talebi bulunamadı.</value></data>
+  <data name="error.leave-request-reason-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-reason-too-long.detail" xml:space="preserve"><value>İzin talebi gerekçesi çok uzun.</value></data>
+  <data name="error.leave-request-account-link-required.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.leave-request-account-link-required.detail" xml:space="preserve"><value>İzin self-servis için personel hesap bağlantısı zorunludur.</value></data>
+  <data name="error.leave-request-current-employment-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-current-employment-not-found.detail" xml:space="preserve"><value>İzin self-servis için açık bir iş ilişkisi bulunamadı.</value></data>
+  <data name="error.leave-request-not-owned.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.leave-request-not-owned.detail" xml:space="preserve"><value>İzin talebi bulunamadı.</value></data>
+  <data name="error.leave-request-department-access-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.leave-request-department-access-denied.detail" xml:space="preserve"><value>Departman kapsamı bu izin talebine izin vermiyor.</value></data>
+  <data name="error.leave-request-approval-permission-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.leave-request-approval-permission-denied.detail" xml:space="preserve"><value>Bu işlem için izin onay yetkisi gerekir.</value></data>
+  <data name="error.leave-request-invalid-final-amount.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.leave-request-invalid-final-amount.detail" xml:space="preserve"><value>Nihai izin miktarı sıfırdan büyük ve 0,5 gün katı olmalıdır.</value></data>
   <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
   <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>Vardiya tanımı bulunamadı.</value></data>
   <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>Mevcut kayıtla çakışma var.</value></data>

@@ -1,6 +1,8 @@
 using HuGuWeb.Api.Authorization;
+using HuGuWeb.Workforce.Infrastructure.Persistence;
 using HuGuWeb.Workforce.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace HuGuWeb.Api.Identity;
 
@@ -28,6 +30,7 @@ public static class DevelopmentUserSeeder
             using var scope = app.Services.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
             var store = scope.ServiceProvider.GetRequiredService<IAuthorizationStore>();
+            var workforce = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
 
             await EnsureSystemRolesAsync(store, logger);
 
@@ -43,6 +46,7 @@ public static class DevelopmentUserSeeder
                 await EnsurePersonaAsync(
                     userManager,
                     store,
+                    workforce,
                     logger,
                     DevelopmentPersonaCatalog.Broad(broadEmail),
                     broadPassword);
@@ -59,8 +63,10 @@ public static class DevelopmentUserSeeder
 
             foreach (var persona in DevelopmentPersonaCatalog.AdditionalPersonas)
             {
-                await EnsurePersonaAsync(userManager, store, logger, persona, sharedPassword);
+                await EnsurePersonaAsync(userManager, store, workforce, logger, persona, sharedPassword);
             }
+
+            await CleanupOrphanEmployeeAccountLinksAsync(store, logger);
         }
         catch (Exception ex)
         {
@@ -118,6 +124,7 @@ public static class DevelopmentUserSeeder
     private static async Task EnsurePersonaAsync(
         UserManager<ApplicationUser> userManager,
         IAuthorizationStore store,
+        WorkforceDbContext workforce,
         ILogger logger,
         DevelopmentPersonaDefinition persona,
         string password)
@@ -150,7 +157,8 @@ public static class DevelopmentUserSeeder
         }
 
         await RemoveLegacyPermissionClaimsAsync(userManager, existing);
-        await EnsureMembershipAndRoleAsync(store, existing.Id, persona.RoleCode, persona.PropertyId);
+        await EnsureMembershipAndRolesAsync(store, workforce, logger, existing.Id, persona);
+        await EnsureEmployeeAccountLinkAsync(store, logger, existing.Id, persona);
         await userManager.UpdateSecurityStampAsync(existing);
     }
 
@@ -165,13 +173,15 @@ public static class DevelopmentUserSeeder
         }
     }
 
-    private static async Task EnsureMembershipAndRoleAsync(
+    private static async Task EnsureMembershipAndRolesAsync(
         IAuthorizationStore store,
+        WorkforceDbContext workforce,
+        ILogger logger,
         string userId,
-        string roleCode,
-        Guid? propertyId)
+        DevelopmentPersonaDefinition persona)
     {
         var organizationId = DevelopmentWorkforceSeeder.OrganizationId;
+        var propertyId = persona.PropertyId;
         var memberships = await store.ListMembershipsForUserAsync(userId, CancellationToken.None);
         var membership = memberships.FirstOrDefault(item =>
             item.OrganizationId == organizationId && item.PropertyId == propertyId);
@@ -188,6 +198,7 @@ public static class DevelopmentUserSeeder
             };
             store.AddMembership(membership);
             await store.SaveChangesAsync(CancellationToken.None);
+            membership = (await store.GetMembershipAsync(membership.Id, CancellationToken.None))!;
         }
         else if (!membership.IsActive)
         {
@@ -196,23 +207,177 @@ public static class DevelopmentUserSeeder
 
         DeactivateObsoleteSeedMemberships(memberships, organizationId, propertyId, membership.Id);
 
-        var role = await store.FindRoleByCodeAsync(organizationId, roleCode, CancellationToken.None);
-        if (role is null)
+        foreach (var roleCode in persona.AssignedRoleCodes)
+        {
+            var role = await store.FindRoleByCodeAsync(organizationId, roleCode, CancellationToken.None);
+            if (role is null)
+            {
+                continue;
+            }
+
+            if (membership.RoleAssignments.All(item => item.RoleId != role.Id))
+            {
+                store.AddAssignment(new UserRoleAssignment
+                {
+                    Id = Guid.CreateVersion7(),
+                    MembershipId = membership.Id,
+                    RoleId = role.Id
+                });
+            }
+        }
+
+        await EnsureDepartmentScopesAsync(store, workforce, logger, membership, persona);
+        await store.SaveChangesAsync(CancellationToken.None);
+    }
+
+    private static async Task EnsureDepartmentScopesAsync(
+        IAuthorizationStore store,
+        WorkforceDbContext workforce,
+        ILogger logger,
+        UserMembership membership,
+        DevelopmentPersonaDefinition persona)
+    {
+        if (persona.DepartmentScopeCodes is null || membership.PropertyId is null)
         {
             return;
         }
 
-        if (membership.RoleAssignments.All(item => item.RoleId != role.Id))
+        var propertyId = membership.PropertyId.Value;
+        var desired = new HashSet<Guid>();
+        foreach (var code in persona.DepartmentScopeCodes)
         {
-            store.AddAssignment(new UserRoleAssignment
+            var department = await workforce.Departments.FirstOrDefaultAsync(
+                item => item.PropertyId == propertyId && item.Code == code && item.IsActive,
+                CancellationToken.None);
+            if (department is null)
+            {
+                logger.LogWarning(
+                    "Development persona {Email} department scope {Code} was not found for property {PropertyId}.",
+                    persona.Email,
+                    code,
+                    propertyId);
+                continue;
+            }
+
+            desired.Add(department.Id);
+        }
+
+        var current = membership.DepartmentScopes.Select(item => item.DepartmentId).ToHashSet();
+        if (current.SetEquals(desired))
+        {
+            return;
+        }
+
+        foreach (var extra in membership.DepartmentScopes.Where(item => !desired.Contains(item.DepartmentId)).ToArray())
+        {
+            store.RemoveDepartmentScope(extra);
+        }
+
+        foreach (var departmentId in desired.Where(id => !current.Contains(id)))
+        {
+            store.AddDepartmentScope(new UserMembershipDepartmentScope
             {
                 Id = Guid.CreateVersion7(),
-                MembershipId = membership.Id,
-                RoleId = role.Id
+                UserMembershipId = membership.Id,
+                DepartmentId = departmentId
             });
         }
 
+        logger.LogInformation(
+            "Development persona {Email} department scopes set to {Codes}.",
+            persona.Email,
+            string.Join(',', persona.DepartmentScopeCodes));
+    }
+
+    private static async Task EnsureEmployeeAccountLinkAsync(
+        IAuthorizationStore store,
+        ILogger logger,
+        string userId,
+        DevelopmentPersonaDefinition persona)
+    {
+        if (persona.LinkedEmployeeId is not Guid employeeId)
+        {
+            var unexpected = await store.FindLinkByUserAsync(userId, CancellationToken.None);
+            if (unexpected is not null)
+            {
+                store.RemoveLink(unexpected);
+                await store.SaveChangesAsync(CancellationToken.None);
+                logger.LogInformation(
+                    "Removed unexpected EmployeeAccountLink for non-employee persona {Email}.",
+                    persona.Email);
+            }
+
+            return;
+        }
+
+        var linkId = persona.LinkedAccountLinkId ?? Guid.CreateVersion7();
+        var byUser = await store.FindLinkByUserAsync(userId, CancellationToken.None);
+        if (byUser is not null)
+        {
+            if (byUser.EmployeeId == employeeId && byUser.Id == linkId)
+            {
+                return;
+            }
+
+            store.RemoveLink(byUser);
+            await store.SaveChangesAsync(CancellationToken.None);
+            logger.LogInformation(
+                "Corrected EmployeeAccountLink for development persona {Email}.",
+                persona.Email);
+        }
+
+        var byEmployee = await store.FindLinkByEmployeeAsync(employeeId, CancellationToken.None);
+        if (byEmployee is not null)
+        {
+            if (byEmployee.UserId == userId && byEmployee.Id == linkId)
+            {
+                return;
+            }
+
+            store.RemoveLink(byEmployee);
+            await store.SaveChangesAsync(CancellationToken.None);
+        }
+
+        store.AddLink(new EmployeeAccountLink
+        {
+            Id = linkId,
+            UserId = userId,
+            EmployeeId = employeeId,
+            CreatedAtUtc = DateTimeOffset.UtcNow
+        });
         await store.SaveChangesAsync(CancellationToken.None);
+        logger.LogInformation(
+            "Development persona {Email} linked to employee {EmployeeId}.",
+            persona.Email,
+            employeeId);
+    }
+
+    private static async Task CleanupOrphanEmployeeAccountLinksAsync(IAuthorizationStore store, ILogger logger)
+    {
+        var allowedEmployeeIds = DevelopmentPersonaCatalog.AdditionalPersonas
+            .Where(item => item.LinkedEmployeeId.HasValue)
+            .Select(item => item.LinkedEmployeeId!.Value)
+            .ToHashSet();
+        var links = await store.ListLinksAsync(CancellationToken.None);
+        var removed = 0;
+        foreach (var link in links)
+        {
+            if (allowedEmployeeIds.Contains(link.EmployeeId))
+            {
+                continue;
+            }
+
+            store.RemoveLink(link);
+            removed++;
+        }
+
+        if (removed > 0)
+        {
+            await store.SaveChangesAsync(CancellationToken.None);
+            logger.LogInformation(
+                "Removed {Count} orphan development EmployeeAccountLink row(s).",
+                removed);
+        }
     }
 
     /// <summary>

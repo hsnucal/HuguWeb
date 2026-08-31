@@ -22,8 +22,13 @@ workforce: {
     leaveTypes: 'İzin türleri',
     leaveTypesIntro:
       'Organizasyona ait izin türleri. Kod oluşturulduktan sonra değiştirilmez; pasif türler yeni kayıtlarda seçilemez.',
+    leaveManagement: 'İzin Yönetimi',
+    leaveManagementIntro:
+      'Personel izin taleplerini inceleyin ve yönetin.',
     leaveTypeCode: 'Kod',
     leaveTypeName: 'Ad',
+    leaveTypeDefaultRequestAmount: 'Varsayılan talep süresi',
+    leaveTypeDefaultRequestAmountHint: 'İsteğe bağlı. Gün cinsinden, 0,5 katı.',
     leaveTracksBalance: 'Bakiye takip et',
     leaveTracksBalanceYes: 'Bakiye takip edilir',
     leaveTracksBalanceNo: 'Bakiye takip edilmez',

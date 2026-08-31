@@ -35,7 +35,7 @@ export function resolveWorkforceNavTo(options: {
   }
 
   if (options.canReadHrLeave) {
-    return '/app/workforce/leave-types'
+    return '/app/workforce/leave-management'
   }
 
   if (options.canReadHrShiftDefinitions) {
@@ -61,6 +61,7 @@ export function buildPrimaryNav(options: {
   canReadHrLeave?: boolean
   canReadHrShiftDefinitions?: boolean
   canReadHrSchedule?: boolean
+  canRequestHrLeave?: boolean
 }): SidebarNavItem[] {
   const items: SidebarNavItem[] = [
     {
@@ -99,6 +100,15 @@ export function buildPrimaryNav(options: {
         kind: 'link',
         to: workforceTo,
       },
+    })
+  }
+
+  if (options.canRequestHrLeave) {
+    items.push({
+      id: 'my-leave',
+      icon: 'tasks',
+      labelKey: 'navigation.myLeave',
+      destination: { kind: 'link', to: '/app/my/leave' },
     })
   }
 

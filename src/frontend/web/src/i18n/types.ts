@@ -34,6 +34,7 @@ export type Translations = {
     workforce: string
     roomOperations: string
     technicalService: string
+    myLeave: string
     openMenu: string
     closeMenu: string
   }
@@ -88,8 +89,12 @@ export type Translations = {
     officialSettingsIntro: string
     leaveTypes: string
     leaveTypesIntro: string
+    leaveManagement: string
+    leaveManagementIntro: string
     leaveTypeCode: string
     leaveTypeName: string
+    leaveTypeDefaultRequestAmount: string
+    leaveTypeDefaultRequestAmountHint: string
     leaveTracksBalance: string
     leaveTracksBalanceYes: string
     leaveTracksBalanceNo: string
@@ -333,10 +338,12 @@ export type Translations = {
       summaryTitle: string
       entitlementsTitle: string
       historyTitle: string
+      requestsTitle: string
       emptyTitle: string
       emptyHint: string
       noEntitlements: string
       noRecords: string
+      noRequests: string
       noBalanceTypes: string
       calendarHint: string
       type: string
@@ -346,6 +353,7 @@ export type Translations = {
       date: string
       source: string
       amount: string
+      dayUnit: string
       note: string
       startDate: string
       endDate: string
@@ -357,7 +365,102 @@ export type Translations = {
       cancellationReason: string
       amountHint: string
       positiveAmountHint: string
+      defaultRequestAmountHint: string
       adjustmentAmountHint: string
+      myLeaveTitle: string
+      myLeaveIntro: string
+      newRequest: string
+      submitRequest: string
+      myRequests: string
+      withdraw: string
+      withdrawConfirm: string
+      withdrawSuccess: string
+      createSuccess: string
+      requestedAmount: string
+      requestedAmountShort: string
+      requestedAmountLabel: string
+      suggestedAmount: string
+      systemSuggestion: string
+      finalAmount: string
+      finalApprovalSection: string
+      reason: string
+      reasonEmpty: string
+      previewTitle: string
+      scheduleIncompleteWarning: string
+      scheduleIncompleteWarningShort: string
+      balanceOverrunWarning: string
+      balanceOverrunWarningShort: string
+      currentBalance: string
+      projectedBalance: string
+      afterApprovalBalance: string
+      balanceSummary: string
+      primarySummary: string
+      review: string
+      approve: string
+      sendToHr: string
+      reject: string
+      rejectNote: string
+      cancelApproved: string
+      departmentApproveHint: string
+      hrApproveHint: string
+      cancelApprovedHint: string
+      decisionHistory: string
+      scheduleSummary: string
+      showScheduleDetails: string
+      hideScheduleDetails: string
+      metricScheduled: string
+      metricRestDay: string
+      metricUnscheduled: string
+      linkedRecord: string
+      scheduleCharge: string
+      scheduleChargeUnknown: string
+      scheduleStateScheduled: string
+      scheduleStateRestDay: string
+      scheduleStateUnscheduled: string
+      tabPending: string
+      tabApproved: string
+      tabRejected: string
+      tabCancelled: string
+      stageAll: string
+      stageDepartment: string
+      stageHr: string
+      emptyRequests: string
+      emptyRequestsHint: string
+      pagePrev: string
+      pageNext: string
+      pageStatus: string
+      actions: string
+      createdAt: string
+      personnel: string
+      department: string
+      position: string
+      compareSuggested: string
+      hrApproveAction: string
+      noteOptional: string
+      searchPlaceholder: string
+      allLeaveTypes: string
+      scheduledCount: string
+      restDayCount: string
+      unscheduledCount: string
+      successDepartmentApproved: string
+      successHrApproved: string
+      successRejected: string
+      successCancelled: string
+      decisionCreated: string
+      decisionDepartmentApproved: string
+      decisionHrApproved: string
+      decisionRejected: string
+      decisionCancelled: string
+      decisionWithdrawn: string
+      requests: {
+        status: {
+          pendingDepartment: string
+          pendingHr: string
+          approved: string
+          rejected: string
+          cancelled: string
+        }
+      }
       kinds: {
         Annual: string
         Unpaid: string
@@ -398,6 +501,18 @@ export type Translations = {
         positiveAmount: string
         adjustmentAmount: string
         overlap: string
+        requestOverlap: string
+        crossAssignment: string
+        assignmentNotFound: string
+        accountLinkRequired: string
+        currentEmploymentNotFound: string
+        requestNotFound: string
+        notPending: string
+        invalidStage: string
+        alreadyFinalized: string
+        departmentAccessDenied: string
+        approvalPermissionDenied: string
+        recordConflict: string
         recordNotFound: string
         alreadyCancelled: string
         reasonRequired: string
@@ -926,6 +1041,8 @@ export type Translations = {
       'hr.employee.sensitive.read': string
       'hr.leave.read': string
       'hr.leave.manage': string
+      'hr.leave.request': string
+      'hr.leave.approve': string
       'hr.schedule.read': string
       'hr.schedule.manage': string
       'hr.shift-definition.read': string

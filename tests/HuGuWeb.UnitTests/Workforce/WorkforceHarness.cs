@@ -51,6 +51,8 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<LeaveType> LeaveTypes { get; } = [];
     public List<LeaveEntitlement> LeaveEntitlements { get; } = [];
     public List<LeaveRecord> LeaveRecords { get; } = [];
+    public List<LeaveRequest> LeaveRequests { get; } = [];
+    public List<LeaveRequestDecision> LeaveRequestDecisions { get; } = [];
     public List<ShiftDefinition> ShiftDefinitions { get; } = [];
     public List<ScheduleEntry> ScheduleEntries { get; } = [];
     public List<ScheduleEntryChange> ScheduleEntryChanges { get; } = [];
@@ -153,6 +155,9 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
 
     public Task<IReadOnlyList<Employment>> ListEmploymentsAsync(Guid employeeId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<Employment>>(Employments.Where(item => item.EmployeeId == employeeId).ToArray());
+
+    public Task<Employment?> GetEmploymentAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Employments.FirstOrDefault(item => item.Id == id));
 
     public Task<IReadOnlyList<Employment>> ListEmploymentsForEmployeesAsync(
         IReadOnlyCollection<Guid> employeeIds,
@@ -378,9 +383,51 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public Task<LeaveRecord?> GetLeaveRecordAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(LeaveRecords.FirstOrDefault(item => item.Id == id));
 
+    public Task<LeaveRecord?> FindLeaveRecordBySourceLeaveRequestIdAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(LeaveRecords.FirstOrDefault(item => item.SourceLeaveRequestId == leaveRequestId));
+
     public void AddLeaveEntitlement(LeaveEntitlement entitlement) => LeaveEntitlements.Add(entitlement);
 
     public void AddLeaveRecord(LeaveRecord record) => LeaveRecords.Add(record);
+
+    public Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveRequest>>(
+            LeaveRequests.Where(item => item.EmploymentId == employmentId).ToArray());
+
+    public Task<IReadOnlyList<LeaveRequest>> ListLeaveRequestsForEmployeeAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken)
+    {
+        var employmentIds = Employments
+            .Where(item => item.EmployeeId == employeeId)
+            .Select(item => item.Id)
+            .ToHashSet();
+        return Task.FromResult<IReadOnlyList<LeaveRequest>>(
+            LeaveRequests.Where(item => employmentIds.Contains(item.EmploymentId)).ToArray());
+    }
+
+    public Task<IReadOnlyList<LeaveRequest>> ListAllLeaveRequestsAsync(CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveRequest>>(LeaveRequests.ToArray());
+
+    public Task<LeaveRequest?> GetLeaveRequestAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(LeaveRequests.FirstOrDefault(item => item.Id == id));
+
+    public Task<IReadOnlyList<LeaveRequestDecision>> ListLeaveRequestDecisionsAsync(
+        Guid leaveRequestId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<LeaveRequestDecision>>(
+            LeaveRequestDecisions
+                .Where(item => item.LeaveRequestId == leaveRequestId)
+                .OrderBy(item => item.DecisionAtUtc)
+                .ToArray());
+
+    public void AddLeaveRequest(LeaveRequest request) => LeaveRequests.Add(request);
+
+    public void AddLeaveRequestDecision(LeaveRequestDecision decision) => LeaveRequestDecisions.Add(decision);
 
     public Task<IReadOnlyList<ShiftDefinition>> ListShiftDefinitionsAsync(
         Guid propertyId,
@@ -531,6 +578,15 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
             throw new InvalidOperationException("Schedule conflict: duplicate entry for employment and date.");
         }
 
+        var duplicateSourceRequest = LeaveRecords
+            .Where(item => item.SourceLeaveRequestId is not null)
+            .GroupBy(item => item.SourceLeaveRequestId)
+            .Any(group => group.Count() > 1);
+        if (duplicateSourceRequest)
+        {
+            throw new InvalidOperationException("Leave record conflict: duplicate SourceLeaveRequestId.");
+        }
+
         return Task.CompletedTask;
     }
 }
@@ -593,6 +649,10 @@ internal sealed class InMemoryWorkforceSnapshot
     private readonly List<LeaveType> _leaveTypes;
     private readonly List<LeaveEntitlement> _leaveEntitlements;
     private readonly List<LeaveRecord> _leaveRecords;
+    private readonly List<(Guid Id, LeaveRecordStatus Status, DateTimeOffset? CancelledAtUtc, string? CancelledByUserId, string? CancellationReason)> _leaveRecordStates;
+    private readonly List<LeaveRequest> _leaveRequests;
+    private readonly List<(Guid Id, LeaveRequestStatus Status, LeaveRequestApprovalStage ApprovalStage, DateTimeOffset UpdatedAtUtc)> _leaveRequestStates;
+    private readonly List<LeaveRequestDecision> _leaveRequestDecisions;
     private readonly List<ShiftDefinition> _shiftDefinitions;
     private readonly List<ScheduleEntry> _scheduleEntries;
     private readonly List<ScheduleEntryChange> _scheduleEntryChanges;
@@ -624,6 +684,10 @@ internal sealed class InMemoryWorkforceSnapshot
         List<LeaveType> leaveTypes,
         List<LeaveEntitlement> leaveEntitlements,
         List<LeaveRecord> leaveRecords,
+        List<(Guid Id, LeaveRecordStatus Status, DateTimeOffset? CancelledAtUtc, string? CancelledByUserId, string? CancellationReason)> leaveRecordStates,
+        List<LeaveRequest> leaveRequests,
+        List<(Guid Id, LeaveRequestStatus Status, LeaveRequestApprovalStage ApprovalStage, DateTimeOffset UpdatedAtUtc)> leaveRequestStates,
+        List<LeaveRequestDecision> leaveRequestDecisions,
         List<ShiftDefinition> shiftDefinitions,
         List<ScheduleEntry> scheduleEntries,
         List<ScheduleEntryChange> scheduleEntryChanges,
@@ -654,6 +718,10 @@ internal sealed class InMemoryWorkforceSnapshot
         _leaveTypes = leaveTypes;
         _leaveEntitlements = leaveEntitlements;
         _leaveRecords = leaveRecords;
+        _leaveRecordStates = leaveRecordStates;
+        _leaveRequests = leaveRequests;
+        _leaveRequestStates = leaveRequestStates;
+        _leaveRequestDecisions = leaveRequestDecisions;
         _shiftDefinitions = shiftDefinitions;
         _scheduleEntries = scheduleEntries;
         _scheduleEntryChanges = scheduleEntryChanges;
@@ -687,6 +755,14 @@ internal sealed class InMemoryWorkforceSnapshot
             [.. store.LeaveTypes],
             [.. store.LeaveEntitlements],
             [.. store.LeaveRecords],
+            store.LeaveRecords
+                .Select(item => (item.Id, item.Status, item.CancelledAtUtc, item.CancelledByUserId, item.CancellationReason))
+                .ToList(),
+            [.. store.LeaveRequests],
+            store.LeaveRequests
+                .Select(item => (item.Id, item.Status, item.ApprovalStage, item.UpdatedAtUtc))
+                .ToList(),
+            [.. store.LeaveRequestDecisions],
             [.. store.ShiftDefinitions],
             [.. store.ScheduleEntries],
             [.. store.ScheduleEntryChanges],
@@ -719,6 +795,24 @@ internal sealed class InMemoryWorkforceSnapshot
         Replace(store.LeaveTypes, _leaveTypes);
         Replace(store.LeaveEntitlements, _leaveEntitlements);
         Replace(store.LeaveRecords, _leaveRecords);
+        foreach (var state in _leaveRecordStates)
+        {
+            var record = store.LeaveRecords.FirstOrDefault(item => item.Id == state.Id);
+            record?.RestoreCancellationState(
+                state.Status,
+                state.CancelledAtUtc,
+                state.CancelledByUserId,
+                state.CancellationReason);
+        }
+
+        Replace(store.LeaveRequests, _leaveRequests);
+        foreach (var state in _leaveRequestStates)
+        {
+            var request = store.LeaveRequests.FirstOrDefault(item => item.Id == state.Id);
+            request?.RestoreWorkflowState(state.Status, state.ApprovalStage, state.UpdatedAtUtc);
+        }
+
+        Replace(store.LeaveRequestDecisions, _leaveRequestDecisions);
         Replace(store.ShiftDefinitions, _shiftDefinitions);
         Replace(store.ScheduleEntries, _scheduleEntries);
         Replace(store.ScheduleEntryChanges, _scheduleEntryChanges);
@@ -798,6 +892,17 @@ internal sealed class WorkforceHarness
     public RecordLeaveEntitlementUseCase RecordLeaveEntitlement { get; }
     public RecordLeaveUseCase RecordLeave { get; }
     public CancelLeaveRecordUseCase CancelLeaveRecord { get; }
+    public CreateLeaveRequestUseCase CreateLeaveRequest { get; }
+    public ApproveLeaveRequestDepartmentUseCase ApproveLeaveRequestDepartment { get; }
+    public ApproveLeaveRequestHrUseCase ApproveLeaveRequestHr { get; }
+    public RejectLeaveRequestUseCase RejectLeaveRequest { get; }
+    public WithdrawLeaveRequestUseCase WithdrawLeaveRequest { get; }
+    public CancelApprovedLeaveRequestUseCase CancelApprovedLeaveRequest { get; }
+    public LeaveRequestComposer LeaveRequestComposer { get; }
+    public LeaveRequestQuery LeaveRequestQuery { get; }
+    public CreateMyLeaveRequestUseCase CreateMyLeaveRequest { get; }
+    public PreviewLeaveRequestUseCase PreviewLeaveRequest { get; }
+    public LeaveRequestActionUseCase LeaveRequestActions { get; }
     public ShiftDefinitionAdminUseCase ShiftDefinitionAdmin { get; }
     public UpsertScheduleEntryUseCase UpsertSchedule { get; }
     public ClearScheduleEntryUseCase ClearSchedule { get; }
@@ -895,6 +1000,24 @@ internal sealed class WorkforceHarness
         RecordLeaveEntitlement = new RecordLeaveEntitlementUseCase(Store, Clock, Workplace, LeaveQuery);
         RecordLeave = new RecordLeaveUseCase(Store, Clock, Workplace, LeaveQuery);
         CancelLeaveRecord = new CancelLeaveRecordUseCase(Store, Clock, Workplace, LeaveQuery);
+        CreateLeaveRequest = new CreateLeaveRequestUseCase(Store, Clock, Workplace);
+        ApproveLeaveRequestDepartment = new ApproveLeaveRequestDepartmentUseCase(Store, Clock);
+        ApproveLeaveRequestHr = new ApproveLeaveRequestHrUseCase(Store, Clock);
+        RejectLeaveRequest = new RejectLeaveRequestUseCase(Store, Clock);
+        WithdrawLeaveRequest = new WithdrawLeaveRequestUseCase(Store, Clock);
+        CancelApprovedLeaveRequest = new CancelApprovedLeaveRequestUseCase(Store, Clock);
+        LeaveRequestComposer = new LeaveRequestComposer(Store);
+        LeaveRequestQuery = new LeaveRequestQuery(Store, Workplace, LeaveRequestComposer);
+        CreateMyLeaveRequest = new CreateMyLeaveRequestUseCase(Store, CreateLeaveRequest, LeaveRequestComposer);
+        PreviewLeaveRequest = new PreviewLeaveRequestUseCase(Store, Workplace, LeaveRequestComposer);
+        LeaveRequestActions = new LeaveRequestActionUseCase(
+            LeaveRequestQuery,
+            LeaveRequestComposer,
+            ApproveLeaveRequestDepartment,
+            ApproveLeaveRequestHr,
+            RejectLeaveRequest,
+            WithdrawLeaveRequest,
+            CancelApprovedLeaveRequest);
         ShiftDefinitionAdmin = new ShiftDefinitionAdminUseCase(Store, Clock, Workplace);
         UpsertSchedule = new UpsertScheduleEntryUseCase(Store, Clock, Workplace);
         ClearSchedule = new ClearScheduleEntryUseCase(Store, Clock, Workplace);

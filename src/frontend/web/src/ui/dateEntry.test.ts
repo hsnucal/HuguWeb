@@ -42,6 +42,18 @@ test('typing constraint keeps a four-digit year', () => {
   assert.equal(constrainDateInput('18.04.2019'), '18.04.2019')
 })
 
+test('start and end leave dates parse independently as ISO', () => {
+  assert.equal(toIsoDate('31.08.2026'), '2026-08-31')
+  assert.equal(toIsoDate('01.09.2026'), '2026-09-01')
+  assert.notEqual(toIsoDate('31.08.2026'), toIsoDate('01.09.2026'))
+})
+
+test('blur-ready incomplete drafts stay non-ISO until complete', () => {
+  assert.equal(toIsoDate('31.08.202'), null)
+  assert.equal(toIsoDate('31.08.'), null)
+  assert.equal(constrainDateInput('31082026'), '31.08.2026')
+})
+
 test('optional graduation-style DateOnly stays empty or valid ISO', () => {
   assert.equal(toIsoDate(''), null)
   assert.equal(toIsoDate('15.06.2018'), '2018-06-15')

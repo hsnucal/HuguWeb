@@ -45,6 +45,8 @@ authorization: {
       'hr.employee.sensitive.read': 'Чтение чувствительных данных',
       'hr.leave.read': 'Чтение отпусков',
       'hr.leave.manage': 'Управление отпусками',
+      'hr.leave.request': 'Заявка на отпуск',
+      'hr.leave.approve': 'Согласование отпуска',
       'hr.schedule.read': 'Чтение графика',
       'hr.schedule.manage': 'Управление графиком',
       'hr.shift-definition.read': 'Чтение определений смен',

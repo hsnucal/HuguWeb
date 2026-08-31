@@ -442,12 +442,13 @@ public class ProductionAssemblyGuardTests
         Assert.Contains("LeaveType", names);
         Assert.Contains("LeaveEntitlement", names);
         Assert.Contains("LeaveRecord", names);
+        Assert.Contains("LeaveRequest", names);
+        Assert.Contains("LeaveRequestDecision", names);
         Assert.Contains("ShiftDefinition", names);
         Assert.Contains("ScheduleEntry", names);
         Assert.Contains("ScheduleEntryChange", names);
         Assert.DoesNotContain("PayrollRun", names);
         Assert.DoesNotContain("LeaveBalance", names);
-        Assert.DoesNotContain("LeaveRequest", names);
         Assert.DoesNotContain("LeaveAdjustment", names);
         Assert.DoesNotContain("WorkCalendar", names);
         Assert.DoesNotContain("ShiftAssignment", names);

@@ -73,6 +73,47 @@ test('schedule-only users get Workforce nav routed to shift plan', () => {
   }
 })
 
+test('leave-only users get Workforce nav routed to leave management', () => {
+  assert.equal(
+    resolveWorkforceNavTo({
+      canReadHrEmployees: false,
+      canReadWorkforce: false,
+      canReadHrLeave: true,
+    }),
+    '/app/workforce/leave-management',
+  )
+})
+
+test('hr.leave.request shows My Leave nav destination', () => {
+  const items = buildPrimaryNav({
+    canReadRoomOperations: false,
+    canReadMaintenance: false,
+    canReadHrEmployees: false,
+    canReadWorkforce: false,
+    canRequestHrLeave: true,
+  })
+  const myLeave = items.find((item) => item.id === 'my-leave')
+  assert.ok(myLeave)
+  assert.equal(myLeave.destination.kind, 'link')
+  if (myLeave.destination.kind === 'link') {
+    assert.equal(myLeave.destination.to, '/app/my/leave')
+  }
+})
+
+test('users without hr.leave.request do not see My Leave nav', () => {
+  const items = buildPrimaryNav({
+    canReadRoomOperations: false,
+    canReadMaintenance: true,
+    canReadHrEmployees: false,
+    canReadWorkforce: false,
+    canRequestHrLeave: false,
+  })
+  assert.equal(
+    items.find((item) => item.id === 'my-leave'),
+    undefined,
+  )
+})
+
 test('modules without permission are omitted while future placeholders remain', () => {
   const items = buildPrimaryNav({
     canReadRoomOperations: false,

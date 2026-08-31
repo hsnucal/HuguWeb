@@ -45,6 +45,8 @@ authorization: {
       'hr.employee.sensitive.read': 'Sensitive personnel read',
       'hr.leave.read': 'Leave read',
       'hr.leave.manage': 'Leave management',
+      'hr.leave.request': 'Leave request',
+      'hr.leave.approve': 'Leave approval',
       'hr.schedule.read': 'Schedule read',
       'hr.schedule.manage': 'Schedule management',
       'hr.shift-definition.read': 'Shift definition read',

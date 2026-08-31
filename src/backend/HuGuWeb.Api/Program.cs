@@ -33,8 +33,9 @@ app.UseHuGuWebPipeline();
 
 if (app.Environment.IsDevelopment())
 {
-    await DevelopmentUserSeeder.TrySeedAsync(app);
+    // Workforce persona Employees must exist before EmployeeAccountLink seed.
     await TrySeedWorkforceAsync(app);
+    await DevelopmentUserSeeder.TrySeedAsync(app);
     await TrySeedRoomOperationsAsync(app);
     await TrySeedTechnicalServiceAsync(app);
 }
@@ -49,7 +50,11 @@ static async Task TrySeedWorkforceAsync(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<WorkforceDbContext>();
-        await DevelopmentWorkforceSeeder.TrySeedAsync(dbContext, app.Logger);
+        await DevelopmentWorkforceSeeder.TrySeedAsync(
+            dbContext,
+            app.Logger,
+            cancellationToken: default,
+            isDevelopment: app.Environment.IsDevelopment());
     }
     catch (Exception exception)
     {

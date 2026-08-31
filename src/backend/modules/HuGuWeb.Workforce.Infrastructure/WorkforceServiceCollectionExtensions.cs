@@ -55,6 +55,18 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<RecordLeaveEntitlementUseCase>();
         services.AddScoped<RecordLeaveUseCase>();
         services.AddScoped<CancelLeaveRecordUseCase>();
+        services.AddScoped<CreateLeaveRequestUseCase>();
+        services.AddScoped<ApproveLeaveRequestDepartmentUseCase>();
+        services.AddScoped<ApproveLeaveRequestHrUseCase>();
+        services.AddScoped<RejectLeaveRequestUseCase>();
+        services.AddScoped<WithdrawLeaveRequestUseCase>();
+        services.AddScoped<CancelApprovedLeaveRequestUseCase>();
+        services.AddScoped<LeaveRequestComposer>();
+        services.AddScoped<LeaveRequestQuery>();
+        services.AddScoped<CreateMyLeaveRequestUseCase>();
+        services.AddScoped<PreviewLeaveRequestUseCase>();
+        services.AddScoped<LeaveRequestActionUseCase>();
+        services.AddScoped<MyLeaveSelfServiceQuery>();
         services.AddScoped<ShiftDefinitionAdminUseCase>();
         services.AddScoped<UpsertScheduleEntryUseCase>();
         services.AddScoped<ClearScheduleEntryUseCase>();

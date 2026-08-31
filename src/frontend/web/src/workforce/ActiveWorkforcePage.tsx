@@ -306,8 +306,20 @@ export function ActiveWorkforcePage() {
             </option>
           ))}
         </SelectField>
-        <DateField id="workforce-start-from" label={t('personnel.startFrom')} value={startFrom} onChange={setStartFrom} />
-        <DateField id="workforce-start-to" label={t('personnel.startTo')} value={startTo} onChange={setStartTo} />
+        <DateField
+          id="workforce-start-from"
+          label={t('personnel.startFrom')}
+          value={startFrom}
+          onChange={setStartFrom}
+          calendar
+        />
+        <DateField
+          id="workforce-start-to"
+          label={t('personnel.startTo')}
+          value={startTo}
+          onChange={setStartTo}
+          calendar
+        />
         <div className={styles.columnPicker} ref={pickerRef}>
           <Button
             variant="secondary"

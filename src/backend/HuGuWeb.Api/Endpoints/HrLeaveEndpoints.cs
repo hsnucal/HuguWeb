@@ -63,7 +63,12 @@ public static class HrLeaveEndpoints
         CancellationToken cancellationToken)
     {
         var result = await useCase.CreateAsync(
-            new CreateLeaveTypeCommand(request.Code, request.Name, request.TracksBalance, ActorUserId(user)),
+            new CreateLeaveTypeCommand(
+                request.Code,
+                request.Name,
+                request.TracksBalance,
+                ActorUserId(user),
+                request.DefaultRequestAmount),
             cancellationToken);
         return result.IsSuccess
             ? Results.Created($"/api/hr/leave-types/{result.Value!.Id}", result.Value)
@@ -78,7 +83,14 @@ public static class HrLeaveEndpoints
         CancellationToken cancellationToken)
     {
         var result = await useCase.UpdateAsync(
-            new UpdateLeaveTypeCommand(leaveTypeId, request.Name, request.TracksBalance, request.IsActive, ActorUserId(user)),
+            new UpdateLeaveTypeCommand(
+                leaveTypeId,
+                request.Name,
+                request.TracksBalance,
+                request.IsActive,
+                ActorUserId(user),
+                request.DefaultRequestAmount,
+                request.DefaultRequestAmountSpecified),
             cancellationToken);
         return result.ToHttp();
     }
@@ -178,9 +190,32 @@ public static class HrLeaveEndpoints
         user.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
 }
 
-public sealed record CreateLeaveTypeRequest(string? Code, string? Name, bool TracksBalance);
+public sealed record CreateLeaveTypeRequest(
+    string? Code,
+    string? Name,
+    bool TracksBalance,
+    decimal? DefaultRequestAmount = null);
 
-public sealed record UpdateLeaveTypeRequest(string? Name, bool? TracksBalance, bool? IsActive);
+public sealed class UpdateLeaveTypeRequest
+{
+    public string? Name { get; set; }
+    public bool? TracksBalance { get; set; }
+    public bool? IsActive { get; set; }
+
+    private decimal? _defaultRequestAmount;
+
+    public bool DefaultRequestAmountSpecified { get; private set; }
+
+    public decimal? DefaultRequestAmount
+    {
+        get => _defaultRequestAmount;
+        set
+        {
+            _defaultRequestAmount = value;
+            DefaultRequestAmountSpecified = true;
+        }
+    }
+}
 
 public sealed record CreateLeaveEntitlementRequest(
     Guid? EmploymentId,

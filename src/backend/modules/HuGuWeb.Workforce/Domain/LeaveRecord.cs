@@ -1,8 +1,9 @@
 namespace HuGuWeb.Workforce.Domain;
 
 /// <summary>
-/// An HR-entered leave fact. Amount (in days, half-day quantum) is authoritative; dates are stored
-/// for reference. There is no request/approval workflow in HR-05A. Cancellation retains the row.
+/// Authoritative leave fact. Amount (in days, half-day quantum) is authoritative; dates are stored
+/// for reference. Direct HR entry (HR-05A) keeps <see cref="SourceLeaveRequestId"/> null.
+/// Request-approved records set a unique SourceLeaveRequestId (HR-05B). Cancellation retains the row.
 /// </summary>
 public sealed class LeaveRecord
 {
@@ -24,7 +25,8 @@ public sealed class LeaveRecord
         decimal amount,
         string? note,
         string actorUserId,
-        DateTimeOffset createdAtUtc)
+        DateTimeOffset createdAtUtc,
+        Guid? sourceLeaveRequestId)
     {
         Id = id;
         EmploymentId = employmentId;
@@ -36,6 +38,7 @@ public sealed class LeaveRecord
         Status = LeaveRecordStatus.Recorded;
         CreatedByUserId = actorUserId;
         CreatedAtUtc = createdAtUtc;
+        SourceLeaveRequestId = sourceLeaveRequestId;
     }
 
     public Guid Id { get; private set; }
@@ -51,6 +54,7 @@ public sealed class LeaveRecord
     public DateTimeOffset? CancelledAtUtc { get; private set; }
     public string? CancelledByUserId { get; private set; }
     public string? CancellationReason { get; private set; }
+    public Guid? SourceLeaveRequestId { get; private set; }
 
     public bool IsCancelled => Status == LeaveRecordStatus.Cancelled;
 
@@ -66,7 +70,8 @@ public sealed class LeaveRecord
         DateTimeOffset createdAtUtc,
         out LeaveRecord? record,
         out string? field,
-        out string? errorCode)
+        out string? errorCode,
+        Guid? sourceLeaveRequestId = null)
     {
         record = null;
         field = null;
@@ -103,8 +108,24 @@ public sealed class LeaveRecord
             amount,
             trimmedNote,
             actorUserId,
-            createdAtUtc);
+            createdAtUtc,
+            sourceLeaveRequestId);
         return true;
+    }
+
+    /// <summary>
+    /// Restores cancellation fields for in-memory transaction rollback in tests.
+    /// </summary>
+    internal void RestoreCancellationState(
+        LeaveRecordStatus status,
+        DateTimeOffset? cancelledAtUtc,
+        string? cancelledByUserId,
+        string? cancellationReason)
+    {
+        Status = status;
+        CancelledAtUtc = cancelledAtUtc;
+        CancelledByUserId = cancelledByUserId;
+        CancellationReason = cancellationReason;
     }
 
     public bool TryCancel(string? reason, string actorUserId, DateTimeOffset utcNow, out string? field, out string? errorCode)

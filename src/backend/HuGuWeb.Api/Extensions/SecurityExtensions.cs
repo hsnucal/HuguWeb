@@ -157,11 +157,22 @@ public static class SecurityExtensions
                 AuthorizationPolicies.HrLeaveRead,
                 policy => policy.RequireAssertion(context =>
                     context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Read)
-                    || context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage)));
+                    || context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage)
+                    || context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Approve)));
 
             options.AddPolicy(
                 AuthorizationPolicies.HrLeaveManage,
                 policy => policy.RequireClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrLeaveRequest,
+                policy => policy.RequireClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Request));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrLeaveApprove,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Approve)
+                    || context.User.HasClaim(HrLeavePermissions.ClaimType, HrLeavePermissions.Manage)));
 
             options.AddPolicy(
                 AuthorizationPolicies.HrScheduleRead,

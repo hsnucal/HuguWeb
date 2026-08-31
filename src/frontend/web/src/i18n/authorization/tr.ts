@@ -45,6 +45,8 @@ authorization: {
       'hr.employee.sensitive.read': 'Hassas personel okuma',
       'hr.leave.read': 'İzin okuma',
       'hr.leave.manage': 'İzin yönetimi',
+      'hr.leave.request': 'İzin talebi',
+      'hr.leave.approve': 'İzin onayı',
       'hr.schedule.read': 'Çizelge okuma',
       'hr.schedule.manage': 'Çizelge yönetimi',
       'hr.shift-definition.read': 'Vardiya tanımı okuma',

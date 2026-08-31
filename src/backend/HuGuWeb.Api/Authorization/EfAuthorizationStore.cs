@@ -31,6 +31,7 @@ public interface IAuthorizationStore
     void AddAssignment(UserRoleAssignment assignment);
     void RemoveAssignment(UserRoleAssignment assignment);
     void AddLink(EmployeeAccountLink link);
+    void RemoveLink(EmployeeAccountLink link);
     void AddAudit(AuthorizationAuditRecord record);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
@@ -144,6 +145,8 @@ public sealed class EfAuthorizationStore(AppIdentityDbContext dbContext) : IAuth
     public void RemoveAssignment(UserRoleAssignment assignment) => dbContext.UserRoleAssignments.Remove(assignment);
 
     public void AddLink(EmployeeAccountLink link) => dbContext.EmployeeAccountLinks.Add(link);
+
+    public void RemoveLink(EmployeeAccountLink link) => dbContext.EmployeeAccountLinks.Remove(link);
 
     public void AddAudit(AuthorizationAuditRecord record) => dbContext.AuthorizationAuditRecords.Add(record);
 

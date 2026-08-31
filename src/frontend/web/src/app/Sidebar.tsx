@@ -16,6 +16,7 @@ import {
   canReadHrLeave,
   canReadHrSchedule,
   canReadHrShiftDefinitions,
+  canRequestHrLeave,
 } from '../workforce/hrAccess'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import {
@@ -76,6 +77,7 @@ export function Sidebar({
     canReadHrLeave: canReadHrLeave(user),
     canReadHrShiftDefinitions: canReadHrShiftDefinitions(user),
     canReadHrSchedule: canReadHrSchedule(user),
+    canRequestHrLeave: canRequestHrLeave(user),
   })
   const settingsNav = buildSettingsNav(canOpenSettings(user))
   const hiddenFromTree = isDrawer && !drawerOpen

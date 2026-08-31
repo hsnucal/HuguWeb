@@ -92,11 +92,28 @@ public class LeaveTenantTests
     {
         Assert.Contains(HrLeavePermissions.Read, SystemRoleTemplates.HumanResourcesPermissions);
         Assert.Contains(HrLeavePermissions.Manage, SystemRoleTemplates.HumanResourcesPermissions);
+        Assert.Contains(HrLeavePermissions.Approve, SystemRoleTemplates.HumanResourcesPermissions);
+        Assert.DoesNotContain(HrLeavePermissions.Request, SystemRoleTemplates.HumanResourcesPermissions);
     }
 
     [Fact]
-    public void NoLeaveApprovePermission_Exists()
+    public void LeaveRequestAndApprovePermissions_AreCatalogued_WithPersonaBundles()
     {
-        Assert.DoesNotContain(PermissionCatalog.All, code => code.Contains("leave.approve", StringComparison.Ordinal));
+        Assert.True(PermissionCatalog.IsKnown(HrLeavePermissions.Request));
+        Assert.True(PermissionCatalog.IsKnown(HrLeavePermissions.Approve));
+        Assert.Contains(HrLeavePermissions.Approve, SystemRoleTemplates.DepartmentSchedulerPermissions);
+        Assert.Contains(HrLeavePermissions.Read, SystemRoleTemplates.DepartmentSchedulerPermissions);
+        Assert.DoesNotContain(HrLeavePermissions.Manage, SystemRoleTemplates.DepartmentSchedulerPermissions);
+        Assert.Contains(HrLeavePermissions.Request, SystemRoleTemplates.EmployeeLeaveSelfServicePermissions);
+        Assert.DoesNotContain(HrLeavePermissions.Request, SystemRoleTemplates.HumanResourcesPermissions);
+        Assert.Equal(
+            SystemRoleTemplates.EmployeeLeaveSelfServicePermissions,
+            SystemRoleTemplates.ByCode(SystemRoleTemplates.EmployeeLeaveSelfService)!.Permissions);
+        Assert.DoesNotContain(
+            SystemRoleTemplates.All.Where(template =>
+                template.Code is not (
+                    SystemRoleTemplates.DevelopmentSuperuser
+                    or SystemRoleTemplates.EmployeeLeaveSelfService)),
+            template => template.Permissions.Contains(HrLeavePermissions.Request));
     }
 }

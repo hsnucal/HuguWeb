@@ -196,6 +196,22 @@ function headingFor(pathname: string, t: (key: string) => string) {
     }
   }
 
+  if (pathname.startsWith('/app/workforce/leave-management')) {
+    return {
+      kicker: t('workforce.title'),
+      title: t('workforce.leaveManagement'),
+      subtitle: t('workforce.leaveManagementIntro'),
+    }
+  }
+
+  if (pathname.startsWith('/app/my/leave')) {
+    return {
+      kicker: t('navigation.myLeave'),
+      title: t('personnel.leave.myLeaveTitle'),
+      subtitle: t('personnel.leave.myLeaveIntro'),
+    }
+  }
+
   if (pathname.startsWith('/app/workforce/shift-definitions')) {
     return {
       kicker: t('workforce.title'),

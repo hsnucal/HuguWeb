@@ -350,6 +350,91 @@ public sealed record WorkforceError(
             "Leave record is already cancelled.",
             "A cancelled leave record cannot be cancelled again.");
 
+    public static WorkforceError LeaveRequestNotFound() =>
+        NotFound(LeaveValidation.Codes.LeaveRequestNotFound, "The leave request was not found.");
+
+    public static WorkforceError LeaveRequestDateOutsideEmployment() =>
+        InvalidRequest(
+            LeaveValidation.Codes.LeaveRequestDateOutsideEmployment,
+            "Leave request dates must fall inside the employment period.");
+
+    public static WorkforceError LeaveRequestAssignmentNotFound() =>
+        InvalidRequest(
+            LeaveValidation.Codes.LeaveRequestAssignmentNotFound,
+            "No primary assignment covers the leave request start date.");
+
+    public static WorkforceError LeaveRequestCrossAssignmentRange() =>
+        InvalidRequest(
+            LeaveValidation.Codes.LeaveRequestCrossAssignmentRange,
+            "The leave request date range must stay inside a single primary assignment. Submit separate requests.");
+
+    public static WorkforceError LeaveRequestTypeInactive() =>
+        InvalidFields(
+            LeaveValidation.Codes.LeaveRequestTypeInactive,
+            "An inactive leave type cannot be used for a new leave request.",
+            LeaveValidation.Fields.LeaveTypeId,
+            LeaveValidation.Codes.LeaveRequestTypeInactive);
+
+    public static WorkforceError LeaveRequestOverlap() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveRequestOverlap,
+            "Leave request dates overlap an existing request or record.",
+            "Another pending or approved leave request, or a recorded leave, covers one or more of these dates.");
+
+    public static WorkforceError LeaveRequestNotPending() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveRequestNotPending,
+            "Leave request is not pending.",
+            "This action is only valid for a pending leave request.");
+
+    public static WorkforceError LeaveRequestInvalidApprovalStage() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveRequestInvalidApprovalStage,
+            "Leave request is at the wrong approval stage.",
+            "This action is not valid for the current approval stage.");
+
+    public static WorkforceError LeaveRequestAlreadyFinalized() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveRequestAlreadyFinalized,
+            "Leave request is already finalized.",
+            "An approved, rejected, or cancelled leave request cannot be changed.");
+
+    public static WorkforceError LeaveRequestRecordConflict() =>
+        Conflict(
+            LeaveValidation.Codes.LeaveRequestRecordConflict,
+            "Leave request record conflict.",
+            "A leave record for this request already exists or cannot be linked for cancellation.");
+
+    public static WorkforceError LeaveRequestAccountLinkRequired() =>
+        Forbidden(
+            LeaveValidation.Codes.LeaveRequestAccountLinkRequired,
+            "An employee account link is required for leave self-service.");
+
+    public static WorkforceError LeaveRequestCurrentEmploymentNotFound() =>
+        InvalidRequest(
+            LeaveValidation.Codes.LeaveRequestCurrentEmploymentNotFound,
+            "No current open employment is available for leave self-service.");
+
+    public static WorkforceError LeaveRequestNotOwned() =>
+        NotFound(LeaveValidation.Codes.LeaveRequestNotOwned, "The leave request was not found.");
+
+    public static WorkforceError LeaveRequestDepartmentAccessDenied() =>
+        Forbidden(
+            LeaveValidation.Codes.LeaveRequestDepartmentAccessDenied,
+            "Department scope does not allow this leave request.");
+
+    public static WorkforceError LeaveRequestApprovalPermissionDenied() =>
+        Forbidden(
+            LeaveValidation.Codes.LeaveRequestApprovalPermissionDenied,
+            "Leave approval permission is required for this action.");
+
+    public static WorkforceError LeaveRequestInvalidFinalAmount() =>
+        InvalidFields(
+            LeaveValidation.Codes.LeaveRequestInvalidFinalAmount,
+            "Final leave amount must be greater than zero and a multiple of 0.5 days.",
+            LeaveValidation.Fields.FinalAmount,
+            LeaveValidation.Codes.LeaveRequestInvalidFinalAmount);
+
     public static WorkforceError ShiftDefinitionNotFound() =>
         NotFound(ScheduleValidation.Codes.ShiftDefinitionNotFound, "The shift definition was not found.") with
         {

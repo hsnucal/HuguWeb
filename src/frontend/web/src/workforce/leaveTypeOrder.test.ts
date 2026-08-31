@@ -9,6 +9,7 @@ function type(partial: Partial<LeaveTypeRecord> & Pick<LeaveTypeRecord, 'id' | '
     systemKind: partial.systemKind ?? null,
     tracksBalance: partial.tracksBalance ?? false,
     isActive: partial.isActive ?? true,
+    defaultRequestAmount: partial.defaultRequestAmount ?? null,
     ...partial,
   }
 }

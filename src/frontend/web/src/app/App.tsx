@@ -8,6 +8,8 @@ import { DepartmentsPage } from '../workforce/DepartmentsPage'
 import { PositionsPage } from '../workforce/PositionsPage'
 import { SgkWorkplacesPage } from '../workforce/SgkWorkplacesPage'
 import { LeaveTypesPage } from '../workforce/LeaveTypesPage'
+import { LeaveRequestsPage } from '../workforce/LeaveRequestsPage'
+import { MyLeavePage } from '../workforce/MyLeavePage'
 import { ShiftDefinitionsPage } from '../workforce/ShiftDefinitionsPage'
 import { ShiftPlanPage } from '../workforce/ShiftPlanPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
@@ -38,12 +40,14 @@ export function App() {
         <Route path="technical-service" element={<TechnicalServicePage />} />
         <Route path="technical-service/new" element={<CreateIssuePage />} />
         <Route path="technical-service/:issueId" element={<IssueDetailPage />} />
+        <Route path="my/leave" element={<MyLeavePage />} />
         <Route path="workforce" element={<WorkforceLayout />}>
           <Route index element={<ActiveWorkforcePage />} />
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="positions" element={<PositionsPage />} />
           <Route path="official-settings" element={<SgkWorkplacesPage />} />
           <Route path="leave-types" element={<LeaveTypesPage />} />
+          <Route path="leave-management" element={<LeaveRequestsPage />} />
           <Route path="shift-definitions" element={<ShiftDefinitionsPage />} />
           <Route path="shift-plan" element={<ShiftPlanPage />} />
         </Route>

@@ -18,6 +18,8 @@ public static class SystemRoleTemplates
     public static readonly Guid MaintenanceManagerId = Guid.Parse("b1e1c0de-0001-4000-8000-000000000007");
     public static readonly Guid MaintenanceTechnicianId = Guid.Parse("b1e1c0de-0001-4000-8000-000000000008");
     public static readonly Guid CorporateHrId = Guid.Parse("b1e1c0de-0001-4000-8000-000000000009");
+    public static readonly Guid EmployeeLeaveSelfServiceId = Guid.Parse("b1e1c0de-0001-4000-8000-00000000000a");
+    public static readonly Guid DepartmentLeaveApproverId = Guid.Parse("b1e1c0de-0001-4000-8000-00000000000b");
 
     public const string DevelopmentSuperuser = "development-superuser";
     public const string HrManager = "hr-manager";
@@ -28,6 +30,8 @@ public static class SystemRoleTemplates
     public const string MaintenanceManager = "maintenance-manager";
     public const string MaintenanceTechnician = "maintenance-technician";
     public const string CorporateHr = "hr-corporate";
+    public const string EmployeeLeaveSelfService = "employee-leave-self-service";
+    public const string DepartmentLeaveApprover = "department-leave-approver";
 
     public static readonly IReadOnlyList<string> HumanResourcesPermissions =
     [
@@ -38,6 +42,7 @@ public static class SystemRoleTemplates
         HrEmployeePermissions.SensitiveRead,
         HrLeavePermissions.Read,
         HrLeavePermissions.Manage,
+        HrLeavePermissions.Approve,
         HrSchedulePermissions.Read,
         HrSchedulePermissions.Manage,
         HrShiftDefinitionPermissions.Read,
@@ -45,15 +50,36 @@ public static class SystemRoleTemplates
     ];
 
     /// <summary>
-    /// Typical department operational scheduler: assign schedules + read definitions.
-    /// Does not grant ShiftDefinition catalogue management. Not bound to a system role until
-    /// Department membership scope exists in the authorization schema.
+    /// Typical department operational scheduler/approver: schedules + department leave approval.
+    /// Does not grant HR leave manage. Schedule portion remains a permission bundle until productized;
+    /// leave approval portion is bound to <see cref="DepartmentLeaveApprover"/>.
     /// </summary>
     public static readonly IReadOnlyList<string> DepartmentSchedulerPermissions =
     [
         HrSchedulePermissions.Read,
         HrSchedulePermissions.Manage,
-        HrShiftDefinitionPermissions.Read
+        HrShiftDefinitionPermissions.Read,
+        HrLeavePermissions.Read,
+        HrLeavePermissions.Approve
+    ];
+
+    /// <summary>
+    /// Department-stage leave approve/reject (+ list read). Does not grant HR final manage.
+    /// Assign alongside operational manager roles; AUTH-02 department scopes provide WHERE.
+    /// </summary>
+    public static readonly IReadOnlyList<string> DepartmentLeaveApproverPermissions =
+    [
+        HrLeavePermissions.Read,
+        HrLeavePermissions.Approve
+    ];
+
+    /// <summary>
+    /// Employee self-service leave. Bound to system role <see cref="EmployeeLeaveSelfService"/>;
+    /// assign alongside operational employee roles (not HR admin templates).
+    /// </summary>
+    public static readonly IReadOnlyList<string> EmployeeLeaveSelfServicePermissions =
+    [
+        HrLeavePermissions.Request
     ];
 
     public static IReadOnlyList<SystemRoleTemplate> All { get; } =
@@ -101,7 +127,19 @@ public static class SystemRoleTemplates
             MaintenanceTechnician,
             "Maintenance Technician",
             AuthorizationScopeType.Property,
-            [MaintenancePermissions.Read, MaintenancePermissions.Resolve])
+            [MaintenancePermissions.Read, MaintenancePermissions.Resolve]),
+        new(
+            EmployeeLeaveSelfServiceId,
+            EmployeeLeaveSelfService,
+            "Employee Leave Self-Service",
+            AuthorizationScopeType.Property,
+            EmployeeLeaveSelfServicePermissions),
+        new(
+            DepartmentLeaveApproverId,
+            DepartmentLeaveApprover,
+            "Department Leave Approver",
+            AuthorizationScopeType.Property,
+            DepartmentLeaveApproverPermissions)
     ];
 
     public static SystemRoleTemplate? ByCode(string code) =>

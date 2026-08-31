@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -16,6 +16,8 @@
   <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>Тип отпуска с этим кодом уже существует в организации.</value></data>
   <data name="error.leave-type-has-history.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Учёт остатка нельзя изменить после появления истории по этому типу отпуска.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.detail" xml:space="preserve"><value>Продолжительность запроса по умолчанию должна быть больше нуля с шагом 0,5 дня.</value></data>
   <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>Сумма начисления должна быть ненулевым кратным 0,5 дня и положительной, кроме ручной корректировки.</value></data>
   <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
@@ -34,6 +36,42 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>Эта запись отпуска уже отменена.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>Необходимо указать причину отмены.</value></data>
+  <data name="error.leave-request-date-outside-employment.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-date-outside-employment.detail" xml:space="preserve"><value>Даты заявки на отпуск должны попадать в период трудовых отношений.</value></data>
+  <data name="error.leave-request-assignment-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-assignment-not-found.detail" xml:space="preserve"><value>Нет основного назначения, покрывающего дату начала заявки.</value></data>
+  <data name="error.leave-request-cross-assignment-range.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-cross-assignment-range.detail" xml:space="preserve"><value>Диапазон дат заявки должен оставаться в одном основном назначении. Подайте отдельные заявки.</value></data>
+  <data name="error.leave-request-type-inactive.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-type-inactive.detail" xml:space="preserve"><value>Неактивный тип отпуска нельзя использовать в новой заявке.</value></data>
+  <data name="error.leave-request-invalid-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-invalid-amount.detail" xml:space="preserve"><value>Количество дней в заявке должно быть больше нуля и кратным 0,5.</value></data>
+  <data name="error.leave-request-overlap.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-request-overlap.detail" xml:space="preserve"><value>Другая ожидающая/одобренная заявка или записанный отпуск пересекается с этими датами.</value></data>
+  <data name="error.leave-request-not-pending.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-request-not-pending.detail" xml:space="preserve"><value>Это действие допустимо только для ожидающей заявки.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.detail" xml:space="preserve"><value>Это действие недопустимо на текущем этапе согласования.</value></data>
+  <data name="error.leave-request-already-finalized.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-request-already-finalized.detail" xml:space="preserve"><value>Одобренную, отклонённую или отменённую заявку изменить нельзя.</value></data>
+  <data name="error.leave-request-record-conflict.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>
+  <data name="error.leave-request-record-conflict.detail" xml:space="preserve"><value>Запись отпуска по этой заявке уже существует или не может быть связана для отмены.</value></data>
+  <data name="error.leave-request-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.leave-request-not-found.detail" xml:space="preserve"><value>Заявка на отпуск не найдена.</value></data>
+  <data name="error.leave-request-reason-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-reason-too-long.detail" xml:space="preserve"><value>Причина заявки на отпуск слишком длинная.</value></data>
+  <data name="error.leave-request-account-link-required.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.leave-request-account-link-required.detail" xml:space="preserve"><value>Для самообслуживания отпуска требуется привязка учётной записи сотрудника.</value></data>
+  <data name="error.leave-request-current-employment-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-current-employment-not-found.detail" xml:space="preserve"><value>Нет текущего открытого трудового отношения для самообслуживания отпуска.</value></data>
+  <data name="error.leave-request-not-owned.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.leave-request-not-owned.detail" xml:space="preserve"><value>Заявка на отпуск не найдена.</value></data>
+  <data name="error.leave-request-department-access-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.leave-request-department-access-denied.detail" xml:space="preserve"><value>Охват отдела не разрешает эту заявку на отпуск.</value></data>
+  <data name="error.leave-request-approval-permission-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.leave-request-approval-permission-denied.detail" xml:space="preserve"><value>Для этого действия требуется право согласования отпуска.</value></data>
+  <data name="error.leave-request-invalid-final-amount.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.leave-request-invalid-final-amount.detail" xml:space="preserve"><value>Итоговое количество дней отпуска должно быть больше нуля и кратным 0,5.</value></data>
   <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
   <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>Определение смены не найдено.</value></data>
   <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>Конфликт с существующими данными.</value></data>

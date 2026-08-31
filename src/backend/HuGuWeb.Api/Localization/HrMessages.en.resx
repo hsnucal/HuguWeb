@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
@@ -16,6 +16,8 @@
   <data name="error.leave-type-code-conflict.detail" xml:space="preserve"><value>A leave type with this code already exists in the organization.</value></data>
   <data name="error.leave-type-has-history.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.leave-type-has-history.detail" xml:space="preserve"><value>Balance tracking cannot change after the leave type has historical usage.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-type-invalid-default-request-amount.detail" xml:space="preserve"><value>Default request duration must be greater than zero in 0.5-day increments.</value></data>
   <data name="error.leave-entitlement-invalid-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.leave-entitlement-invalid-amount.detail" xml:space="preserve"><value>The entitlement amount must be a non-zero multiple of 0.5 days, and positive unless it is a manual adjustment.</value></data>
   <data name="error.leave-entitlement-balance-not-supported.title" xml:space="preserve"><value>The request is invalid.</value></data>
@@ -34,6 +36,42 @@
   <data name="error.leave-already-cancelled.detail" xml:space="preserve"><value>This leave record is already cancelled.</value></data>
   <data name="error.leave-cancellation-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.leave-cancellation-reason-required.detail" xml:space="preserve"><value>A cancellation reason is required.</value></data>
+  <data name="error.leave-request-date-outside-employment.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-date-outside-employment.detail" xml:space="preserve"><value>Leave request dates must fall inside the employment period.</value></data>
+  <data name="error.leave-request-assignment-not-found.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-assignment-not-found.detail" xml:space="preserve"><value>No primary assignment covers the leave request start date.</value></data>
+  <data name="error.leave-request-cross-assignment-range.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-cross-assignment-range.detail" xml:space="preserve"><value>The leave request date range must stay inside a single primary assignment. Submit separate requests.</value></data>
+  <data name="error.leave-request-type-inactive.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-type-inactive.detail" xml:space="preserve"><value>An inactive leave type cannot be used for a new leave request.</value></data>
+  <data name="error.leave-request-invalid-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-invalid-amount.detail" xml:space="preserve"><value>Leave request amount must be greater than zero and a multiple of 0.5 days.</value></data>
+  <data name="error.leave-request-overlap.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-request-overlap.detail" xml:space="preserve"><value>Another pending or approved leave request, or a recorded leave, covers one or more of these dates.</value></data>
+  <data name="error.leave-request-not-pending.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-request-not-pending.detail" xml:space="preserve"><value>This action is only valid for a pending leave request.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-request-invalid-approval-stage.detail" xml:space="preserve"><value>This action is not valid for the current approval stage.</value></data>
+  <data name="error.leave-request-already-finalized.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-request-already-finalized.detail" xml:space="preserve"><value>An approved, rejected, or cancelled leave request cannot be changed.</value></data>
+  <data name="error.leave-request-record-conflict.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>
+  <data name="error.leave-request-record-conflict.detail" xml:space="preserve"><value>A leave record for this request already exists or cannot be linked for cancellation.</value></data>
+  <data name="error.leave-request-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.leave-request-not-found.detail" xml:space="preserve"><value>The leave request was not found.</value></data>
+  <data name="error.leave-request-reason-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-reason-too-long.detail" xml:space="preserve"><value>Leave request reason is too long.</value></data>
+  <data name="error.leave-request-account-link-required.title" xml:space="preserve"><value>Access is denied.</value></data>
+  <data name="error.leave-request-account-link-required.detail" xml:space="preserve"><value>An employee account link is required for leave self-service.</value></data>
+  <data name="error.leave-request-current-employment-not-found.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-current-employment-not-found.detail" xml:space="preserve"><value>No current open employment is available for leave self-service.</value></data>
+  <data name="error.leave-request-not-owned.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.leave-request-not-owned.detail" xml:space="preserve"><value>The leave request was not found.</value></data>
+  <data name="error.leave-request-department-access-denied.title" xml:space="preserve"><value>Access is denied.</value></data>
+  <data name="error.leave-request-department-access-denied.detail" xml:space="preserve"><value>Department scope does not allow this leave request.</value></data>
+  <data name="error.leave-request-approval-permission-denied.title" xml:space="preserve"><value>Access is denied.</value></data>
+  <data name="error.leave-request-approval-permission-denied.detail" xml:space="preserve"><value>Leave approval permission is required for this action.</value></data>
+  <data name="error.leave-request-invalid-final-amount.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.leave-request-invalid-final-amount.detail" xml:space="preserve"><value>Final leave amount must be greater than zero and a multiple of 0.5 days.</value></data>
   <data name="error.shift-definition-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
   <data name="error.shift-definition-not-found.detail" xml:space="preserve"><value>The shift definition was not found.</value></data>
   <data name="error.shift-definition-code-exists.title" xml:space="preserve"><value>The request conflicts with existing data.</value></data>

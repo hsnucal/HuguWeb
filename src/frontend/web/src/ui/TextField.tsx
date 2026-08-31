@@ -77,7 +77,8 @@ export function TextField({
 type TextAreaProps = FieldChrome & {
   value: string
   onChange: (value: string) => void
-} & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id' | 'value' | 'onChange'>
+  ref?: Ref<HTMLTextAreaElement>
+} & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'id' | 'value' | 'onChange' | 'ref'>
 
 export function TextArea({
   id,
@@ -88,6 +89,7 @@ export function TextArea({
   error,
   required,
   rows = 3,
+  ref,
   ...textAreaProps
 }: TextAreaProps) {
   const hintId = hint ? `${id}-hint` : undefined
@@ -99,6 +101,7 @@ export function TextArea({
       <FieldLabel id={id} label={label} required={required} />
       <textarea
         {...textAreaProps}
+        ref={ref}
         id={id}
         className={`${styles.input} ${styles.textarea} ${error ? styles.invalid : ''}`}
         value={value}

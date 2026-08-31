@@ -16,6 +16,9 @@ public class ApiMessagesLocalizationTests
     [InlineData("tr", "error.leave-overlap.detail", "Bu izin, aynı iş ilişkisindeki başka bir kayıtlı izinle çakışıyor.")]
     [InlineData("en", "error.leave-overlap.detail", "This leave overlaps another recorded leave for the same employment.")]
     [InlineData("ru", "error.leave-overlap.detail", "Этот отпуск пересекается с другой записанной записью по тем же трудовым отношениям.")]
+    [InlineData("tr", "error.leave-request-overlap.detail", "Başka bir bekleyen/onaylı talep veya kayıtlı izin bu tarihlerle çakışıyor.")]
+    [InlineData("en", "error.leave-request-overlap.detail", "Another pending or approved leave request, or a recorded leave, covers one or more of these dates.")]
+    [InlineData("ru", "error.leave-request-overlap.detail", "Другая ожидающая/одобренная заявка или записанный отпуск пересекается с этими датами.")]
     public void ErrorCodes_HaveTrEnRuResources(string culture, string key, string expected)
     {
         CultureInfo.CurrentUICulture = new CultureInfo(culture);

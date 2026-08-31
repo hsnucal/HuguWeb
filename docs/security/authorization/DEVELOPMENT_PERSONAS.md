@@ -22,19 +22,21 @@ Runtime code paths (policies, endpoints, sidebar, calculators) must not contain 
 
 ## Mapping
 
-| Email | Role code |
-|-------|-----------|
-| `dev@localhost` (or `DevelopmentUser:Email`) | `development-superuser` |
-| `hr.manager@localhost` | `hr-manager` (Ankara membership) |
-| `hr.antalya@localhost` | `hr-manager` (Antalya membership) |
-| `hr.corporate@localhost` | `hr-corporate` (organization-wide) |
-| `roomops.attendant@localhost` | `room-attendant` |
-| `roomops.inspector@localhost` | `room-inspector` |
-| `roomops.manager@localhost` | `room-operations-manager` |
-| `maintenance.technician@localhost` | `maintenance-technician` |
-| `maintenance.manager@localhost` | `maintenance-manager` |
+| Email | Role code(s) | EmployeeAccountLink |
+|-------|--------------|---------------------|
+| `dev@localhost` (or `DevelopmentUser:Email`) | `development-superuser` | none (non-employee) |
+| `hr.manager@localhost` | `hr-manager` + `employee-leave-self-service` (Ankara) | `DEMO-HR-01` |
+| `hr.antalya@localhost` | `hr-manager` + `employee-leave-self-service` (Antalya) | `DEMO-HR-AYT-01` |
+| `hr.corporate@localhost` | `hr-corporate` (organization-wide) | none (non-employee) |
+| `roomops.attendant@localhost` | `room-attendant` + `employee-leave-self-service` | `DEMO-HK-01` |
+| `roomops.inspector@localhost` | `room-inspector` + `employee-leave-self-service` | `DEMO-HK-INS-01` |
+| `roomops.manager@localhost` | `room-operations-manager` + `employee-leave-self-service` | `DEMO-HK-MGR-01` |
+| `maintenance.technician@localhost` | `maintenance-technician` + `employee-leave-self-service` | `DEMO-TECH-01` (ENG / ENG-TECH) |
+| `maintenance.manager@localhost` | `maintenance-manager` + `department-leave-approver` + `employee-leave-self-service`; AUTH-02 scope **ENG** | `DEMO-TECH-MGR-01` |
 
-Permission bundles match the previous persona table so local UX does not regress.
+Identity bridge is **EmployeeAccountLink only** (deterministic seeded IDs). Runtime never matches by email or PersonnelNumber. ApplicationUser ≠ Employee.
+
+On Development startup, operational personnel outside the persona fixture set is cleared and persona Employees / Employments / Assignments are re-ensured idempotently.
 
 ## After AUTH-01
 

@@ -15,11 +15,24 @@ export function canReadHrSensitive(user: CurrentUser | null): boolean {
 
 export function canReadHrLeave(user: CurrentUser | null): boolean {
   const permissions = user?.permissions ?? []
-  return permissions.includes('hr.leave.read') || permissions.includes('hr.leave.manage')
+  return (
+    permissions.includes('hr.leave.read')
+    || permissions.includes('hr.leave.manage')
+    || permissions.includes('hr.leave.approve')
+  )
 }
 
 export function canManageHrLeave(user: CurrentUser | null): boolean {
   return (user?.permissions ?? []).includes('hr.leave.manage')
+}
+
+export function canRequestHrLeave(user: CurrentUser | null): boolean {
+  return (user?.permissions ?? []).includes('hr.leave.request')
+}
+
+export function canApproveHrLeave(user: CurrentUser | null): boolean {
+  const permissions = user?.permissions ?? []
+  return permissions.includes('hr.leave.approve') || permissions.includes('hr.leave.manage')
 }
 
 export function canReadHrSchedule(user: CurrentUser | null): boolean {

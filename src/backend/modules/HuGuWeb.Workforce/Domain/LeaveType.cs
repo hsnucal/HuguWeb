@@ -27,6 +27,7 @@ public sealed class LeaveType
         string name,
         LeaveTypeSystemKind? systemKind,
         bool tracksBalance,
+        decimal? defaultRequestAmount,
         string actorUserId,
         DateTimeOffset createdAtUtc)
     {
@@ -36,6 +37,7 @@ public sealed class LeaveType
         Name = name;
         SystemKind = systemKind;
         TracksBalance = tracksBalance;
+        DefaultRequestAmount = defaultRequestAmount;
         IsActive = true;
         CreatedAtUtc = createdAtUtc;
         CreatedByUserId = actorUserId;
@@ -49,6 +51,11 @@ public sealed class LeaveType
     public string Name { get; private set; }
     public LeaveTypeSystemKind? SystemKind { get; private set; }
     public bool TracksBalance { get; private set; }
+    /// <summary>
+    /// Optional day-based request default for UI/self-service prefill. Not entitlement, balance,
+    /// or approval FinalAmount.
+    /// </summary>
+    public decimal? DefaultRequestAmount { get; private set; }
     public bool IsActive { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public string CreatedByUserId { get; private set; }
@@ -63,7 +70,8 @@ public sealed class LeaveType
         LeaveTypeSystemKind systemKind,
         bool tracksBalance,
         string actorUserId,
-        DateTimeOffset createdAtUtc)
+        DateTimeOffset createdAtUtc,
+        decimal? defaultRequestAmount = null)
     {
         if (!TryNormalizeCode(code, out var normalizedCode, out _, out _))
         {
@@ -75,6 +83,13 @@ public sealed class LeaveType
             throw new ArgumentException($"System leave type name '{name}' is invalid.", nameof(name));
         }
 
+        if (!TryNormalizeDefaultRequestAmount(defaultRequestAmount, out var normalizedDefault, out _, out _))
+        {
+            throw new ArgumentException(
+                $"System leave type default request amount '{defaultRequestAmount}' is invalid.",
+                nameof(defaultRequestAmount));
+        }
+
         return new LeaveType(
             id,
             organizationId,
@@ -82,6 +97,7 @@ public sealed class LeaveType
             normalizedName,
             systemKind,
             tracksBalance,
+            normalizedDefault,
             actorUserId,
             createdAtUtc);
     }
@@ -97,7 +113,8 @@ public sealed class LeaveType
         DateTimeOffset createdAtUtc,
         out LeaveType? leaveType,
         out string? field,
-        out string? errorCode)
+        out string? errorCode,
+        decimal? defaultRequestAmount = null)
     {
         leaveType = null;
         if (!TryNormalizeCode(code, out var normalizedCode, out field, out errorCode))
@@ -110,6 +127,11 @@ public sealed class LeaveType
             return false;
         }
 
+        if (!TryNormalizeDefaultRequestAmount(defaultRequestAmount, out var normalizedDefault, out field, out errorCode))
+        {
+            return false;
+        }
+
         leaveType = new LeaveType(
             id,
             organizationId,
@@ -117,6 +139,7 @@ public sealed class LeaveType
             normalizedName,
             systemKind: null,
             tracksBalance,
+            normalizedDefault,
             actorUserId,
             createdAtUtc);
         field = null;
@@ -168,6 +191,23 @@ public sealed class LeaveType
         return true;
     }
 
+    public bool TrySetDefaultRequestAmount(
+        decimal? defaultRequestAmount,
+        string actorUserId,
+        DateTimeOffset utcNow,
+        out string? field,
+        out string? errorCode)
+    {
+        if (!TryNormalizeDefaultRequestAmount(defaultRequestAmount, out var normalized, out field, out errorCode))
+        {
+            return false;
+        }
+
+        DefaultRequestAmount = normalized;
+        Touch(actorUserId, utcNow);
+        return true;
+    }
+
     public void SetActive(bool isActive, string actorUserId, DateTimeOffset utcNow)
     {
         if (IsActive == isActive)
@@ -185,6 +225,31 @@ public sealed class LeaveType
     {
         UpdatedByUserId = actorUserId;
         UpdatedAtUtc = utcNow;
+    }
+
+    public static bool TryNormalizeDefaultRequestAmount(
+        decimal? defaultRequestAmount,
+        out decimal? normalized,
+        out string? field,
+        out string? errorCode)
+    {
+        normalized = null;
+        field = null;
+        errorCode = null;
+        if (defaultRequestAmount is null)
+        {
+            return true;
+        }
+
+        if (!LeaveAmount.IsValidPositive(defaultRequestAmount.Value))
+        {
+            field = LeaveValidation.Fields.DefaultRequestAmount;
+            errorCode = LeaveValidation.Codes.LeaveTypeInvalidDefaultRequestAmount;
+            return false;
+        }
+
+        normalized = defaultRequestAmount.Value;
+        return true;
     }
 
     public static bool TryNormalizeCode(string? code, out string normalized, out string? field, out string? errorCode)

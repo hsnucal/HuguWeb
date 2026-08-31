@@ -140,9 +140,31 @@
   --space-field: var(--space-field-compact);
   --control-pad-x: var(--control-pad-x-compact);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  grid-template-columns:
+    minmax(10rem, 1.5fr)
+    minmax(8rem, 1fr)
+    minmax(8rem, 1fr)
+    minmax(8.5rem, 0.95fr)
+    minmax(8.5rem, 0.95fr)
+    auto;
   gap: var(--space-3);
   align-items: end;
+}
+
+.leaveMgmtFilters {
+  --size-control: var(--size-control-compact);
+  --space-field: var(--space-field-compact);
+  --control-pad-x: var(--control-pad-x-compact);
+  display: grid;
+  grid-template-columns: minmax(10rem, 1.4fr) minmax(9rem, 1fr) minmax(9rem, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.hrFilterActions {
+  display: flex;
+  align-items: end;
+  padding-bottom: 0.05rem;
 }
 
 .columnPicker {
@@ -597,9 +619,255 @@
   }
 }
 
+.leaveRequestRow {
+  grid-template-columns:
+    minmax(9rem, 1.3fr)
+    minmax(6rem, 0.9fr)
+    minmax(6rem, 0.9fr)
+    minmax(7rem, 1fr)
+    minmax(4rem, 0.6fr)
+    minmax(7rem, 1fr)
+    minmax(6rem, 0.9fr)
+    minmax(5rem, 0.7fr);
+}
+
+.leaveRequestRow .rowLink {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stageChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 var(--space-3);
+}
+
+.stageChip,
+.stageChipCurrent {
+  margin: 0;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.stageChipCurrent {
+  border-color: color-mix(in srgb, var(--color-brand-primary) 35%, var(--color-border-subtle));
+  background: color-mix(in srgb, var(--color-brand-mist) 55%, var(--color-surface-elevated));
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.leaveDetailFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.leaveDetailFooterActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.leaveDetailStatusRow {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 var(--space-3);
+}
+
+.leavePrimarySummary {
+  margin: 0 0 var(--space-4);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+  background: color-mix(in srgb, var(--color-brand-mist) 28%, var(--color-surface-elevated));
+}
+
+.leavePrimaryTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.leavePrimaryRange {
+  margin: 0.35rem 0 0;
+  font-size: 1rem;
+}
+
+.leavePrimaryAmount {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  align-items: baseline;
+  margin: 0.55rem 0 0;
+}
+
+.leaveCompactSection {
+  margin: 0 0 var(--space-4);
+}
+
+.leaveSectionLabel {
+  display: block;
+  margin: 0 0 0.35rem;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.leaveMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.leaveMetricGrid > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.leaveCompactNotice {
+  margin: 0.55rem 0 0;
+  padding: 0.45rem 0.65rem;
+  font-size: var(--font-size-sm);
+}
+
+.leaveExpandToggle {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-brand-primary);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.scheduleDayListCompact,
+.decisionTimelineCompact {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scheduleDayListCompact li,
+.decisionTimelineCompact li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.scheduleDayListCompact li:last-child,
+.decisionTimelineCompact li:last-child {
+  border-bottom: 0;
+}
+
+.leaveActionHint,
+.leaveFinalApproval,
+.leaveRejectPanel {
+  margin: 0 0 var(--space-3);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-subtle);
+}
+
+.leaveRejectPanel {
+  border-color: color-mix(in srgb, var(--color-danger, #b42318) 28%, var(--color-border-subtle));
+}
+
+.leaveDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+}
+
+.leaveDetailGrid dt {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.leaveDetailGrid dd {
+  margin: 0.15rem 0 0;
+}
+
+.leaveDetailWide {
+  grid-column: 1 / -1;
+}
+
+.scheduleDayList,
+.decisionTimeline {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scheduleDayList li,
+.decisionTimeline li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-m);
+  background: var(--color-surface-subtle);
+}
+
+.leaveRequestCards {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .leaveRequestList .head {
+    display: none;
+  }
+
+  .leaveRequestRow {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: var(--space-2);
+  }
+
+  .leaveDetailGrid,
+  .leaveMetricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .hrFilters,
+  .leaveMgmtFilters {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .filters,
   .hrFilters,
+  .leaveMgmtFilters,
   .panel {
     --size-control: 2.75rem;
     --space-form: 0.9rem;
