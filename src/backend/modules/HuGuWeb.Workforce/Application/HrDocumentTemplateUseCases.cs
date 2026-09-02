@@ -143,19 +143,13 @@ public sealed class PreviewHrDocumentTemplateUseCase(
             propertyName,
             clock.Today);
 
-        if (!HrDocumentTemplateRenderer.TryRender(
-                template.Content,
-                context,
-                CultureInfo.GetCultureInfo("tr-TR"),
-                out var rendered,
-                out var field,
-                out var code))
+        var renderedResult = HrDocumentDraftRendering.RenderPreviewContent(
+            template,
+            context,
+            CultureInfo.GetCultureInfo("tr-TR"));
+        if (!renderedResult.IsSuccess)
         {
-            return WorkforceError.InvalidFields(
-                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder,
-                "Document template content is invalid.",
-                field ?? HrValidation.Fields.DocumentTemplateContent,
-                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder);
+            return renderedResult.Error!;
         }
 
         return new HrDocumentTemplatePreview(
@@ -163,7 +157,7 @@ public sealed class PreviewHrDocumentTemplateUseCase(
             template.Code,
             template.Name,
             template.Version,
-            rendered);
+            renderedResult.Value!);
     }
 }
 

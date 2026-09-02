@@ -123,6 +123,53 @@ internal static class HrDocumentDraftRendering
             [HrDocumentPlaceholderCatalog.EmploymentStartDate] =
                 HrDocumentDocxRenderer.FormatTrDate(context.EmploymentStartDate),
         };
+
+    public static WorkforceResult<string> RenderPreviewContent(
+        HrDocumentTemplate template,
+        HrDocumentRenderContext context,
+        CultureInfo culture)
+    {
+        if (!string.IsNullOrWhiteSpace(template.TemplateAssetPath))
+        {
+            try
+            {
+                var values = BuildDocxPlaceholderValues(context);
+                return WorkforceResult<string>.Success(
+                    HrDocumentDocxRenderer.BuildPreviewHtml(template.TemplateAssetPath, values));
+            }
+            catch (FileNotFoundException)
+            {
+                return WorkforceError.Conflict(
+                    HrValidation.Codes.DocumentTemplateAssetMissing,
+                    "DOCX asset missing",
+                    "DOCX template asset is missing from the application.");
+            }
+            catch (Exception)
+            {
+                return WorkforceError.Conflict(
+                    HrValidation.Codes.DocumentTemplateDocxUnavailable,
+                    "DOCX unavailable",
+                    "DOCX template could not be rendered.");
+            }
+        }
+
+        if (!HrDocumentTemplateRenderer.TryRender(
+                template.Content,
+                context,
+                culture,
+                out var rendered,
+                out var field,
+                out var code))
+        {
+            return WorkforceError.InvalidFields(
+                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder,
+                "Document template content is invalid.",
+                field ?? HrValidation.Fields.DocumentTemplateContent,
+                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder);
+        }
+
+        return WorkforceResult<string>.Success(rendered);
+    }
 }
 
 public sealed class PreviewHrDocumentTemplateDraftUseCase(
@@ -171,19 +218,13 @@ public sealed class PreviewHrDocumentTemplateDraftUseCase(
             propertyName,
             clock.Today);
 
-        if (!HrDocumentTemplateRenderer.TryRender(
-                template.Content,
-                context,
-                CultureInfo.GetCultureInfo("tr-TR"),
-                out var rendered,
-                out var field,
-                out var code))
+        var renderedResult = HrDocumentDraftRendering.RenderPreviewContent(
+            template,
+            context,
+            CultureInfo.GetCultureInfo("tr-TR"));
+        if (!renderedResult.IsSuccess)
         {
-            return WorkforceError.InvalidFields(
-                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder,
-                "Document template content is invalid.",
-                field ?? HrValidation.Fields.DocumentTemplateContent,
-                code ?? HrValidation.Codes.DocumentTemplateUnknownPlaceholder);
+            return renderedResult.Error!;
         }
 
         return new HrDocumentTemplatePreview(
@@ -191,7 +232,7 @@ public sealed class PreviewHrDocumentTemplateDraftUseCase(
             template.Code,
             template.Name,
             template.Version,
-            rendered);
+            renderedResult.Value!);
     }
 }
 

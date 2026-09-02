@@ -95,6 +95,7 @@ public class PersonnelEnrichmentDocumentTemplateTests
         Assert.True(preview.IsSuccess, preview.Error?.Detail);
         Assert.Contains("Ayşe Yılmaz", preview.Value!.RenderedContent, StringComparison.Ordinal);
         Assert.Contains("21.08.2026", preview.Value.RenderedContent, StringComparison.Ordinal);
+        Assert.Contains("Muvafakat Belgesi", preview.Value.RenderedContent, StringComparison.Ordinal);
         Assert.Contains("İmza", preview.Value.RenderedContent, StringComparison.Ordinal);
 
         var listed = await harness.HrDocumentTemplates.ListActiveAsync(

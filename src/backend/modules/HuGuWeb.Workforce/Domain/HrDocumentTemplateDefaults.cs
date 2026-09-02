@@ -16,11 +16,11 @@ public static class HrDocumentTemplateDefaults
     public const string OvertimeConsentAssetPath = "Templates/Onboarding/Taslak.docx";
 
     /// <summary>
-    /// HTML preview convenience body — DOCX asset is authoritative for OVERTIME-CONSENT.
+    /// HTML fallback when no DOCX asset is configured. OVERTIME-CONSENT previews use the embedded DOCX.
     /// </summary>
     public static readonly string OvertimeConsentPlaceholderContent =
         """
-        <p>Fazla Çalışma Muvafakat Belgesi</p>
+        <p>Fazla Çalışma Yapmaya-Serbest Zaman Olarak Kullanmaya-Hafta ve Genel Tatil Günlerinde Çalışma Yapmaya Muvafakat Belgesi</p>
         <p>Giriş Tarihi: {{Employment.StartDate}}</p>
         <p>İşçi Adı Soyadı: {{Employee.FullName}}</p>
         <p>İmza: ________________</p>

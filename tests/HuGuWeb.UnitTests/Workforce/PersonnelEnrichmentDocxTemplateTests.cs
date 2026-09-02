@@ -27,6 +27,41 @@ public sealed class PersonnelEnrichmentDocxTemplateTests
     }
 
     [Fact]
+    public void Embedded_Taslak_docx_contains_imported_legal_title_and_form_labels()
+    {
+        var plainText = HrDocumentDocxRenderer.ReadDocumentPlainText(
+            HrDocumentTemplateDefaults.OvertimeConsentAssetPath);
+
+        Assert.Contains("Muvafakat Belgesi", plainText, StringComparison.Ordinal);
+        Assert.Contains("4857 sayılı", plainText, StringComparison.Ordinal);
+        Assert.Contains("Giriş Tarihi:", plainText, StringComparison.Ordinal);
+        Assert.Contains("İşçi Adı Soyadı:", plainText, StringComparison.Ordinal);
+        Assert.Contains("İmza:", plainText, StringComparison.Ordinal);
+        Assert.DoesNotContain("C:\\Users\\hsnuc", plainText, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void BuildPreviewHtml_uses_imported_docx_and_fills_draft_values()
+    {
+        var values = new Dictionary<string, string>
+        {
+            ["{{Employee.FullName}}"] = "Hasan Uçal",
+            ["{{Employment.StartDate}}"] = "02.09.2026",
+        };
+
+        var html = HrDocumentDocxRenderer.BuildPreviewHtml(
+            HrDocumentTemplateDefaults.OvertimeConsentAssetPath,
+            values);
+
+        Assert.Contains("Muvafakat Belgesi", html, StringComparison.Ordinal);
+        Assert.Contains("Hasan Uçal", html, StringComparison.Ordinal);
+        Assert.Contains("02.09.2026", html, StringComparison.Ordinal);
+        Assert.Contains("İşçi Adı Soyadı:", html, StringComparison.Ordinal);
+        Assert.Contains("İmza:", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("{{Employee.FullName}}", html, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Render_fills_allow_listed_placeholders_and_keeps_signature_blank()
     {
         var values = new Dictionary<string, string>
@@ -47,6 +82,7 @@ public sealed class PersonnelEnrichmentDocxTemplateTests
 
         Assert.Contains("Ali Tekin", xml, StringComparison.Ordinal);
         Assert.Contains("01.09.2026", xml, StringComparison.Ordinal);
+        Assert.Contains("İşçi Adı Soyadı:", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("{{Employee.FullName}}", xml, StringComparison.Ordinal);
         Assert.DoesNotContain("{{Employment.StartDate}}", xml, StringComparison.Ordinal);
         Assert.Contains("İmza:", xml, StringComparison.Ordinal);

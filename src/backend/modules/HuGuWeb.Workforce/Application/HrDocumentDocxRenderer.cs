@@ -48,8 +48,37 @@ public static class HrDocumentDocxRenderer
         using var source = OpenTemplateStream(assetPath);
         using var input = new MemoryStream();
         source.CopyTo(input);
-        var bytes = input.ToArray();
+        return RenderDocumentXml(input.ToArray(), values);
+    }
 
+    public static string BuildPreviewHtml(
+        string assetPath,
+        IReadOnlyDictionary<string, string> values)
+    {
+        var xml = ReplacePlaceholders(ReadDocumentXml(assetPath), values);
+        return ConvertDocumentXmlToHtml(xml);
+    }
+
+    public static string ReadDocumentPlainText(string assetPath)
+    {
+        return ExtractPlainText(ReadDocumentXml(assetPath));
+    }
+
+    private static string ReadDocumentXml(string assetPath)
+    {
+        using var source = OpenTemplateStream(assetPath);
+        using var archive = new ZipArchive(source, ZipArchiveMode.Read, leaveOpen: false);
+        var entry = archive.Entries.First(item =>
+            string.Equals(
+                NormalizeZipEntryPath(item.FullName),
+                "word/document.xml",
+                StringComparison.OrdinalIgnoreCase));
+        using var reader = new StreamReader(entry.Open(), Encoding.UTF8);
+        return reader.ReadToEnd();
+    }
+
+    private static byte[] RenderDocumentXml(byte[] bytes, IReadOnlyDictionary<string, string> values)
+    {
         using var output = new MemoryStream();
         using (var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read, leaveOpen: false))
         using (var writer = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
@@ -63,8 +92,7 @@ public static class HrDocumentDocxRenderer
                 if (string.Equals(entryPath, "word/document.xml", StringComparison.OrdinalIgnoreCase))
                 {
                     using var reader = new StreamReader(entryStream, Encoding.UTF8);
-                    var xml = reader.ReadToEnd();
-                    xml = ReplacePlaceholders(xml, values);
+                    var xml = ReplacePlaceholders(reader.ReadToEnd(), values);
                     var payload = Encoding.UTF8.GetBytes(xml);
                     targetStream.Write(payload, 0, payload.Length);
                 }
@@ -76,6 +104,51 @@ public static class HrDocumentDocxRenderer
         }
 
         return output.ToArray();
+    }
+
+    private static string ConvertDocumentXmlToHtml(string xml)
+    {
+        XNamespace word = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+        var document = XDocument.Parse(xml);
+        var builder = new StringBuilder();
+        foreach (var paragraph in document.Descendants(word + "p"))
+        {
+            var line = string.Concat(paragraph.Descendants(word + "t").Select(node => node.Value)).Trim();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            builder.Append("<p>")
+                .Append(SecurityElementEscape(line))
+                .Append("</p>");
+        }
+
+        return builder.ToString();
+    }
+
+    private static string ExtractPlainText(string xml)
+    {
+        XNamespace word = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+        var document = XDocument.Parse(xml);
+        var builder = new StringBuilder();
+        foreach (var paragraph in document.Descendants(word + "p"))
+        {
+            var line = string.Concat(paragraph.Descendants(word + "t").Select(node => node.Value)).Trim();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            if (builder.Length > 0)
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(line);
+        }
+
+        return builder.ToString();
     }
 
     public static string NormalizeZipEntryPath(string path) =>

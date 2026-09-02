@@ -54,3 +54,6 @@ yarn-error.log*
 *.nupkg
 project.lock.json
 artifacts/
+
+# Local temporary / diagnostic files
+.tmp/

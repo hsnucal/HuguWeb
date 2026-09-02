@@ -31,6 +31,8 @@ public sealed class PersonnelFinding07OnboardingDraftTests
         Assert.True(preview.IsSuccess, preview.Error?.Detail);
         Assert.Contains("Hasan Uçal", preview.Value!.RenderedContent, StringComparison.Ordinal);
         Assert.Contains("02.09.2026", preview.Value.RenderedContent, StringComparison.Ordinal);
+        Assert.Contains("Muvafakat Belgesi", preview.Value.RenderedContent, StringComparison.Ordinal);
+        Assert.Contains("İşçi Adı Soyadı:", preview.Value.RenderedContent, StringComparison.Ordinal);
         Assert.Equal(employeeCountBefore, harness.Store.Employees.Count);
         Assert.Equal(employmentCountBefore, harness.Store.Employments.Count);
         Assert.Equal(statusCountBefore, harness.Store.EmploymentOnboardingDocumentStatuses.Count);
