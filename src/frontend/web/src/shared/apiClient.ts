@@ -20,6 +20,12 @@ export function setCsrfToken(token: string | null) {
   csrfToken = token
 }
 
+export function appendCsrfHeader(headers: Headers, method: string) {
+  if (csrfToken && method !== 'GET' && method !== 'HEAD') {
+    headers.set('X-XSRF-TOKEN', csrfToken)
+  }
+}
+
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method ?? 'GET').toUpperCase()
   const headers = new Headers(options.headers)

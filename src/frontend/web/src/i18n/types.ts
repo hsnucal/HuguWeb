@@ -330,8 +330,43 @@ export type Translations = {
     tabIdentity: string
     tabWork: string
     tabOfficial: string
+    tabOnboarding: string
     tabPayment: string
     tabHistory: string
+    onboarding: {
+      loading: string
+      requiredTitle: string
+      templatesTitle: string
+      progress: string
+      selectedCount: string
+      preview: string
+      openWord: string
+      printSelected: string
+      complete: string
+      received: string
+      missing: string
+      readOnlyNotice: string
+      historicalNotice: string
+      historicalTemplatesNotice: string
+      createSaveBeforeDocx: string
+      previewDraftFieldsHint: string
+      templatesClosed: string
+      emptyChecklistTitle: string
+      emptyChecklistHint: string
+      emptyTemplatesTitle: string
+      emptyTemplatesHint: string
+      errors: {
+        generic: string
+        requirementNotFound: string
+        templateNotFound: string
+        templateInvalid: string
+        readOnly: string
+        alreadyCompleted: string
+        docxMissing: string
+        docxUnavailable: string
+        generationClosed: string
+      }
+    }
     leave: {
       tab: string
       loading: string
@@ -523,9 +558,33 @@ export type Translations = {
     sectionAddress: string
     sectionEmergency: string
     sectionEmployment: string
+    sectionProbation: string
     sectionContract: string
     sectionOrganization: string
     sectionTermination: string
+    workSubNav: string
+    workTerminationCreateHint: string
+    workTerminationUnavailable: string
+    workType: string
+    workTypes: {
+      FullTime: string
+      PartTime: string
+      ReducedHours: string
+      Intern: string
+    }
+    probationPeriod: string
+    probationNone: string
+    probationTwoMonths: string
+    probationStartDate: string
+    probationEndDate: string
+    probationEndHint: string
+    recruitmentSource: string
+    recruitmentSourceInactiveKept: string
+    sectionCertificates: string
+    certificateName: string
+    addCertificate: string
+    removeCertificate: string
+    noCertificates: string
     seniorityStartDate: string
     seniorityHint: string
     employmentEndDate: string
@@ -602,8 +661,6 @@ export type Translations = {
     schoolName: string
     graduationDate: string
     foreignLanguage: string
-    argeProjectCode: string
-    argeProjectHint: string
     nationalityEmpty: string
     langEnglish: string
     langGerman: string
@@ -679,6 +736,8 @@ export type Translations = {
       occupationCode: string
       dutyCode: string
       contractType: string
+      workType: string
+      recruitmentSource: string
       terminationReason: string
       iskurStatus: string
       iskurWorkforceStatus: string
@@ -713,6 +772,9 @@ export type Translations = {
     personnelNumberReadOnly: string
     noPositionsForDepartment: string
     createNeedsStructure: string
+    selectPropertyForDepartments: string
+    noAccessibleDepartments: string
+    structureLoadFailed: string
     historyEmptyCreate: string
     employmentPeriod: string
     assignmentPeriod: string
@@ -794,6 +856,8 @@ export type Translations = {
       sgkWorkplaceNotForProperty: string
       employmentNotFound: string
       employmentPropertyUnresolved: string
+      recruitmentSourceNotFound: string
+      recruitmentSourceInactive: string
     }
     validation: {
       tcknLength: string
@@ -848,6 +912,13 @@ export type Translations = {
       districtNotInProvince: string
       paymentIbanRequired: string
       paymentIbanInvalid: string
+      workTypeRequired: string
+      workTypeInvalid: string
+      probationPeriodInvalid: string
+      probationStartRequired: string
+      probationStartMustBeNull: string
+      certificateNameRequired: string
+      certificateNameTooLong: string
     }
   }
   roomOperations: {

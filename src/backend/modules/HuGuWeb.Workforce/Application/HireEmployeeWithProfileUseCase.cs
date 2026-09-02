@@ -41,7 +41,13 @@ public sealed class HireEmployeeWithProfileUseCase(
 
         var today = clock.Today;
         var employeeId = Guid.CreateVersion7();
-        var employment = Employment.Open(Guid.CreateVersion7(), employeeId, command.EmploymentStartDate, today);
+        var workType = command.WorkforceTerms?.WorkType ?? WorkType.FullTime;
+        var employment = Employment.Open(
+            Guid.CreateVersion7(),
+            employeeId,
+            command.EmploymentStartDate,
+            today,
+            workType);
         if (!employment.TryApplySeniorityStartDate(command.SeniorityStartDate, out var seniorityField, out var seniorityCode))
         {
             return WorkforceError.InvalidFields(
@@ -51,9 +57,12 @@ public sealed class HireEmployeeWithProfileUseCase(
                 seniorityCode ?? HrValidation.Codes.SeniorityStartDateInvalid);
         }
 
-        var workforce = EmploymentWorkforceComposer.Apply(
+        var workforce = await EmploymentWorkforceComposer.ApplyAsync(
+            store,
             employment,
-            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty);
+            command.WorkforceTerms ?? EmploymentWorkforceWriteModel.Empty,
+            workplace.Value.Organization.Id,
+            cancellationToken);
         if (!workforce.IsSuccess)
         {
             return workforce.Error!;
@@ -101,6 +110,17 @@ public sealed class HireEmployeeWithProfileUseCase(
         if (!profile.IsSuccess)
         {
             return profile.Error!;
+        }
+
+        var certificates = await CertificatesComposer.ReplaceAllAsync(
+            store,
+            employee.Id,
+            command.Certificates ?? [],
+            clock.UtcNow,
+            cancellationToken);
+        if (!certificates.IsSuccess)
+        {
+            return certificates.Error!;
         }
 
         store.AddEmployee(employee);
@@ -169,7 +189,8 @@ public sealed record HireEmployeeWithProfileCommand(
     OfficialEmploymentWriteModel? OfficialProfile = null,
     EmploymentWorkforceWriteModel? WorkforceTerms = null,
     EmploymentBesWriteModel? BesSettings = null,
-    DateOnly? SeniorityStartDate = null);
+    DateOnly? SeniorityStartDate = null,
+    IReadOnlyList<EmployeeCertificateDraft>? Certificates = null);
 
 public sealed class NationalIdentityConflictException : Exception
 {

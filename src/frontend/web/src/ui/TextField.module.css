@@ -186,24 +186,46 @@
   height: 1.7rem;
   transform: translateY(-50%);
   color: var(--color-text-muted);
-  pointer-events: none;
+}
+
+.datePickerButton {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.datePickerButton:hover:not(:disabled) {
+  color: var(--color-brand-primary);
+}
+
+.datePickerButton:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.datePickerButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .datePickerNative {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
   padding: 0;
   border: 0;
-  opacity: 0;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.datePickerNative:disabled {
-  cursor: not-allowed;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .hint {

@@ -29,7 +29,6 @@ public sealed record HrProfileWriteModel(
     string? SchoolName,
     DateOnly? GraduationDate,
     ForeignLanguageSummary? ForeignLanguage,
-    string? ArgeProjectCode,
     IReadOnlyList<EmergencyContactDraft> EmergencyContacts);
 
 public static class HrProfileAccess
@@ -70,8 +69,7 @@ public static class HrProfileAccess
             model.EducationDescription,
             model.SchoolName,
             model.GraduationDate,
-            model.ForeignLanguage,
-            model.ArgeProjectCode);
+            model.ForeignLanguage);
 }
 
 public static class HrProfileComposer
@@ -186,6 +184,5 @@ public static class HrProfileComposer
             model.EducationDescription,
             model.SchoolName,
             model.GraduationDate,
-            model.ForeignLanguage,
-            model.ArgeProjectCode);
+            model.ForeignLanguage);
 }

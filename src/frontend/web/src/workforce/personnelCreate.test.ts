@@ -15,6 +15,7 @@ test('create write payload keeps department and position while omitting blank se
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
   form.seniorityStartDate = ''
   form.contractType = 'Indefinite'
 
@@ -24,12 +25,14 @@ test('create write payload keeps department and position while omitting blank se
   assert.equal(body.positionId, 'pos-1')
   assert.equal(body.seniorityStartDate, null)
   assert.equal(body.workforceTerms.contractType, 'Indefinite')
+  assert.equal(body.workforceTerms.workType, 'FullTime')
 })
 
 test('create validation for missing department and position belongs to the work tab', () => {
   const form = emptyPersonnelForm('2026-08-28')
   form.givenName = 'Ayşe'
   form.familyName = 'Yılmaz'
+  form.workType = 'FullTime'
   const errors = validatePersonnelForm(form, { createMode: true, today: '2026-08-28' })
   assert.equal(errors.departmentId, 'department-required')
   assert.equal(errors.positionId, 'position-required')
@@ -47,6 +50,7 @@ test('blank seniority is valid and a later seniority date is rejected', () => {
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
   form.seniorityStartDate = ''
   const ok = validatePersonnelForm(form, { createMode: true, today: '2026-08-28' })
   assert.equal(ok.seniorityStartDate, undefined)
@@ -64,6 +68,7 @@ test('malformed and impossible dates are rejected before save', () => {
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
   form.birthDate = '18.04.201991'
   const oversized = validatePersonnelForm(form, { createMode: true, today: '2026-08-28' })
   assert.equal(oversized.birthDate, 'date-invalid')
@@ -83,6 +88,7 @@ test('district must belong to the selected province while unknown text does not 
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
   form.residenceCity = 'İstanbul'
   form.residenceDistrict = 'Kadıköy'
   const ok = validatePersonnelForm(form, { createMode: true, today: '2026-08-28' })
@@ -105,6 +111,7 @@ test('bank name without IBAN is owned by the payment tab', () => {
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
   form.paymentBankName = 'Ziraat'
   const errors = validatePersonnelForm(form, { createMode: true, today: '2026-08-28' })
   assert.equal(errors.paymentIban, 'payment-iban-required')
@@ -118,6 +125,7 @@ test('incomplete IBAN fails blur/field validation and save; complete and empty p
   form.familyName = 'Yılmaz'
   form.departmentId = 'dept-1'
   form.positionId = 'pos-1'
+  form.workType = 'FullTime'
 
   assert.equal(
     validatePersonnelField(form, 'paymentIban', { createMode: true, today: '2026-08-28' }),

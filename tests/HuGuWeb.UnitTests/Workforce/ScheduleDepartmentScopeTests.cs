@@ -1,4 +1,5 @@
 using HuGuWeb.Api.Authorization;
+using HuGuWeb.Api.Identity;
 using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
 
@@ -38,6 +39,27 @@ public class ScheduleDepartmentScopeTests
         Assert.DoesNotContain(
             HrShiftDefinitionPermissions.Manage,
             SystemRoleTemplates.DepartmentSchedulerPermissions);
+        Assert.Equal(
+            SystemRoleTemplates.DepartmentSchedulerOnlyPermissions,
+            SystemRoleTemplates.ByCode(SystemRoleTemplates.DepartmentScheduler)!.Permissions);
+        Assert.Contains(
+            HrSchedulePermissions.Read,
+            SystemRoleTemplates.DepartmentSchedulerOnlyPermissions);
+        Assert.Contains(
+            HrSchedulePermissions.Manage,
+            SystemRoleTemplates.DepartmentSchedulerOnlyPermissions);
+        Assert.Contains(
+            HrShiftDefinitionPermissions.Read,
+            SystemRoleTemplates.DepartmentSchedulerOnlyPermissions);
+        Assert.DoesNotContain(
+            HrLeavePermissions.Approve,
+            SystemRoleTemplates.DepartmentSchedulerOnlyPermissions);
+        Assert.Contains(
+            SystemRoleTemplates.DepartmentScheduler,
+            DevelopmentPersonaCatalog.MaintenanceManager.AssignedRoleCodes);
+        Assert.Contains(
+            HrSchedulePermissions.Manage,
+            DevelopmentPersonaCatalog.MaintenanceManager.Permissions);
     }
 
     [Fact]

@@ -56,6 +56,36 @@ public static class HrValidation
         public const string BesRateInvalid = "bes-rate-invalid";
         public const string BesExtraAmountInvalid = "bes-extra-amount-invalid";
         public const string KepInvalid = "kep-invalid";
+        public const string WorkTypeRequired = "work-type-required";
+        public const string WorkTypeInvalid = "work-type-invalid";
+        public const string ProbationPeriodMonthsInvalid = "probation-period-months-invalid";
+        public const string ProbationStartDateRequired = "probation-start-date-required";
+        public const string ProbationStartDateMustBeNull = "probation-start-date-must-be-null";
+        public const string RecruitmentSourceNotFound = "recruitment-source-not-found";
+        public const string RecruitmentSourceInactive = "recruitment-source-inactive";
+        public const string RecruitmentSourceCodeRequired = "recruitment-source-code-required";
+        public const string RecruitmentSourceCodeTooLong = "recruitment-source-code-too-long";
+        public const string RecruitmentSourceNameRequired = "recruitment-source-name-required";
+        public const string RecruitmentSourceNameTooLong = "recruitment-source-name-too-long";
+        public const string CertificateNameRequired = "certificate-name-required";
+        public const string CertificateNameTooLong = "certificate-name-too-long";
+        public const string OnboardingRequirementNotFound = "onboarding-requirement-not-found";
+        public const string OnboardingRequirementCodeRequired = "onboarding-requirement-code-required";
+        public const string OnboardingRequirementCodeTooLong = "onboarding-requirement-code-too-long";
+        public const string OnboardingRequirementNameRequired = "onboarding-requirement-name-required";
+        public const string OnboardingRequirementNameTooLong = "onboarding-requirement-name-too-long";
+        public const string OnboardingCompleted = "onboarding-completed";
+        public const string OnboardingDocumentsReadOnly = "onboarding-documents-read-only";
+        public const string OnboardingDocumentGenerationClosed = "onboarding-document-generation-closed";
+        public const string OnboardingAlreadyCompleted = "onboarding-already-completed";
+        public const string DocumentTemplateAssetMissing = "document-template-asset-missing";
+        public const string DocumentTemplateDocxUnavailable = "document-template-docx-unavailable";
+        public const string DocumentTemplateNotFound = "document-template-not-found";
+        public const string DocumentTemplateCodeRequired = "document-template-code-required";
+        public const string DocumentTemplateCodeTooLong = "document-template-code-too-long";
+        public const string DocumentTemplateNameRequired = "document-template-name-required";
+        public const string DocumentTemplateNameTooLong = "document-template-name-too-long";
+        public const string DocumentTemplateUnknownPlaceholder = "document-template-unknown-placeholder";
     }
 
     public static class Fields
@@ -80,6 +110,7 @@ public static class HrValidation
         public const string NotificationAddress = "notificationAddress";
         public const string HrNotes = "hrNotes";
         public const string EmergencyContacts = "emergencyContacts";
+        public const string Certificates = "certificates";
         public const string SgkWorkplaceRegistrationId = "sgkWorkplaceRegistrationId";
         public const string DocumentTypeCode = "documentTypeCode";
         public const string ApplicableLawCode = "applicableLawCode";
@@ -109,16 +140,32 @@ public static class HrValidation
         public const string SchoolName = "schoolName";
         public const string GraduationDate = "graduationDate";
         public const string ForeignLanguage = "foreignLanguage";
-        public const string ArgeProjectCode = "argeProjectCode";
         public const string RegistrationNumber = "registrationNumber";
         public const string DisplayName = "displayName";
         public const string PaymentIban = "paymentIban";
         public const string PaymentBankName = "paymentBankName";
+        public const string WorkType = "workType";
+        public const string ProbationPeriodMonths = "probationPeriodMonths";
+        public const string ProbationStartDate = "probationStartDate";
+        public const string RecruitmentSourceId = "recruitmentSourceId";
+        public const string RecruitmentSourceCode = "recruitmentSourceCode";
+        public const string RecruitmentSourceName = "recruitmentSourceName";
+        public const string OnboardingRequirementId = "onboardingRequirementId";
+        public const string OnboardingRequirementCode = "onboardingRequirementCode";
+        public const string OnboardingRequirementName = "onboardingRequirementName";
+        public const string OnboardingIsCompleted = "isCompleted";
+        public const string DocumentTemplateId = "documentTemplateId";
+        public const string DocumentTemplateCode = "documentTemplateCode";
+        public const string DocumentTemplateName = "documentTemplateName";
+        public const string DocumentTemplateContent = "documentTemplateContent";
+        public const string DocumentTemplatePlaceholder = "documentTemplatePlaceholder";
 
         public static string EmergencyName(int index) => $"emergencyContacts[{index}].name";
 
         public static string EmergencyRelationship(int index) => $"emergencyContacts[{index}].relationship";
 
         public static string EmergencyPhone(int index) => $"emergencyContacts[{index}].phone";
+
+        public static string CertificateName(int index) => $"certificates[{index}].name";
     }
 }

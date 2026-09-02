@@ -20,6 +20,7 @@ public static class SystemRoleTemplates
     public static readonly Guid CorporateHrId = Guid.Parse("b1e1c0de-0001-4000-8000-000000000009");
     public static readonly Guid EmployeeLeaveSelfServiceId = Guid.Parse("b1e1c0de-0001-4000-8000-00000000000a");
     public static readonly Guid DepartmentLeaveApproverId = Guid.Parse("b1e1c0de-0001-4000-8000-00000000000b");
+    public static readonly Guid DepartmentSchedulerId = Guid.Parse("b1e1c0de-0001-4000-8000-00000000000c");
 
     public const string DevelopmentSuperuser = "development-superuser";
     public const string HrManager = "hr-manager";
@@ -32,6 +33,7 @@ public static class SystemRoleTemplates
     public const string CorporateHr = "hr-corporate";
     public const string EmployeeLeaveSelfService = "employee-leave-self-service";
     public const string DepartmentLeaveApprover = "department-leave-approver";
+    public const string DepartmentScheduler = "department-scheduler";
 
     public static readonly IReadOnlyList<string> HumanResourcesPermissions =
     [
@@ -51,7 +53,7 @@ public static class SystemRoleTemplates
 
     /// <summary>
     /// Typical department operational scheduler/approver: schedules + department leave approval.
-    /// Does not grant HR leave manage. Schedule portion remains a permission bundle until productized;
+    /// Does not grant HR leave manage. Schedule portion is bound to <see cref="DepartmentScheduler"/>;
     /// leave approval portion is bound to <see cref="DepartmentLeaveApprover"/>.
     /// </summary>
     public static readonly IReadOnlyList<string> DepartmentSchedulerPermissions =
@@ -61,6 +63,17 @@ public static class SystemRoleTemplates
         HrShiftDefinitionPermissions.Read,
         HrLeavePermissions.Read,
         HrLeavePermissions.Approve
+    ];
+
+    /// <summary>
+    /// Department-scoped shift schedule + shift definition read. Does not grant leave approve/manage.
+    /// Assign alongside operational manager roles; AUTH-02 department scopes provide WHERE.
+    /// </summary>
+    public static readonly IReadOnlyList<string> DepartmentSchedulerOnlyPermissions =
+    [
+        HrSchedulePermissions.Read,
+        HrSchedulePermissions.Manage,
+        HrShiftDefinitionPermissions.Read
     ];
 
     /// <summary>
@@ -139,7 +152,13 @@ public static class SystemRoleTemplates
             DepartmentLeaveApprover,
             "Department Leave Approver",
             AuthorizationScopeType.Property,
-            DepartmentLeaveApproverPermissions)
+            DepartmentLeaveApproverPermissions),
+        new(
+            DepartmentSchedulerId,
+            DepartmentScheduler,
+            "Department Scheduler",
+            AuthorizationScopeType.Property,
+            DepartmentSchedulerOnlyPermissions)
     ];
 
     public static SystemRoleTemplate? ByCode(string code) =>

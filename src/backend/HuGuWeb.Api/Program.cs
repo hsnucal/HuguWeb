@@ -41,6 +41,7 @@ if (app.Environment.IsDevelopment())
 }
 
 await TryEnsureDefaultLeaveTypesAsync(app);
+await TryEnsurePersonnelEnrichmentDefaultsAsync(app);
 
 app.Run();
 
@@ -105,5 +106,26 @@ static async Task TryEnsureDefaultLeaveTypesAsync(WebApplication app)
     catch (Exception exception)
     {
         app.Logger.LogWarning(exception, "Default organization leave types were not initialized.");
+    }
+}
+
+static async Task TryEnsurePersonnelEnrichmentDefaultsAsync(WebApplication app)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var useCase = scope.ServiceProvider
+            .GetRequiredService<HuGuWeb.Workforce.Application.EnsurePersonnelEnrichmentDefaultsUseCase>();
+        var added = await useCase.ExecuteForAllOrganizationsAsync(CancellationToken.None);
+        if (added > 0)
+        {
+            app.Logger.LogInformation(
+                "Default personnel enrichment catalogs were initialized ({Count} added).",
+                added);
+        }
+    }
+    catch (Exception exception)
+    {
+        app.Logger.LogWarning(exception, "Default personnel enrichment catalogs were not initialized.");
     }
 }

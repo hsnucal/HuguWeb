@@ -92,10 +92,29 @@ public sealed class UpdateEmployeeHrProfileUseCase(
 
         if (command.WorkforceTerms is not null)
         {
-            var workforce = EmploymentWorkforceComposer.Apply(employment.Value, command.WorkforceTerms);
+            var workforce = await EmploymentWorkforceComposer.ApplyAsync(
+                store,
+                employment.Value,
+                command.WorkforceTerms,
+                workplace.Value.Organization.Id,
+                cancellationToken);
             if (!workforce.IsSuccess)
             {
                 return workforce.Error!;
+            }
+        }
+
+        if (command.Certificates is not null)
+        {
+            var certificates = await CertificatesComposer.ReplaceAllAsync(
+                store,
+                employee.Id,
+                command.Certificates,
+                clock.UtcNow,
+                cancellationToken);
+            if (!certificates.IsSuccess)
+            {
+                return certificates.Error!;
             }
         }
 
@@ -166,4 +185,5 @@ public sealed record UpdateEmployeeHrProfileCommand(
     EmploymentBesWriteModel? BesSettings = null,
     PersonnelChangeContext? ChangeContext = null,
     DateOnly? SeniorityStartDate = null,
-    bool ApplySeniorityStartDate = false);
+    bool ApplySeniorityStartDate = false,
+    IReadOnlyList<EmployeeCertificateDraft>? Certificates = null);

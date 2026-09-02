@@ -60,3 +60,22 @@ test('optional graduation-style DateOnly stays empty or valid ISO', () => {
   assert.equal(toIsoDate('15.06.20181'), null)
   assert.equal(toIsoDate('31.02.2018'), null)
 })
+
+test('DateField calendar contract: picker for editable, none for readonly', () => {
+  function shouldShowCalendar(options: { calendar?: boolean; readOnly?: boolean; disabled?: boolean }) {
+    const calendar = options.calendar ?? true
+    return calendar && !options.disabled && !options.readOnly
+  }
+
+  assert.equal(shouldShowCalendar({}), true)
+  assert.equal(shouldShowCalendar({ calendar: true }), true)
+  assert.equal(shouldShowCalendar({ calendar: false }), false)
+  assert.equal(shouldShowCalendar({ readOnly: true }), false)
+  assert.equal(shouldShowCalendar({ disabled: true }), false)
+  assert.equal(shouldShowCalendar({ calendar: true, readOnly: true }), false)
+})
+
+test('probation start/end presentation stays DD.MM.YYYY', () => {
+  assert.equal(isoToDisplayDate('2026-09-01'), '01.09.2026')
+  assert.equal(isoToDisplayDate('2026-11-01'), '01.11.2026')
+})

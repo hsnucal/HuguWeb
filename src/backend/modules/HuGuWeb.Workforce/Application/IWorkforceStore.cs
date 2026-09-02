@@ -85,6 +85,37 @@ public interface IWorkforceStore
     void AddEmployeePhoto(EmployeePhoto photo);
     void RemoveEmployeePhoto(EmployeePhoto photo);
 
+    Task<IReadOnlyList<EmployeeCertificate>> ListEmployeeCertificatesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken);
+    void AddEmployeeCertificate(EmployeeCertificate certificate);
+    void RemoveEmployeeCertificate(EmployeeCertificate certificate);
+
+    Task<IReadOnlyList<RecruitmentSource>> ListRecruitmentSourcesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
+    Task<RecruitmentSource?> GetRecruitmentSourceAsync(Guid id, CancellationToken cancellationToken);
+    void AddRecruitmentSource(RecruitmentSource source);
+
+    Task<IReadOnlyList<OnboardingDocumentRequirement>> ListOnboardingDocumentRequirementsAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
+    Task<OnboardingDocumentRequirement?> GetOnboardingDocumentRequirementAsync(
+        Guid id,
+        CancellationToken cancellationToken);
+    void AddOnboardingDocumentRequirement(OnboardingDocumentRequirement requirement);
+
+    Task<IReadOnlyList<EmploymentOnboardingDocumentStatus>> ListEmploymentOnboardingDocumentStatusesAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken);
+    void AddEmploymentOnboardingDocumentStatus(EmploymentOnboardingDocumentStatus status);
+
+    Task<IReadOnlyList<HrDocumentTemplate>> ListHrDocumentTemplatesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken);
+    Task<HrDocumentTemplate?> GetHrDocumentTemplateAsync(Guid id, CancellationToken cancellationToken);
+    void AddHrDocumentTemplate(HrDocumentTemplate template);
+
     Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<SgkWorkplaceRegistration>> ListSgkWorkplaceRegistrationsAsync(
         Guid propertyId,

@@ -1,11 +1,35 @@
-import type { PersonnelForm } from './personnelForm'
-import { toIsoDate } from '../ui/dateEntry'
-import { validatePaymentIban } from './paymentIban'
-import { MOBILE_DIGIT_MAX, normalizeMobileDigits } from './personnelInput'
-import { findTurkishProvince, isKnownProvinceDistrict } from './trProvinces'
+import type { PersonnelForm } from './personnelForm.ts'
+import { toIsoDate } from '../ui/dateEntry.ts'
+import { validatePaymentIban } from './paymentIban.ts'
+import { MOBILE_DIGIT_MAX, normalizeMobileDigits } from './personnelInput.ts'
+import { findTurkishProvince, isKnownProvinceDistrict } from './trProvinces.ts'
 
-export type PersonnelTabId = 'general' | 'identity' | 'work' | 'official' | 'payment' | 'history'
+export type PersonnelTabId = 'general' | 'identity' | 'work' | 'official' | 'onboarding' | 'payment' | 'history'
 export type OfficialSectionId = 'declaration' | 'iskur' | 'bes' | 'social' | 'education'
+export type WorkSectionId =
+  | 'employment'
+  | 'probation'
+  | 'contract'
+  | 'organization'
+  | 'termination'
+
+export const WORK_SECTION_IDS: readonly WorkSectionId[] = [
+  'employment',
+  'probation',
+  'contract',
+  'organization',
+  'termination',
+] as const
+
+export const DEFAULT_WORK_SECTION: WorkSectionId = 'employment'
+
+export const WORK_SECTION_LABEL_KEYS: Record<WorkSectionId, string> = {
+  employment: 'personnel.sectionEmployment',
+  probation: 'personnel.sectionProbation',
+  contract: 'personnel.sectionContract',
+  organization: 'personnel.sectionOrganization',
+  termination: 'personnel.sectionTermination',
+}
 
 export const HrValidationCodes = {
   tcknLength: 'tckn-length',
@@ -64,6 +88,13 @@ export const HrValidationCodes = {
   districtNotInProvince: 'district-not-in-province',
   paymentIbanRequired: 'payment-iban-required',
   paymentIbanInvalid: 'payment-profile-invalid-iban',
+  workTypeRequired: 'work-type-required',
+  workTypeInvalid: 'work-type-invalid',
+  probationPeriodInvalid: 'probation-period-months-invalid',
+  probationStartRequired: 'probation-start-date-required',
+  probationStartMustBeNull: 'probation-start-date-must-be-null',
+  certificateNameRequired: 'certificate-name-required',
+  certificateNameTooLong: 'certificate-name-too-long',
 } as const
 
 const NAME_MAX = 100
@@ -75,6 +106,8 @@ const ADDRESS_MAX = 500
 const PLACE_MAX = 100
 const NOTES_MAX = 2000
 const RELATIONSHIP_MAX = 64
+const CERTIFICATE_NAME_MAX = 200
+const WORK_TYPES = new Set(['FullTime', 'PartTime', 'ReducedHours', 'Intern'])
 
 export type FieldErrors = Record<string, string>
 
@@ -88,6 +121,7 @@ type FieldTarget = {
   tab: PersonnelTabId
   controlId: string
   officialSection?: OfficialSectionId
+  workSection?: WorkSectionId
 }
 
 export function validationMessageKey(code: string): string {
@@ -204,6 +238,20 @@ export function validationMessageKey(code: string): string {
       return 'personnel.validation.paymentIbanRequired'
     case HrValidationCodes.paymentIbanInvalid:
       return 'personnel.validation.paymentIbanInvalid'
+    case HrValidationCodes.workTypeRequired:
+      return 'personnel.validation.workTypeRequired'
+    case HrValidationCodes.workTypeInvalid:
+      return 'personnel.validation.workTypeInvalid'
+    case HrValidationCodes.probationPeriodInvalid:
+      return 'personnel.validation.probationPeriodInvalid'
+    case HrValidationCodes.probationStartRequired:
+      return 'personnel.validation.probationStartRequired'
+    case HrValidationCodes.probationStartMustBeNull:
+      return 'personnel.validation.probationStartMustBeNull'
+    case HrValidationCodes.certificateNameRequired:
+      return 'personnel.validation.certificateNameRequired'
+    case HrValidationCodes.certificateNameTooLong:
+      return 'personnel.validation.certificateNameTooLong'
     default:
       return 'personnel.errors.generic'
   }
@@ -246,6 +294,28 @@ export function validatePersonnelField(
       context.createMode,
       HrValidationCodes.startDateRequired,
     )
+  }
+  if (field === 'workType') {
+    if (form.workType === '') {
+      return HrValidationCodes.workTypeRequired
+    }
+    return WORK_TYPES.has(form.workType) ? undefined : HrValidationCodes.workTypeInvalid
+  }
+  if (field === 'probationPeriodMonths' || field === 'probationStartDate') {
+    if (form.probationPeriodMonths !== '' && form.probationPeriodMonths !== '2') {
+      return HrValidationCodes.probationPeriodInvalid
+    }
+    if (form.probationPeriodMonths === '2') {
+      return validateStoredDate(
+        form.probationStartDate,
+        true,
+        HrValidationCodes.probationStartRequired,
+      )
+    }
+    if (form.probationStartDate.trim() !== '') {
+      return HrValidationCodes.probationStartMustBeNull
+    }
+    return undefined
   }
   if (field === 'seniorityStartDate') {
     const formatError = validateStoredDate(form.seniorityStartDate, false)
@@ -421,15 +491,12 @@ export function validatePersonnelField(
   if (
     field === 'educationDescription'
     || field === 'schoolName'
-    || field === 'argeProjectCode'
   ) {
     return optionalMax(
       field === 'educationDescription'
         ? form.educationDescription
-        : field === 'schoolName'
-          ? form.schoolName
-          : form.argeProjectCode,
-      field === 'argeProjectCode' ? 64 : 200,
+        : form.schoolName,
+      200,
     )
   }
 
@@ -460,6 +527,20 @@ export function validatePersonnelField(
     return form.emergencyContacts.filter((item) => item.isPrimary).length > 1
       ? HrValidationCodes.emergencyPrimaryMultiple
       : undefined
+  }
+
+  const certificate = /^certificates\[(\d+)\]\.name$/.exec(field)
+  if (certificate) {
+    const index = Number(certificate[1])
+    const row = form.certificates[index]
+    if (!row) {
+      return undefined
+    }
+    const trimmed = row.name.trim()
+    if (trimmed === '') {
+      return HrValidationCodes.certificateNameRequired
+    }
+    return trimmed.length > CERTIFICATE_NAME_MAX ? HrValidationCodes.certificateNameTooLong : undefined
   }
 
   return undefined
@@ -501,6 +582,33 @@ export function invalidPersonnelTabs(
   return tabs
 }
 
+export function invalidWorkSections(
+  errors: FieldErrors,
+  form: PersonnelForm,
+  createMode: boolean,
+): Set<WorkSectionId> {
+  const sections = new Set<WorkSectionId>()
+  if (Object.keys(errors).length === 0) {
+    return sections
+  }
+
+  for (const target of fieldTargets(form, createMode)) {
+    if (errors[target.field] && target.tab === 'work') {
+      sections.add(target.workSection ?? workSectionForField(target.field))
+    }
+  }
+
+  if (sections.size === 0) {
+    for (const field of Object.keys(errors)) {
+      if (tabForField(field) === 'work') {
+        sections.add(workSectionForField(field))
+      }
+    }
+  }
+
+  return sections
+}
+
 export function firstInvalidTarget(
   errors: FieldErrors,
   form: PersonnelForm,
@@ -513,14 +621,18 @@ export function firstInvalidTarget(
   }
 
   const leftover = Object.keys(errors)[0]
-  return leftover
-    ? {
-        field: leftover,
-        tab: tabForField(leftover),
-        controlId: controlIdForField(leftover, form),
-        officialSection: tabForField(leftover) === 'official' ? officialSectionForField(leftover) : undefined,
-      }
-    : null
+  if (!leftover) {
+    return null
+  }
+
+  const tab = tabForField(leftover)
+  return {
+    field: leftover,
+    tab,
+    controlId: controlIdForField(leftover, form),
+    officialSection: tab === 'official' ? officialSectionForField(leftover) : undefined,
+    workSection: tab === 'work' ? workSectionForField(leftover) : undefined,
+  }
 }
 
 export function officialSectionForField(field: string): OfficialSectionId {
@@ -555,12 +667,39 @@ export function officialSectionForField(field: string): OfficialSectionId {
     || field === 'schoolName'
     || field === 'graduationDate'
     || field === 'foreignLanguage'
-    || field === 'argeProjectCode'
+    || field.startsWith('certificates')
   ) {
     return 'education'
   }
 
   return 'declaration'
+}
+
+export function workSectionForField(field: string): WorkSectionId {
+  if (
+    field === 'probationPeriodMonths'
+    || field === 'probationStartDate'
+  ) {
+    return 'probation'
+  }
+
+  if (
+    field === 'contractType'
+    || field === 'contractEndDate'
+    || field === 'partTimeMonthlyHours'
+  ) {
+    return 'contract'
+  }
+
+  if (field === 'departmentId' || field === 'positionId') {
+    return 'organization'
+  }
+
+  if (field === 'terminationReason') {
+    return 'termination'
+  }
+
+  return 'employment'
 }
 
 export function tabForField(field: string): PersonnelTabId {
@@ -587,6 +726,10 @@ export function tabForField(field: string): PersonnelTabId {
     || field === 'departmentId'
     || field === 'positionId'
     || field === 'seniorityStartDate'
+    || field === 'workType'
+    || field === 'probationPeriodMonths'
+    || field === 'probationStartDate'
+    || field === 'recruitmentSourceId'
     || field === 'contractType'
     || field === 'contractEndDate'
     || field === 'partTimeMonthlyHours'
@@ -619,7 +762,7 @@ export function tabForField(field: string): PersonnelTabId {
     || field === 'schoolName'
     || field === 'graduationDate'
     || field === 'foreignLanguage'
-    || field === 'argeProjectCode'
+    || field.startsWith('certificates')
   ) {
     return 'official'
   }
@@ -638,6 +781,11 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     return `hr-em-${part}-${emergency[1]}`
   }
 
+  const certificate = /^certificates\[(\d+)\]\.name$/.exec(field)
+  if (certificate) {
+    return `hr-cert-name-${certificate[1]}`
+  }
+
   const ids: Record<string, string> = {
     givenName: 'hr-given',
     familyName: 'hr-family',
@@ -648,6 +796,10 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     email: 'hr-email',
     employmentStartDate: 'hr-work-start',
     seniorityStartDate: 'hr-seniority-start',
+    workType: 'hr-work-type',
+    probationPeriodMonths: 'hr-probation-period',
+    probationStartDate: 'hr-probation-start',
+    recruitmentSourceId: 'hr-recruitment-source',
     departmentId: 'hr-work-department',
     positionId: 'hr-work-position',
     hrNotes: 'hr-notes',
@@ -691,7 +843,6 @@ export function controlIdForField(field: string, form: PersonnelForm): string {
     schoolName: 'hr-school',
     graduationDate: 'hr-graduation',
     foreignLanguage: 'hr-foreign-language',
-    argeProjectCode: 'hr-arge-code',
     paymentIban: 'hr-payment-iban',
     paymentBankName: 'hr-payment-bank',
   }
@@ -726,9 +877,9 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
 
   if (createMode) {
     general.push(
-      { field: 'employmentStartDate', tab: 'work', controlId: 'hr-work-start' },
-      { field: 'departmentId', tab: 'work', controlId: 'hr-work-department' },
-      { field: 'positionId', tab: 'work', controlId: 'hr-work-position' },
+      { field: 'employmentStartDate', tab: 'work', controlId: 'hr-work-start', workSection: 'employment' },
+      { field: 'departmentId', tab: 'work', controlId: 'hr-work-department', workSection: 'organization' },
+      { field: 'positionId', tab: 'work', controlId: 'hr-work-position', workSection: 'organization' },
     )
   }
 
@@ -755,6 +906,13 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     )
   })
 
+  const certificates: FieldTarget[] = form.certificates.map((_, index) => ({
+    field: `certificates[${index}].name`,
+    tab: 'official' as const,
+    controlId: `hr-cert-name-${index}`,
+    officialSection: 'education' as const,
+  }))
+
   return [
     ...general,
     ...identity,
@@ -764,10 +922,14 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     { field: 'insuranceBranchCode', tab: 'official', controlId: 'hr-insurance-branch', officialSection: 'declaration' },
     { field: 'occupationCode', tab: 'official', controlId: 'hr-occupation', officialSection: 'declaration' },
     { field: 'dutyCode', tab: 'official', controlId: 'hr-duty-code', officialSection: 'declaration' },
-    { field: 'seniorityStartDate', tab: 'work', controlId: 'hr-seniority-start' },
-    { field: 'contractType', tab: 'work', controlId: 'hr-contract-type' },
-    { field: 'contractEndDate', tab: 'work', controlId: 'hr-contract-end' },
-    { field: 'partTimeMonthlyHours', tab: 'work', controlId: 'hr-part-time-hours' },
+    { field: 'seniorityStartDate', tab: 'work', controlId: 'hr-seniority-start', workSection: 'employment' },
+    { field: 'workType', tab: 'work', controlId: 'hr-work-type', workSection: 'employment' },
+    { field: 'recruitmentSourceId', tab: 'work', controlId: 'hr-recruitment-source', workSection: 'employment' },
+    { field: 'probationPeriodMonths', tab: 'work', controlId: 'hr-probation-period', workSection: 'probation' },
+    { field: 'probationStartDate', tab: 'work', controlId: 'hr-probation-start', workSection: 'probation' },
+    { field: 'contractType', tab: 'work', controlId: 'hr-contract-type', workSection: 'contract' },
+    { field: 'contractEndDate', tab: 'work', controlId: 'hr-contract-end', workSection: 'contract' },
+    { field: 'partTimeMonthlyHours', tab: 'work', controlId: 'hr-part-time-hours', workSection: 'contract' },
     { field: 'iskurStatus', tab: 'official', controlId: 'hr-iskur-status', officialSection: 'iskur' },
     { field: 'incentiveStartDate', tab: 'official', controlId: 'hr-incentive-start', officialSection: 'iskur' },
     { field: 'incentiveEndDate', tab: 'official', controlId: 'hr-incentive-end', officialSection: 'iskur' },
@@ -783,7 +945,7 @@ function fieldTargets(form: PersonnelForm, createMode: boolean): FieldTarget[] {
     { field: 'educationDescription', tab: 'official', controlId: 'hr-education-description', officialSection: 'education' },
     { field: 'schoolName', tab: 'official', controlId: 'hr-school', officialSection: 'education' },
     { field: 'graduationDate', tab: 'official', controlId: 'hr-graduation', officialSection: 'education' },
-    { field: 'argeProjectCode', tab: 'official', controlId: 'hr-arge-code', officialSection: 'education' },
+    ...certificates,
     { field: 'paymentIban', tab: 'payment', controlId: 'hr-payment-iban' },
     { field: 'paymentBankName', tab: 'payment', controlId: 'hr-payment-bank' },
   ]

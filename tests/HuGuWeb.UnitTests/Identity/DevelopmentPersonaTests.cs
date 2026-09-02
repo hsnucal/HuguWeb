@@ -157,6 +157,7 @@ public class DevelopmentPersonaTests
         Assert.Equal("maintenance.manager@localhost", persona.Email);
         Assert.Equal(SystemRoleTemplates.MaintenanceManager, persona.RoleCode);
         Assert.Contains(SystemRoleTemplates.DepartmentLeaveApprover, persona.AssignedRoleCodes);
+        Assert.Contains(SystemRoleTemplates.DepartmentScheduler, persona.AssignedRoleCodes);
         Assert.Contains(SystemRoleTemplates.EmployeeLeaveSelfService, persona.AssignedRoleCodes);
         Assert.Equal(["ENG"], persona.DepartmentScopeCodes);
         Assert.Contains(MaintenancePermissions.Read, persona.Permissions);
@@ -164,7 +165,11 @@ public class DevelopmentPersonaTests
         Assert.Contains(MaintenancePermissions.Resolve, persona.Permissions);
         Assert.Contains(HrLeavePermissions.Read, persona.Permissions);
         Assert.Contains(HrLeavePermissions.Approve, persona.Permissions);
+        Assert.Contains(HrSchedulePermissions.Read, persona.Permissions);
+        Assert.Contains(HrSchedulePermissions.Manage, persona.Permissions);
+        Assert.Contains(HrShiftDefinitionPermissions.Read, persona.Permissions);
         Assert.DoesNotContain(HrLeavePermissions.Manage, persona.Permissions);
+        Assert.DoesNotContain(HrShiftDefinitionPermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));

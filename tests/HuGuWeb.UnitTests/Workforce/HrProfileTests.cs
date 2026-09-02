@@ -518,7 +518,6 @@ public class HrProfileTests
             null,
             null,
             null,
-            null,
             contacts ?? []);
 
     private static HrProfileWriteModel TcknProfile(string number, string? address = null) =>
@@ -534,5 +533,5 @@ public class HrProfileTests
             number,
             null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, null, null);
 }

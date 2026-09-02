@@ -142,7 +142,8 @@ public static class HrEmployeeEndpoints
                 request.OfficialProfile.ToWriteModel(),
                 request.WorkforceTerms.ToWriteModel(),
                 request.BesSettings.ToWriteModel(),
-                request.SeniorityStartDate),
+                request.SeniorityStartDate,
+                request.ToCertificateDrafts()),
             cancellationToken);
         if (!hired.IsSuccess)
         {
@@ -183,7 +184,8 @@ public static class HrEmployeeEndpoints
                 request.BesSettings.ToWriteModel(),
                 ToChangeContext(user, actorContext),
                 request.SeniorityStartDate,
-                ApplySeniorityStartDate: true),
+                ApplySeniorityStartDate: true,
+                request.ToCertificateDrafts()),
             cancellationToken);
         if (!updated.IsSuccess)
         {
@@ -324,7 +326,6 @@ public sealed record CreateHrEmployeeRequest(
     string? SchoolName,
     DateOnly? GraduationDate,
     ForeignLanguageSummary? ForeignLanguage,
-    string? ArgeProjectCode,
     DrivingLicenceCategory? DrivingLicenceCategory,
     MilitaryServiceStatus? MilitaryServiceStatus,
     string? MilitaryExemptionReason,
@@ -339,6 +340,7 @@ public sealed record CreateHrEmployeeRequest(
     string? NotificationAddress,
     string? HrNotes,
     IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
+    IReadOnlyList<EmployeeCertificateRequest>? Certificates,
     OfficialEmploymentRequest? OfficialProfile,
     EmploymentWorkforceRequest? WorkforceTerms,
     EmploymentBesRequest? BesSettings,
@@ -361,7 +363,6 @@ public sealed record UpdateHrEmployeeRequest(
     string? SchoolName,
     DateOnly? GraduationDate,
     ForeignLanguageSummary? ForeignLanguage,
-    string? ArgeProjectCode,
     DrivingLicenceCategory? DrivingLicenceCategory,
     MilitaryServiceStatus? MilitaryServiceStatus,
     string? MilitaryExemptionReason,
@@ -376,6 +377,7 @@ public sealed record UpdateHrEmployeeRequest(
     string? NotificationAddress,
     string? HrNotes,
     IReadOnlyList<EmergencyContactRequest>? EmergencyContacts,
+    IReadOnlyList<EmployeeCertificateRequest>? Certificates,
     OfficialEmploymentRequest? OfficialProfile,
     EmploymentWorkforceRequest? WorkforceTerms,
     EmploymentBesRequest? BesSettings,
@@ -387,6 +389,8 @@ public sealed record EmergencyContactRequest(
     string? Relationship,
     string? Phone,
     bool IsPrimary);
+
+public sealed record EmployeeCertificateRequest(Guid? Id, string? Name);
 
 public sealed record OfficialEmploymentRequest(
     Guid? SgkWorkplaceRegistrationId,
@@ -405,7 +409,11 @@ public sealed record EmploymentWorkforceRequest(
     DateOnly? IncentiveEndDate,
     IskurWorkforceStatus? IskurWorkforceStatus,
     DateOnly? WorkPermitStartDate,
-    DateOnly? WorkPermitEndDate);
+    DateOnly? WorkPermitEndDate,
+    WorkType? WorkType = null,
+    int? ProbationPeriodMonths = null,
+    DateOnly? ProbationStartDate = null,
+    Guid? RecruitmentSourceId = null);
 
 public sealed record EmploymentBesRequest(
     bool DeductionEnabled,
@@ -437,7 +445,23 @@ internal static class HrEmployeeRequestMapping
                 request.IncentiveEndDate,
                 request.IskurWorkforceStatus,
                 request.WorkPermitStartDate,
-                request.WorkPermitEndDate);
+                request.WorkPermitEndDate,
+                request.WorkType,
+                request.ProbationPeriodMonths,
+                request.ProbationStartDate,
+                request.RecruitmentSourceId);
+
+    public static IReadOnlyList<EmployeeCertificateDraft> ToCertificateDrafts(
+        this CreateHrEmployeeRequest request) =>
+        (request.Certificates ?? [])
+            .Select(item => new EmployeeCertificateDraft(item.Id ?? Guid.Empty, item.Name))
+            .ToArray();
+
+    public static IReadOnlyList<EmployeeCertificateDraft> ToCertificateDrafts(
+        this UpdateHrEmployeeRequest request) =>
+        (request.Certificates ?? [])
+            .Select(item => new EmployeeCertificateDraft(item.Id ?? Guid.Empty, item.Name))
+            .ToArray();
 
     public static EmploymentBesWriteModel ToWriteModel(this EmploymentBesRequest? request) =>
         request is null
@@ -472,7 +496,6 @@ internal static class HrEmployeeRequestMapping
             request.SchoolName,
             request.GraduationDate,
             request.ForeignLanguage,
-            request.ArgeProjectCode,
             request.EmergencyContacts);
 
     public static HrProfileWriteModel ToProfileWriteModel(this UpdateHrEmployeeRequest request) =>
@@ -503,7 +526,6 @@ internal static class HrEmployeeRequestMapping
             request.SchoolName,
             request.GraduationDate,
             request.ForeignLanguage,
-            request.ArgeProjectCode,
             request.EmergencyContacts);
 
     private static HrProfileWriteModel ToProfileWriteModel(
@@ -533,7 +555,6 @@ internal static class HrEmployeeRequestMapping
         string? schoolName,
         DateOnly? graduationDate,
         ForeignLanguageSummary? foreignLanguage,
-        string? argeProjectCode,
         IReadOnlyList<EmergencyContactRequest>? contacts) =>
         new(
             scheme,
@@ -562,7 +583,6 @@ internal static class HrEmployeeRequestMapping
             schoolName,
             graduationDate,
             foreignLanguage,
-            argeProjectCode,
             (contacts ?? []).Select(item => new EmergencyContactDraft(
                 item.Id ?? Guid.Empty,
                 item.Name,

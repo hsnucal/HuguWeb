@@ -30,6 +30,7 @@ public sealed class HrEmployeeCardQuery(
         var contacts = canReadSensitive
             ? await store.ListEmergencyContactsAsync(employeeId, cancellationToken)
             : [];
+        var certificates = await store.ListEmployeeCertificatesAsync(employeeId, cancellationToken);
         var photo = await store.GetEmployeePhotoAsync(employeeId, cancellationToken);
         var paymentProfile = canReadSensitive
             ? await store.GetPaymentProfileAsync(employeeId, cancellationToken)
@@ -51,6 +52,17 @@ public sealed class HrEmployeeCardQuery(
                 maskWorkplace: true,
                 cancellationToken);
             workforce = EmploymentWorkforceRead.From(targetEmployment.Value);
+            if (targetEmployment.Value.RecruitmentSourceId is { } recruitmentSourceId)
+            {
+                var source = await store.GetRecruitmentSourceAsync(recruitmentSourceId, cancellationToken);
+                if (source is not null)
+                {
+                    workforce = EmploymentWorkforceRead.From(
+                        targetEmployment.Value,
+                        source.Name,
+                        source.IsActive);
+                }
+            }
             var besRow = await store.GetEmploymentBesSettingsAsync(
                 targetEmployment.Value.Id,
                 cancellationToken);
@@ -70,6 +82,7 @@ public sealed class HrEmployeeCardQuery(
             propertyName,
             profile,
             contacts,
+            certificates,
             photo is not null,
             canReadSensitive,
             official,
@@ -118,6 +131,7 @@ public static class HrEmployeeCardFactory
         string propertyName,
         EmployeeHrProfile? profile,
         IReadOnlyList<EmergencyContact> contacts,
+        IReadOnlyList<EmployeeCertificate> certificates,
         bool hasPhoto,
         bool canReadSensitive,
         OfficialEmploymentProfileReadModel? officialProfile = null,
@@ -142,7 +156,6 @@ public static class HrEmployeeCardFactory
                 profile?.SchoolName,
                 profile?.GraduationDate,
                 profile?.ForeignLanguage,
-                profile?.ArgeProjectCode,
                 profile?.HrNotes,
                 profile?.Nationality,
                 profile?.Gender,
@@ -175,6 +188,10 @@ public static class HrEmployeeCardFactory
                             item.IsPrimary))
                         .ToArray()
                     : []),
+            certificates
+                .OrderBy(item => item.SortOrder)
+                .Select(item => new EmployeeCertificateReadModel(item.Id, item.Name))
+                .ToArray(),
             canReadSensitive,
             officialProfile,
             workforceTerms,
@@ -197,6 +214,7 @@ public sealed record HrEmployeeCard(
     string PropertyName,
     IReadOnlyList<EmploymentHistoryRecord> Employments,
     HrProfileReadModel Profile,
+    IReadOnlyList<EmployeeCertificateReadModel> Certificates,
     bool CanReadSensitive,
     OfficialEmploymentProfileReadModel? OfficialProfile,
     EmploymentWorkforceReadModel? WorkforceTerms,
@@ -209,7 +227,6 @@ public sealed record HrProfileReadModel(
     string? SchoolName,
     DateOnly? GraduationDate,
     ForeignLanguageSummary? ForeignLanguage,
-    string? ArgeProjectCode,
     string? HrNotes,
     string? Nationality,
     Gender? Gender,
@@ -239,3 +256,5 @@ public sealed record EmergencyContactReadModel(
     string? Relationship,
     string Phone,
     bool IsPrimary);
+
+public sealed record EmployeeCertificateReadModel(Guid Id, string Name);

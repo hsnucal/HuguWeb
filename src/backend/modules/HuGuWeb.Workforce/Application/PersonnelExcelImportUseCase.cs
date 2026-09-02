@@ -599,7 +599,6 @@ public sealed class PersonnelExcelImportUseCase(
             NullIfEmpty(GetCell(cells, PersonnelImportColumnCatalog.Ids.SchoolName)),
             graduationDate,
             language,
-            NullIfEmpty(GetCell(cells, PersonnelImportColumnCatalog.Ids.ArgeProjectCode)),
             BuildEmergencyDrafts(cells, canWriteSensitive));
     }
 
@@ -668,7 +667,6 @@ public sealed class PersonnelExcelImportUseCase(
             Pick(incoming.SchoolName, existing?.SchoolName),
             incoming.GraduationDate ?? existing?.GraduationDate,
             incoming.ForeignLanguage ?? existing?.ForeignLanguage,
-            Pick(incoming.ArgeProjectCode, existing?.ArgeProjectCode),
             emergency);
     }
 

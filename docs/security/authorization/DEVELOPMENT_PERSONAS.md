@@ -32,7 +32,7 @@ Runtime code paths (policies, endpoints, sidebar, calculators) must not contain 
 | `roomops.inspector@localhost` | `room-inspector` + `employee-leave-self-service` | `DEMO-HK-INS-01` |
 | `roomops.manager@localhost` | `room-operations-manager` + `employee-leave-self-service` | `DEMO-HK-MGR-01` |
 | `maintenance.technician@localhost` | `maintenance-technician` + `employee-leave-self-service` | `DEMO-TECH-01` (ENG / ENG-TECH) |
-| `maintenance.manager@localhost` | `maintenance-manager` + `department-leave-approver` + `employee-leave-self-service`; AUTH-02 scope **ENG** | `DEMO-TECH-MGR-01` |
+| `maintenance.manager@localhost` | `maintenance-manager` + `department-leave-approver` + `department-scheduler` + `employee-leave-self-service`; AUTH-02 scope **ENG** | `DEMO-TECH-MGR-01` |
 
 Identity bridge is **EmployeeAccountLink only** (deterministic seeded IDs). Runtime never matches by email or PersonnelNumber. ApplicationUser ≠ Employee.
 

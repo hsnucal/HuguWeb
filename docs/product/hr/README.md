@@ -17,6 +17,7 @@ Slice identifiers are product/planning labels. Older Accepted Personel Master te
 | **HR-06** | **Shift & Work Schedule / Vardiya & Çalışma Planı** — Accepted / Completed | sketched inside **HR-06–08** leave / shift / puantaj in Personel Master planning |
 | **HR-06A** | **Shift & Schedule Foundation** — Accepted / Completed | part of HR-06 |
 | **HR-06B** | **Weekly Shift Planning** — Accepted / Completed | part of HR-06 |
+| **Personnel Enrichment + Onboarding Documents** | Certificates, WorkType, Probation, Recruitment Source, Onboarding checklist + printable templates; Department-scheduler seed fix | — |
 
 Current Accepted freeze: [HR-04-Employment-Working-Conditions.md](HR-04-Employment-Working-Conditions.md) — Domain Frozen decisions remain **Accepted**. Implementation is **Accepted**.
 
@@ -31,5 +32,7 @@ Current Accepted freeze: [HR-06-Shift-Work-Schedule.md](HR-06-Shift-Work-Schedul
 Implementation plan: [HR-06A-Shift-Schedule-Implementation-Plan.md](HR-06A-Shift-Schedule-Implementation-Plan.md) — **Accepted / Completed** (foundation). AUTH-02 department scopes included.
 
 Weekly planning: [HR-06B-Weekly-Shift-Planning.md](HR-06B-Weekly-Shift-Planning.md) — **Accepted / Completed**.
+
+Personnel enrichment: [HR-PERSONNEL-ENRICHMENT-ONBOARDING.md](HR-PERSONNEL-ENRICHMENT-ONBOARDING.md) — **Implemented / Awaiting PO Acceptance**. Includes Department manager schedule permission seed fix (`department-scheduler`) and Çalışma Bilgileri nested submenu IA (single edit session; no extra APIs).
 
 Department authorization: [DEPARTMENT_MEMBERSHIP_SCOPE.md](../../security/authorization/DEPARTMENT_MEMBERSHIP_SCOPE.md) — **AUTH-02 Accepted / Completed**.

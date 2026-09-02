@@ -11,4 +11,9 @@
     <InternalsVisibleTo Include="HuGuWeb.UnitTests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Onboarding\Taslak.docx"
+                      LogicalName="HuGuWeb.Workforce.Templates.Onboarding.Taslak.docx" />
+  </ItemGroup>
+
 </Project>

@@ -390,7 +390,7 @@ public class OfficialCompositionTests
         new(
             null, null, nationality, null, null, null, null, null, education,
             null, null, null, null, null, null, null, null,
-            licence, military, exemption, deferment, null, null, school, null, language, null, []);
+            licence, military, exemption, deferment, null, null, school, null, language, []);
 
     private static string CataloguePath()
     {

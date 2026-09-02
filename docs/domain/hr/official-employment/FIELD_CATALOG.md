@@ -65,7 +65,7 @@ Original freeze: deferred. Product Owner now requires the field on Bildirge Kodl
 | AGİ | `agiHesapla`, eş/çocuk | **Reject** | Payroll | Explicit PO exclusion |
 | BES | `besKapsam`, oran, ek tutar | **IN as configuration** | `EmploymentBesSettings` | Kesinti / Oran % / Ek Tutar only. No payroll calculation. |
 | Sosyal bilgiler | ehliyet, askerlik, KEP, çalışma izni | **IN as composition** | Profile vs Employment — see below | Anne kızlık soyadı **excluded**. Passport number reuses NationalIdentity when Scheme=Passport. WebİK Vize → Çalışma İzni. |
-| Eğitim detayı | okul, mezuniyet, dil, arge | **IN as summary** | `EmployeeHrProfile` | Reuse EducationLevel. No organizational Bölüm. `ArgeProjectCode` is stored on HR profile for UI coverage; it is **not** education-domain data. |
+| Eğitim detayı | okul, mezuniyet, dil | **IN as summary** | `EmployeeHrProfile` | Reuse EducationLevel. No organizational Bölüm. AR-GE Project Code removed (PO Finding 02). |
 
 ---
 
@@ -78,7 +78,7 @@ Personel Card composition does **not** imply one aggregate.
 | `OfficialEmploymentProfile` | SGK workplace, belge, kanun, sigorta kolu, meslek kodu, görev kodu |
 | `Employment` | ContractType, ContractEndDate, PartTimeMonthlyHours, IskurStatus, IncentiveStart/End, IskurWorkforceStatus, WorkPermitStart/End. Early HR-02 prerequisite for contract type. |
 | `EmploymentBesSettings` 1:0..1 on Employment | BES deduction enabled, rate %, extra amount. Configuration only. |
-| `EmployeeHrProfile` | ISO nationality; driving licence; military + reasons; KEP; education summary extras; ArgeProjectCode (UI in Eğitim) |
+| `EmployeeHrProfile` | ISO nationality; driving licence; military + reasons; KEP; education summary extras |
 | National identity | Passport number is `NationalIdentityNumber` when Scheme=Passport. No second PassportNumber. |
 
 Conditional requiredness (ordinary save otherwise optional): Muaf → Muaf Nedeni; Tecilli → Tecil Nedeni; FixedTerm → ContractEndDate; PartTime → monthly hours. Incentive/work-permit End ≥ Start when both present. Changing military state clears stale reasons.

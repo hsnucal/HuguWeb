@@ -326,6 +326,71 @@
   gap: 1.15rem;
 }
 
+.workSubNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.1rem;
+  margin: 0 0 0.15rem;
+  padding: 0 0 0.35rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.workSubNavItem,
+.workSubNavItemCurrent {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0.4rem 0.65rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.workSubNavItem:hover {
+  color: var(--color-brand-primary);
+}
+
+.workSubNavItem:focus-visible,
+.workSubNavItemCurrent:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.workSubNavItemCurrent {
+  color: var(--color-brand-primary);
+  border-bottom-color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.workSubNavItemInvalid {
+  color: var(--color-danger);
+}
+
+.workSubNavItemCurrent.workSubNavItemInvalid {
+  border-bottom-color: var(--color-danger);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .legend {
   padding: 0;
   margin-bottom: 0.1rem;
@@ -573,7 +638,9 @@
   .navItem,
   .navItemCurrent,
   .chip,
-  .chipCurrent {
+  .chipCurrent,
+  .workSubNavItem,
+  .workSubNavItemCurrent {
     transition: none;
   }
 }
@@ -588,6 +655,26 @@
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
+}
+
+.certificatesBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.subLegend {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.certificateRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: end;
 }
 
 .leaveSectionHeader {

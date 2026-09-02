@@ -18,15 +18,18 @@ import {
   hrEmployeePhotoUrl,
   hrErrorKey,
   hrListErrorKey,
-  listHrEmployees,
   type HrEmployeeListItem,
 } from './hrApi'
 import {
-  asCollection,
   asHrEmployeeList,
   personnelEmptyKind,
 } from './personnelDirectory'
-import { listDepartments, listPositions, type DepartmentRecord, type PositionRecord } from './workforceApi'
+import { type DepartmentRecord, type PositionRecord } from './workforceApi'
+import {
+  loadPersonnelEmployees,
+  loadPropertyStructure,
+} from './personnelPageData'
+import { workplaceLabelsFromUser, canLoadPropertyStructure } from './workforceWorkplaceLabels'
 import { employmentStatusTone, type WorkforceView } from './workforceStatus'
 import {
   availablePersonnelColumns,
@@ -39,9 +42,14 @@ import { PersonnelCard } from './PersonnelCard'
 import { PersonnelImportDialog } from './PersonnelImportDialog'
 import { exportHrEmployees, downloadBlob } from './hrPersonnelMasterApi'
 import { formatMobileForDisplay } from './personnelInput'
+import { ApiError } from '../shared/apiClient'
 
-async function fetchDirectory() {
-  return Promise.all([listHrEmployees(), listDepartments(), listPositions()])
+function structureErrorKey(reason: unknown): string {
+  if (reason instanceof ApiError && reason.problem?.code === 'property-context-required') {
+    return 'personnel.selectPropertyForDepartments'
+  }
+
+  return 'personnel.structureLoadFailed'
 }
 
 function matchesSearch(person: HrEmployeeListItem, query: string): boolean {
@@ -73,8 +81,13 @@ export function ActiveWorkforcePage() {
   const [startFrom, setStartFrom] = useState('')
   const [startTo, setStartTo] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [structureLoadNotice, setStructureLoadNotice] = useState<string | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
-  const [card, setCard] = useState<{ type: 'create' } | { type: 'edit'; employeeId: string } | null>(null)
+  const [card, setCard] = useState<
+    | { type: 'create' }
+    | { type: 'edit'; employeeId: string; initialTab?: 'general' | 'identity' | 'work' | 'official' | 'onboarding' | 'payment' | 'leave' | 'history' }
+    | null
+  >(null)
   const [feedback, setFeedback] = useState<string | null>(null)
   const [columns, setColumns] = useState<PersonnelColumnId[]>(() => loadPersonnelColumns(canReadSensitive))
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -109,16 +122,14 @@ export function ActiveWorkforcePage() {
   useEffect(() => {
     let cancelled = false
 
-    async function loadPage() {
+    async function loadEmployees() {
       try {
-        const [people, departmentRows, positionRows] = await fetchDirectory()
+        const people = await loadPersonnelEmployees()
         if (cancelled) {
           return
         }
 
-        setDirectory(asHrEmployeeList<HrEmployeeListItem>(people))
-        setDepartments(asCollection<DepartmentRecord>(departmentRows))
-        setPositions(asCollection<PositionRecord>(positionRows))
+        setDirectory(people)
         setError(null)
         setLoadFailed(false)
       } catch (reason) {
@@ -130,18 +141,59 @@ export function ActiveWorkforcePage() {
       }
     }
 
-    void loadPage()
+    void loadEmployees()
     return () => {
       cancelled = true
     }
   }, [t])
+
+  useEffect(() => {
+    if (!canLoadPropertyStructure(user?.propertyId)) {
+      return
+    }
+
+    let cancelled = false
+
+    async function loadStructure() {
+      try {
+        const structure = await loadPropertyStructure()
+        if (cancelled) {
+          return
+        }
+
+        setDepartments(structure.departments)
+        setPositions(structure.positions)
+        setStructureLoadNotice(null)
+      } catch (reason) {
+        if (!cancelled) {
+          setDepartments([])
+          setPositions([])
+          setStructureLoadNotice(t(structureErrorKey(reason)))
+        }
+      }
+    }
+
+    void loadStructure()
+    return () => {
+      cancelled = true
+    }
+  }, [t, user?.propertyId])
+
+  const propertyContextNotice = !canLoadPropertyStructure(user?.propertyId) && user?.propertySelectionRequired
+    ? t('personnel.selectPropertyForDepartments')
+    : null
+  const structureNotice = propertyContextNotice ?? structureLoadNotice
+
+  const workplaceLabels = workplaceLabelsFromUser(user)
+  const structureDepartments = canLoadPropertyStructure(user?.propertyId) ? departments : []
+  const structurePositions = canLoadPropertyStructure(user?.propertyId) ? positions : []
 
   const people = asHrEmployeeList<HrEmployeeListItem>(directory)
   const activeCount = people.filter((item) => item.employmentStatus === 'Active').length
   const scheduledCount = people.filter((item) => item.employmentStatus === 'Scheduled').length
   const formerCount = people.filter((item) => item.employmentStatus === 'Ended').length
   const visibleColumns = columns.filter((id) => availablePersonnelColumns(canReadSensitive).includes(id))
-  const canHire = canManage && departments.some((item) => item.isActive) && positions.some((item) => item.isActive)
+  const canHire = canManage && structureDepartments.some((item) => item.isActive) && structurePositions.some((item) => item.isActive)
 
   const visible = people.filter((person) => {
     if (view === 'active' && person.employmentStatus !== 'Active') {
@@ -177,12 +229,28 @@ export function ActiveWorkforcePage() {
   })
 
   async function reload() {
-    const [staff, departmentRows, positionRows] = await fetchDirectory()
-    setDirectory(asHrEmployeeList<HrEmployeeListItem>(staff))
-    setDepartments(asCollection<DepartmentRecord>(departmentRows))
-    setPositions(asCollection<PositionRecord>(positionRows))
+    const people = await loadPersonnelEmployees()
+    setDirectory(people)
     setLoadFailed(false)
     setError(null)
+
+    if (!canLoadPropertyStructure(user?.propertyId)) {
+      setDepartments([])
+      setPositions([])
+      setStructureLoadNotice(null)
+      return
+    }
+
+    try {
+      const structure = await loadPropertyStructure()
+      setDepartments(structure.departments)
+      setPositions(structure.positions)
+      setStructureLoadNotice(null)
+    } catch (reason) {
+      setDepartments([])
+      setPositions([])
+      setStructureLoadNotice(t(structureErrorKey(reason)))
+    }
   }
 
   function toggleColumn(id: PersonnelColumnId) {
@@ -252,6 +320,7 @@ export function ActiveWorkforcePage() {
 
       {feedback ? <Notice tone="success">{feedback}</Notice> : null}
       {error ? <Notice tone="danger">{error}</Notice> : null}
+      {structureNotice ? <Notice tone="info">{structureNotice}</Notice> : null}
 
       <div className={styles.segments} role="tablist" aria-label={t('workforce.directory')}>
         <ViewTab
@@ -287,7 +356,7 @@ export function ActiveWorkforcePage() {
           onChange={setDepartmentFilter}
         >
           <option value="">{t('workforce.allDepartments')}</option>
-          {departments.map((item) => (
+          {structureDepartments.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
             </option>
@@ -300,7 +369,7 @@ export function ActiveWorkforcePage() {
           onChange={setPositionFilter}
         >
           <option value="">{t('personnel.allPositions')}</option>
-          {positions.map((item) => (
+          {structurePositions.map((item) => (
             <option key={item.id} value={item.id}>
               {item.name}
             </option>
@@ -444,9 +513,11 @@ export function ActiveWorkforcePage() {
 
       {card ? (
         <PersonnelCard
+          key={card.type === 'create' ? 'create' : `${card.employeeId}:${card.initialTab ?? ''}`}
           mode={card}
-          departments={departments}
-          positions={positions}
+          departments={structureDepartments}
+          positions={structurePositions}
+          workplaceLabels={workplaceLabels}
           canManage={canManage}
           canManageWorkforce={canWorkforceManage}
           canReadSensitive={canReadSensitive}
@@ -456,7 +527,15 @@ export function ActiveWorkforcePage() {
           onSaved={async (employeeId) => {
             await reload()
             if (employeeId) {
-              setCard({ type: 'edit', employeeId })
+              const fromCreate = card?.type === 'create'
+              setCard({
+                type: 'edit',
+                employeeId,
+                initialTab: fromCreate ? 'onboarding' : undefined,
+              })
+              if (fromCreate) {
+                setFeedback(t('personnel.createSuccess'))
+              }
               return
             }
             if (card?.type === 'create') {

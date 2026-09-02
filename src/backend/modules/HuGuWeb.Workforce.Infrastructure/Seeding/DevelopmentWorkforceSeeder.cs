@@ -311,8 +311,7 @@ public static class DevelopmentWorkforceSeeder
                 EducationDescription: null,
                 SchoolName: null,
                 GraduationDate: null,
-                ForeignLanguage: null,
-                ArgeProjectCode: null),
+                ForeignLanguage: null),
             [],
             today,
             cancellationToken);
@@ -365,7 +364,7 @@ public static class DevelopmentWorkforceSeeder
                 "Çankaya",
                 "Otel lojmanı A-2",
                 "Referans transfer geçmişi.",
-                null, null, null, null, null, null, null, null, null, null),
+                null, null, null, null, null, null, null, null, null),
             [
                 new EmergencyContactDraft(Guid.Empty, "Mehmet Yılmaz", "Eş", "+905557778899", true),
                 new EmergencyContactDraft(Guid.Empty, "Elif Kaya", "Kardeş", "+905559990011", false)
@@ -410,7 +409,7 @@ public static class DevelopmentWorkforceSeeder
                 "Osmangazi",
                 null,
                 "İşten ayrılmış; profil korunur.",
-                null, null, null, null, null, null, null, null, null, null),
+                null, null, null, null, null, null, null, null, null),
             [new EmergencyContactDraft(Guid.Empty, "Fatma Kaya", "Anne", "+905551234567", true)],
             today,
             cancellationToken);
@@ -452,7 +451,7 @@ public static class DevelopmentWorkforceSeeder
                 null,
                 null,
                 "Yabancı personel; TCKN yok.",
-                null, null, null, null, null, null, null, null, null, null),
+                null, null, null, null, null, null, null, null, null),
             [],
             today,
             cancellationToken);

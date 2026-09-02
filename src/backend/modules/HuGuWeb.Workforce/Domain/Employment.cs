@@ -2,17 +2,28 @@ namespace HuGuWeb.Workforce.Domain;
 
 public sealed class Employment
 {
+    public const int AllowedProbationPeriodMonths = 2;
+
     private Employment()
     {
     }
 
-    private Employment(Guid id, Guid employeeId, DateOnly startDate, DateOnly? endDate, EmploymentStatus status)
+    private Employment(
+        Guid id,
+        Guid employeeId,
+        DateOnly startDate,
+        DateOnly? endDate,
+        EmploymentStatus status,
+        WorkType workType,
+        EmploymentOnboardingStatus onboardingStatus)
     {
         Id = id;
         EmployeeId = employeeId;
         StartDate = startDate;
         EndDate = endDate;
         Status = status;
+        WorkType = workType;
+        OnboardingStatus = onboardingStatus;
     }
 
     public Guid Id { get; private set; }
@@ -31,17 +42,59 @@ public sealed class Employment
     public IskurWorkforceStatus? IskurWorkforceStatus { get; private set; }
     public DateOnly? WorkPermitStartDate { get; private set; }
     public DateOnly? WorkPermitEndDate { get; private set; }
+    public WorkType WorkType { get; private set; }
+    public int? ProbationPeriodMonths { get; private set; }
+    public DateOnly? ProbationStartDate { get; private set; }
+    public Guid? RecruitmentSourceId { get; private set; }
+    public EmploymentOnboardingStatus OnboardingStatus { get; private set; }
 
     public DatePeriod Period => new(StartDate, EndDate);
 
     public bool IsEnded => Status == EmploymentStatus.Ended;
 
+    public bool IsOnboardingMutable => OnboardingStatus == EmploymentOnboardingStatus.InProgress;
+
     public DateOnly EffectiveSeniorityDate => SeniorityStartDate ?? StartDate;
 
-    public static Employment Open(Guid id, Guid employeeId, DateOnly startDate, DateOnly today)
+    public DateOnly? ProbationEndDate =>
+        ProbationPeriodMonths == AllowedProbationPeriodMonths && ProbationStartDate is { } start
+            ? start.AddMonths(AllowedProbationPeriodMonths)
+            : null;
+
+    public static Employment Open(
+        Guid id,
+        Guid employeeId,
+        DateOnly startDate,
+        DateOnly today,
+        WorkType workType = WorkType.FullTime)
     {
+        if (!Enum.IsDefined(workType))
+        {
+            workType = WorkType.FullTime;
+        }
+
         var status = startDate > today ? EmploymentStatus.Scheduled : EmploymentStatus.Active;
-        return new Employment(id, employeeId, startDate, endDate: null, status);
+        return new Employment(
+            id,
+            employeeId,
+            startDate,
+            endDate: null,
+            status,
+            workType,
+            EmploymentOnboardingStatus.InProgress);
+    }
+
+    public bool TryCompleteOnboarding(out string? error)
+    {
+        if (OnboardingStatus == EmploymentOnboardingStatus.Completed)
+        {
+            error = "Onboarding is already completed.";
+            return false;
+        }
+
+        OnboardingStatus = EmploymentOnboardingStatus.Completed;
+        error = null;
+        return true;
     }
 
     public EmploymentStatus EffectiveStatus(DateOnly today)
@@ -142,6 +195,39 @@ public sealed class Employment
         field = null;
         code = null;
 
+        var workType = values.WorkType ?? WorkType;
+        if (!Enum.IsDefined(workType))
+        {
+            field = HrValidation.Fields.WorkType;
+            code = HrValidation.Codes.WorkTypeInvalid;
+            return false;
+        }
+
+        var probationMonths = values.ProbationPeriodMonths;
+        if (probationMonths is not null
+            && probationMonths != AllowedProbationPeriodMonths)
+        {
+            field = HrValidation.Fields.ProbationPeriodMonths;
+            code = HrValidation.Codes.ProbationPeriodMonthsInvalid;
+            return false;
+        }
+
+        if (probationMonths == AllowedProbationPeriodMonths)
+        {
+            if (values.ProbationStartDate is null)
+            {
+                field = HrValidation.Fields.ProbationStartDate;
+                code = HrValidation.Codes.ProbationStartDateRequired;
+                return false;
+            }
+        }
+        else if (values.ProbationStartDate is not null)
+        {
+            field = HrValidation.Fields.ProbationStartDate;
+            code = HrValidation.Codes.ProbationStartDateMustBeNull;
+            return false;
+        }
+
         var contractType = values.ContractType;
         var contractEnd = contractType == EmploymentContractType.FixedTerm ? values.ContractEndDate : null;
         var monthlyHours = contractType == EmploymentContractType.PartTime ? values.PartTimeMonthlyHours : null;
@@ -195,6 +281,10 @@ public sealed class Employment
             return false;
         }
 
+        WorkType = workType;
+        ProbationPeriodMonths = probationMonths;
+        ProbationStartDate = values.ProbationStartDate;
+        RecruitmentSourceId = values.RecruitmentSourceId;
         ContractType = contractType;
         ContractEndDate = contractEnd;
         PartTimeMonthlyHours = monthlyHours;
@@ -219,4 +309,8 @@ public sealed record EmploymentWorkforceTermsValues(
     DateOnly? IncentiveEndDate,
     IskurWorkforceStatus? IskurWorkforceStatus,
     DateOnly? WorkPermitStartDate,
-    DateOnly? WorkPermitEndDate);
+    DateOnly? WorkPermitEndDate,
+    WorkType? WorkType = null,
+    int? ProbationPeriodMonths = null,
+    DateOnly? ProbationStartDate = null,
+    Guid? RecruitmentSourceId = null);

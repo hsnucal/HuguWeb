@@ -35,7 +35,7 @@ export function amountAfterLeaveTypeChange(
   return amountAfterTypeOrPreview(amountTouched, defaultRequestAmount, null, currentAmount)
 }
 
-/** Shared DateField calendar is opt-in; leave request dates must enable it. */
+/** Shared DateField enables calendar by default for editable dates. */
 export function leaveRequestDateFieldUsesCalendar(): boolean {
   return true
 }

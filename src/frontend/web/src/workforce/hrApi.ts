@@ -28,6 +28,7 @@ export type EducationLevel =
   | 'Master'
   | 'Doctorate'
 export type EmploymentContractType = 'Indefinite' | 'FixedTerm' | 'PartTime'
+export type WorkType = 'FullTime' | 'PartTime' | 'ReducedHours' | 'Intern'
 export type IskurStatus = 'Normal' | 'FormerConvict' | 'TerrorVictim' | 'TmyInjured'
 export type IskurWorkforceStatus =
   | 'Indefinite'
@@ -138,6 +139,13 @@ export type EmploymentWorkforceRead = {
   iskurWorkforceStatus: IskurWorkforceStatus | null
   workPermitStartDate: string | null
   workPermitEndDate: string | null
+  workType: WorkType
+  probationPeriodMonths: number | null
+  probationStartDate: string | null
+  probationEndDate: string | null
+  recruitmentSourceId: string | null
+  recruitmentSourceName?: string | null
+  recruitmentSourceIsActive?: boolean | null
 }
 
 export type EmploymentWorkforceWrite = {
@@ -150,6 +158,20 @@ export type EmploymentWorkforceWrite = {
   iskurWorkforceStatus: IskurWorkforceStatus | null
   workPermitStartDate: string | null
   workPermitEndDate: string | null
+  workType: WorkType | null
+  probationPeriodMonths: number | null
+  probationStartDate: string | null
+  recruitmentSourceId: string | null
+}
+
+export type EmployeeCertificateRead = {
+  id: string
+  name: string
+}
+
+export type EmployeeCertificateWrite = {
+  id?: string
+  name: string
 }
 
 export type EmploymentBesRead = {
@@ -178,7 +200,6 @@ export type HrProfileRead = {
   schoolName: string | null
   graduationDate: string | null
   foreignLanguage: ForeignLanguageSummary | null
-  argeProjectCode: string | null
   hrNotes: string | null
   nationality: string | null
   gender: Gender | null
@@ -215,6 +236,7 @@ export type HrEmployeeCard = {
   propertyName: string
   employments: EmploymentHistoryRecord[]
   profile: HrProfileRead
+  certificates: EmployeeCertificateRead[]
   canReadSensitive: boolean
   officialProfile: OfficialEmploymentProfileRead | null
   workforceTerms: EmploymentWorkforceRead | null
@@ -255,7 +277,6 @@ export type HrEmployeeWrite = {
   schoolName: string | null
   graduationDate: string | null
   foreignLanguage: ForeignLanguageSummary | null
-  argeProjectCode: string | null
   drivingLicenceCategory: DrivingLicenceCategory | null
   militaryServiceStatus: MilitaryServiceStatus | null
   militaryExemptionReason: string | null
@@ -270,6 +291,7 @@ export type HrEmployeeWrite = {
   notificationAddress: string | null
   hrNotes: string | null
   emergencyContacts: EmergencyContactWrite[]
+  certificates: EmployeeCertificateWrite[]
   officialProfile: OfficialEmploymentWrite
   workforceTerms: EmploymentWorkforceWrite
   besSettings: EmploymentBesWrite
@@ -374,6 +396,17 @@ const errorKeys: Record<string, string> = {
   'employment-not-found': 'personnel.errors.employmentNotFound',
   'employment-property-unresolved': 'personnel.errors.employmentPropertyUnresolved',
   'property-context-required': 'common.propertySelectionRequired',
+  'work-type-required': 'personnel.validation.workTypeRequired',
+  'work-type-invalid': 'personnel.validation.workTypeInvalid',
+  'probation-period-months-invalid': 'personnel.validation.probationPeriodInvalid',
+  'probation-start-date-required': 'personnel.validation.probationStartRequired',
+  'probation-start-date-must-be-null': 'personnel.validation.probationStartMustBeNull',
+  'recruitment-source-not-found': 'personnel.errors.recruitmentSourceNotFound',
+  'recruitment-source-inactive': 'personnel.errors.recruitmentSourceInactive',
+  'certificate-name-required': 'personnel.validation.certificateNameRequired',
+  'certificate-name-too-long': 'personnel.validation.certificateNameTooLong',
+  'onboarding-requirement-not-found': 'personnel.onboarding.errors.requirementNotFound',
+  'document-template-not-found': 'personnel.onboarding.errors.templateNotFound',
 }
 
 export function hrErrorKey(error: unknown): string {

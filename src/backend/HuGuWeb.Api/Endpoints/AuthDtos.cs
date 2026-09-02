@@ -35,6 +35,7 @@ public sealed record CurrentUserResponse(
     IReadOnlyList<string> Permissions,
     Guid? MembershipId,
     Guid? OrganizationId,
+    string? OrganizationName,
     Guid? PropertyId,
     string? ScopeType,
     Guid? EmployeeId,

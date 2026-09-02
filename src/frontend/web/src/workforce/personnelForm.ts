@@ -3,6 +3,7 @@ import type {
   DrivingLicenceCategory,
   EducationLevel,
   EmergencyContactWrite,
+  EmployeeCertificateWrite,
   EmploymentContractType,
   ForeignLanguageSummary,
   Gender,
@@ -13,10 +14,15 @@ import type {
   MaritalStatus,
   MilitaryServiceStatus,
   NationalIdentityScheme,
-} from './hrApi'
-import { toIsoDate } from '../ui/dateEntry'
-import { normalizeMobileDigits } from './personnelInput'
-import { toPersistedIban } from './paymentIban'
+  WorkType,
+} from './hrApi.ts'
+import { toIsoDate } from '../ui/dateEntry.ts'
+import { normalizeMobileDigits } from './personnelInput.ts'
+import { toPersistedIban } from './paymentIban.ts'
+
+export const WORK_TYPE_VALUES = ['FullTime', 'PartTime', 'ReducedHours', 'Intern'] as const satisfies readonly WorkType[]
+
+export type ProbationPeriodChoice = '' | '2'
 
 export type PersonnelForm = {
   givenName: string
@@ -30,7 +36,6 @@ export type PersonnelForm = {
   schoolName: string
   graduationDate: string
   foreignLanguage: ForeignLanguageSummary | ''
-  argeProjectCode: string
   bloodType: BloodType | ''
   mobilePhone: string
   email: string
@@ -48,6 +53,7 @@ export type PersonnelForm = {
   residenceDistrict: string
   notificationAddress: string
   emergencyContacts: EmergencyContactWrite[]
+  certificates: EmployeeCertificateWrite[]
   sgkWorkplaceRegistrationId: string
   documentTypeCode: string
   applicableLawCode: string
@@ -55,6 +61,11 @@ export type PersonnelForm = {
   occupationCode: string
   occupationLabel: string
   dutyCode: string
+  workType: WorkType | ''
+  probationPeriodMonths: ProbationPeriodChoice
+  probationStartDate: string
+  recruitmentSourceId: string
+  recruitmentSourceName: string
   contractType: EmploymentContractType | ''
   contractEndDate: string
   partTimeMonthlyHours: string
@@ -77,6 +88,33 @@ export type PersonnelForm = {
   paymentBankName: string
 }
 
+/** Calendar AddMonths matching System.DateOnly (clamps to last day of month). */
+export function addMonthsIso(isoDate: string, months: number): string {
+  const iso = toIsoDate(isoDate) ?? isoDate
+  const [yearText, monthText, dayText] = iso.split('-')
+  const year = Number(yearText)
+  const month = Number(monthText)
+  const day = Number(dayText)
+  if (!year || !month || !day) {
+    return isoDate
+  }
+
+  const absolute = year * 12 + (month - 1) + months
+  const targetYear = Math.floor(absolute / 12)
+  const targetMonthIndex = ((absolute % 12) + 12) % 12
+  const lastDay = new Date(Date.UTC(targetYear, targetMonthIndex + 1, 0)).getUTCDate()
+  const clampedDay = Math.min(day, lastDay)
+  return `${targetYear}-${String(targetMonthIndex + 1).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`
+}
+
+export function derivedProbationEndDate(probationPeriodMonths: ProbationPeriodChoice, probationStartDate: string): string | null {
+  if (probationPeriodMonths !== '2') {
+    return null
+  }
+  const start = toIsoDate(probationStartDate)
+  return start ? addMonthsIso(start, 2) : null
+}
+
 export function emptyPersonnelForm(today: string): PersonnelForm {
   return {
     givenName: '',
@@ -90,7 +128,6 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     schoolName: '',
     graduationDate: '',
     foreignLanguage: '',
-    argeProjectCode: '',
     bloodType: '',
     mobilePhone: '',
     email: '',
@@ -108,6 +145,7 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     residenceDistrict: '',
     notificationAddress: '',
     emergencyContacts: [],
+    certificates: [],
     sgkWorkplaceRegistrationId: '',
     documentTypeCode: '',
     applicableLawCode: '',
@@ -115,6 +153,11 @@ export function emptyPersonnelForm(today: string): PersonnelForm {
     occupationCode: '',
     occupationLabel: '',
     dutyCode: '',
+    workType: '',
+    probationPeriodMonths: '',
+    probationStartDate: '',
+    recruitmentSourceId: '',
+    recruitmentSourceName: '',
     contractType: '',
     contractEndDate: '',
     partTimeMonthlyHours: '',
@@ -154,7 +197,6 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
     schoolName: profile.schoolName ?? '',
     graduationDate: profile.graduationDate ?? '',
     foreignLanguage: profile.foreignLanguage ?? '',
-    argeProjectCode: profile.argeProjectCode ?? '',
     bloodType: profile.bloodType ?? '',
     mobilePhone: normalizeMobileDigits(profile.mobilePhone ?? ''),
     email: profile.email ?? '',
@@ -178,6 +220,10 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
       phone: normalizeMobileDigits(item.phone),
       isPrimary: item.isPrimary,
     })),
+    certificates: (card.certificates ?? []).map((item) => ({
+      id: item.id,
+      name: item.name,
+    })),
     sgkWorkplaceRegistrationId: card.officialProfile?.sgkWorkplaceRegistrationId ?? '',
     documentTypeCode: card.officialProfile?.documentTypeCode ?? '',
     applicableLawCode: card.officialProfile?.applicableLawCode ?? '',
@@ -187,6 +233,11 @@ export function formFromCard(card: HrEmployeeCard): PersonnelForm {
       ? `${card.officialProfile.occupation.code} — ${card.officialProfile.occupation.description}`
       : '',
     dutyCode: card.officialProfile?.dutyCode ?? '',
+    workType: terms?.workType ?? '',
+    probationPeriodMonths: terms?.probationPeriodMonths === 2 ? '2' : '',
+    probationStartDate: terms?.probationStartDate ?? '',
+    recruitmentSourceId: terms?.recruitmentSourceId ?? '',
+    recruitmentSourceName: terms?.recruitmentSourceName ?? '',
     contractType: terms?.contractType ?? '',
     contractEndDate: terms?.contractEndDate ?? '',
     partTimeMonthlyHours: numberToInput(terms?.partTimeMonthlyHours),
@@ -247,6 +298,7 @@ function numberToInput(value: number | null | undefined): string {
 }
 
 export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEmployeeWrite {
+  const hasProbation = form.probationPeriodMonths === '2'
   const body: HrEmployeeWrite = {
     givenName: form.givenName.trim(),
     familyName: form.familyName.trim(),
@@ -263,7 +315,6 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
     schoolName: emptyToNull(form.schoolName),
     graduationDate: isoOrNull(form.graduationDate),
     foreignLanguage: form.foreignLanguage === '' ? null : form.foreignLanguage,
-    argeProjectCode: emptyToNull(form.argeProjectCode),
     drivingLicenceCategory: form.drivingLicenceCategory === '' ? null : form.drivingLicenceCategory,
     militaryServiceStatus: form.militaryServiceStatus === '' ? null : form.militaryServiceStatus,
     militaryExemptionReason:
@@ -286,6 +337,10 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
       phone: item.phone.trim() === '' ? '' : normalizeMobileDigits(item.phone),
       isPrimary: item.isPrimary,
     })),
+    certificates: form.certificates.map((item) => ({
+      id: item.id,
+      name: item.name,
+    })),
     officialProfile: {
       sgkWorkplaceRegistrationId: emptyToNull(form.sgkWorkplaceRegistrationId),
       documentTypeCode: emptyToNull(form.documentTypeCode),
@@ -304,6 +359,10 @@ export function toHrWrite(form: PersonnelForm, includeHireFields: boolean): HrEm
       iskurWorkforceStatus: form.iskurWorkforceStatus === '' ? null : form.iskurWorkforceStatus,
       workPermitStartDate: isoOrNull(form.workPermitStartDate),
       workPermitEndDate: isoOrNull(form.workPermitEndDate),
+      workType: form.workType === '' ? null : form.workType,
+      probationPeriodMonths: hasProbation ? 2 : null,
+      probationStartDate: hasProbation ? isoOrNull(form.probationStartDate) : null,
+      recruitmentSourceId: emptyToNull(form.recruitmentSourceId),
     },
     besSettings: {
       deductionEnabled: form.besDeductionEnabled,

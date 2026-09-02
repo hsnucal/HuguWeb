@@ -68,7 +68,6 @@ public static class PersonnelImportColumnCatalog
             ["Completed", "Exempt", "Deferred", "NotCompleted"]),
         Col(Ids.MilitaryExemptionReason, "Askerlik Muaf Nedeni", false, false, true, ["Military Exemption Reason"]),
         Col(Ids.MilitaryDefermentReason, "Askerlik Tecil Nedeni", false, false, true, ["Military Deferment Reason"]),
-        Col(Ids.ArgeProjectCode, "AR-GE Kodu", false, false, false, ["AR-GE Code", "R&D Code"]),
         Col(Ids.EmergencyName, "Acil Durum Kişisi", false, true, false, ["Emergency Contact", "Emergency Name"]),
         Col(Ids.EmergencyRelationship, "Yakınlık", false, true, false, ["Emergency Relationship", "Relationship"]),
         Col(Ids.EmergencyPhone, "Acil Durum Telefonu", false, true, false, ["Emergency Phone"]),
@@ -152,7 +151,6 @@ public static class PersonnelImportColumnCatalog
         public const string MilitaryServiceStatus = "militaryServiceStatus";
         public const string MilitaryExemptionReason = "militaryExemptionReason";
         public const string MilitaryDefermentReason = "militaryDefermentReason";
-        public const string ArgeProjectCode = "argeProjectCode";
         public const string EmergencyName = "emergencyName";
         public const string EmergencyRelationship = "emergencyRelationship";
         public const string EmergencyPhone = "emergencyPhone";

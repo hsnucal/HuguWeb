@@ -30,7 +30,6 @@ public sealed class EmployeeHrProfile
     public string? SchoolName { get; private set; }
     public DateOnly? GraduationDate { get; private set; }
     public ForeignLanguageSummary? ForeignLanguage { get; private set; }
-    public string? ArgeProjectCode { get; private set; }
     public DrivingLicenceCategory? DrivingLicenceCategory { get; private set; }
     public MilitaryServiceStatus? MilitaryServiceStatus { get; private set; }
     public string? MilitaryExemptionReason { get; private set; }
@@ -222,16 +221,6 @@ public sealed class EmployeeHrProfile
             return false;
         }
 
-        if (!ContactValue.TryNormalizeOptionalText(
-                values.ArgeProjectCode,
-                ContactValue.ArgeProjectCodeMaxLength,
-                out var argeProjectCode,
-                out code))
-        {
-            field = HrValidation.Fields.ArgeProjectCode;
-            return false;
-        }
-
         NationalIdentityScheme = scheme;
         NationalIdentityNumber = displayNumber;
         NormalizedNationalIdentityNumber = normalizedNumber;
@@ -246,7 +235,6 @@ public sealed class EmployeeHrProfile
         SchoolName = schoolName;
         GraduationDate = values.GraduationDate;
         ForeignLanguage = values.ForeignLanguage;
-        ArgeProjectCode = argeProjectCode;
         DrivingLicenceCategory = values.DrivingLicenceCategory;
         MilitaryServiceStatus = militaryStatus;
         MilitaryExemptionReason = exemptionReason;
@@ -294,5 +282,4 @@ public sealed record EmployeeHrProfileValues(
     string? EducationDescription,
     string? SchoolName,
     DateOnly? GraduationDate,
-    ForeignLanguageSummary? ForeignLanguage,
-    string? ArgeProjectCode);
+    ForeignLanguageSummary? ForeignLanguage);

@@ -70,7 +70,7 @@ public class Hr01CPersonnelMasterTests
                 null, null, null, null, null, null, null, null, null,
                 "5551112233", null, "old@example.com",
                 null, null, null, null, null,
-                null, null, null, null, null, null, null, null, null, null, [])),
+                null, null, null, null, null, null, null, null, null, [])),
             CancellationToken.None);
         Assert.True(hired.IsSuccess);
 
@@ -84,7 +84,7 @@ public class Hr01CPersonnelMasterTests
                     null, null, null, null, null, null, null, null, null,
                     "5559998877", null, "new@example.com",
                     null, null, null, null, null,
-                    null, null, null, null, null, null, null, null, null, null, []),
+                    null, null, null, null, null, null, null, null, null, []),
                 true,
                 ChangeContext: actor),
             CancellationToken.None);

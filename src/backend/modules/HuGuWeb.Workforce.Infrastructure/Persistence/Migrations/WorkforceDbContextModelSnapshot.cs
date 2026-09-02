@@ -228,15 +228,41 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("Employees", (string)null);
                 });
 
-            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeeHrProfile", b =>
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeeCertificate", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ArgeProjectCode")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeCertificates", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeeHrProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
@@ -482,6 +508,15 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasPrecision(6, 2)
                         .HasColumnType("numeric(6,2)");
 
+                    b.Property<int?>("ProbationPeriodMonths")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("ProbationStartDate")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("RecruitmentSourceId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateOnly?>("SeniorityStartDate")
                         .HasColumnType("date");
 
@@ -503,9 +538,21 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly?>("WorkPermitStartDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("WorkType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("OnboardingStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("RecruitmentSourceId");
 
                     b.ToTable("Employments", null, t =>
                         {
@@ -514,6 +561,8 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_Employments_IncentiveRange", "\"IncentiveEndDate\" IS NULL OR \"IncentiveStartDate\" IS NULL OR \"IncentiveEndDate\" >= \"IncentiveStartDate\"");
 
                             t.HasCheckConstraint("CK_Employments_Period", "\"EndDate\" IS NULL OR \"EndDate\" >= \"StartDate\"");
+
+                            t.HasCheckConstraint("CK_Employments_Probation", "(\"ProbationPeriodMonths\" IS NULL AND \"ProbationStartDate\" IS NULL) OR (\"ProbationPeriodMonths\" = 2 AND \"ProbationStartDate\" IS NOT NULL)");
 
                             t.HasCheckConstraint("CK_Employments_SeniorityStartDate", "\"SeniorityStartDate\" IS NULL OR \"SeniorityStartDate\" <= \"StartDate\"");
 
@@ -576,6 +625,105 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasKey("Code");
 
                     b.ToTable("EmploymentDutyCodes", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentOnboardingDocumentStatus", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CompletedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<Guid>("EmploymentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("RequirementId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequirementId");
+
+                    b.HasIndex("EmploymentId", "RequirementId")
+                        .IsUnique();
+
+                    b.ToTable("EmploymentOnboardingDocumentStatuses", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.HrDocumentTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TemplateAssetPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_HrDocumentTemplates_OrganizationId_Code");
+
+                    b.HasIndex("OrganizationId", "Category", "IsActive");
+
+                    b.ToTable("HrDocumentTemplates", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.InsuranceBranch", b =>
@@ -939,6 +1087,51 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.ToTable("OfficialEmploymentProfiles", (string)null);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.OnboardingDocumentRequirement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsRequiredByDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_OnboardingDocumentRequirements_OrganizationId_Code");
+
+                    b.HasIndex("OrganizationId", "IsActive");
+
+                    b.ToTable("OnboardingDocumentRequirements", (string)null);
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Organization", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1138,6 +1331,48 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("Properties", (string)null);
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.RecruitmentSource", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "Code")
+                        .IsUnique()
+                        .HasDatabaseName("IX_RecruitmentSources_OrganizationId_Code");
+
+                    b.HasIndex("OrganizationId", "IsActive");
+
+                    b.ToTable("RecruitmentSources", (string)null);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.ScheduleEntry", b =>
@@ -1464,6 +1699,15 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeeCertificate", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmployeeHrProfile", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Employee", null)
@@ -1510,6 +1754,11 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.RecruitmentSource", null)
+                        .WithMany()
+                        .HasForeignKey("RecruitmentSourceId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentBesSettings", b =>
@@ -1517,6 +1766,30 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                     b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
                         .WithMany()
                         .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.EmploymentOnboardingDocumentStatus", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Employment", null)
+                        .WithMany()
+                        .HasForeignKey("EmploymentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("HuGuWeb.Workforce.Domain.OnboardingDocumentRequirement", null)
+                        .WithMany()
+                        .HasForeignKey("RequirementId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.HrDocumentTemplate", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1634,6 +1907,15 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.OnboardingDocumentRequirement", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.PersonnelImportRun", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
@@ -1683,6 +1965,15 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("HuGuWeb.Workforce.Domain.Property", b =>
+                {
+                    b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HuGuWeb.Workforce.Domain.RecruitmentSource", b =>
                 {
                     b.HasOne("HuGuWeb.Workforce.Domain.Organization", null)
                         .WithMany()

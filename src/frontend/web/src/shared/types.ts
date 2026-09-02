@@ -22,6 +22,7 @@ export type CurrentUser = {
   permissions: string[]
   membershipId?: string | null
   organizationId?: string | null
+  organizationName?: string | null
   propertyId?: string | null
   scopeType?: string | null
   employeeId?: string | null

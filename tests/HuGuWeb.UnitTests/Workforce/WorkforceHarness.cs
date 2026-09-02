@@ -36,6 +36,7 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<Assignment> Assignments { get; } = [];
     public List<EmployeeHrProfile> HrProfiles { get; } = [];
     public List<EmergencyContact> EmergencyContacts { get; } = [];
+    public List<EmployeeCertificate> EmployeeCertificates { get; } = [];
     public List<EmployeePhoto> Photos { get; } = [];
     public List<SgkWorkplaceRegistration> SgkWorkplaceRegistrations { get; } = [];
     public List<OfficialEmploymentProfile> OfficialEmploymentProfiles { get; } = [];
@@ -56,6 +57,10 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<ShiftDefinition> ShiftDefinitions { get; } = [];
     public List<ScheduleEntry> ScheduleEntries { get; } = [];
     public List<ScheduleEntryChange> ScheduleEntryChanges { get; } = [];
+    public List<RecruitmentSource> RecruitmentSources { get; } = [];
+    public List<OnboardingDocumentRequirement> OnboardingDocumentRequirements { get; } = [];
+    public List<EmploymentOnboardingDocumentStatus> EmploymentOnboardingDocumentStatuses { get; } = [];
+    public List<HrDocumentTemplate> HrDocumentTemplates { get; } = [];
 
     public Task<Organization?> GetOrganizationAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Organizations.FirstOrDefault(item => item.Id == id));
@@ -242,6 +247,73 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public void AddEmployeePhoto(EmployeePhoto photo) => Photos.Add(photo);
 
     public void RemoveEmployeePhoto(EmployeePhoto photo) => Photos.Remove(photo);
+
+    public Task<IReadOnlyList<EmployeeCertificate>> ListEmployeeCertificatesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<EmployeeCertificate>>(
+            EmployeeCertificates.Where(item => item.EmployeeId == employeeId)
+                .OrderBy(item => item.SortOrder)
+                .ToArray());
+
+    public void AddEmployeeCertificate(EmployeeCertificate certificate) => EmployeeCertificates.Add(certificate);
+
+    public void RemoveEmployeeCertificate(EmployeeCertificate certificate) =>
+        EmployeeCertificates.Remove(certificate);
+
+    public Task<IReadOnlyList<RecruitmentSource>> ListRecruitmentSourcesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<RecruitmentSource>>(
+            RecruitmentSources.Where(item => item.OrganizationId == organizationId)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.Name)
+                .ToArray());
+
+    public Task<RecruitmentSource?> GetRecruitmentSourceAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(RecruitmentSources.FirstOrDefault(item => item.Id == id));
+
+    public void AddRecruitmentSource(RecruitmentSource source) => RecruitmentSources.Add(source);
+
+    public Task<IReadOnlyList<OnboardingDocumentRequirement>> ListOnboardingDocumentRequirementsAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<OnboardingDocumentRequirement>>(
+            OnboardingDocumentRequirements.Where(item => item.OrganizationId == organizationId)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.Name)
+                .ToArray());
+
+    public Task<OnboardingDocumentRequirement?> GetOnboardingDocumentRequirementAsync(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(OnboardingDocumentRequirements.FirstOrDefault(item => item.Id == id));
+
+    public void AddOnboardingDocumentRequirement(OnboardingDocumentRequirement requirement) =>
+        OnboardingDocumentRequirements.Add(requirement);
+
+    public Task<IReadOnlyList<EmploymentOnboardingDocumentStatus>> ListEmploymentOnboardingDocumentStatusesAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<EmploymentOnboardingDocumentStatus>>(
+            EmploymentOnboardingDocumentStatuses.Where(item => item.EmploymentId == employmentId).ToArray());
+
+    public void AddEmploymentOnboardingDocumentStatus(EmploymentOnboardingDocumentStatus status) =>
+        EmploymentOnboardingDocumentStatuses.Add(status);
+
+    public Task<IReadOnlyList<HrDocumentTemplate>> ListHrDocumentTemplatesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<HrDocumentTemplate>>(
+            HrDocumentTemplates.Where(item => item.OrganizationId == organizationId)
+                .OrderBy(item => item.SortOrder)
+                .ThenBy(item => item.Name)
+                .ToArray());
+
+    public Task<HrDocumentTemplate?> GetHrDocumentTemplateAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(HrDocumentTemplates.FirstOrDefault(item => item.Id == id));
+
+    public void AddHrDocumentTemplate(HrDocumentTemplate template) => HrDocumentTemplates.Add(template);
 
     public Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(
         Guid id,
@@ -884,10 +956,25 @@ internal sealed class WorkforceHarness
     public EmployeePhotoUseCases Photos { get; }
     public InMemoryEmployeePhotoStorage PhotoStorage { get; } = new();
     public MaintainSgkWorkplaceRegistrationsUseCase SgkWorkplaces { get; }
+    public MaintainDepartmentsUseCase Departments { get; }
+    public MaintainPositionsUseCase Positions { get; }
     public SaveOfficialEmploymentProfileUseCase SaveOfficial { get; }
     public OfficialLookupsQuery OfficialLookups { get; }
     public EnsureDefaultLeaveTypesUseCase EnsureDefaultLeaveTypes { get; }
+    public EnsurePersonnelEnrichmentDefaultsUseCase EnsurePersonnelEnrichmentDefaults { get; }
     public LeaveTypeAdminUseCase LeaveTypeAdmin { get; }
+    public OnboardingCatalogQuery OnboardingCatalog { get; }
+    public OnboardingChecklistQuery OnboardingChecklist { get; }
+    public SyncOnboardingChecklistUseCase SyncOnboardingChecklist { get; }
+    public ListOnboardingDocumentRequirementsQuery ListOnboardingRequirements { get; }
+    public SetOnboardingChecklistItemUseCase SetOnboardingChecklistItem { get; }
+    public CompleteEmploymentOnboardingUseCase CompleteEmploymentOnboarding { get; }
+    public RenderHrDocumentDocxUseCase RenderHrDocumentDocx { get; }
+    public HrDocumentTemplateQuery HrDocumentTemplates { get; }
+    public PreviewHrDocumentTemplateUseCase PreviewHrDocumentTemplate { get; }
+    public PreviewHrDocumentTemplateDraftUseCase PreviewHrDocumentTemplateDraft { get; }
+    public RenderHrDocumentDraftDocxUseCase RenderHrDocumentDraftDocx { get; }
+    public ListRecruitmentSourcesQuery ListRecruitmentSources { get; }
     public EmployeeLeaveQuery LeaveQuery { get; }
     public RecordLeaveEntitlementUseCase RecordLeaveEntitlement { get; }
     public RecordLeaveUseCase RecordLeave { get; }
@@ -915,9 +1002,11 @@ internal sealed class WorkforceHarness
     public Guid OtherPropertyDepartmentId { get; } = Guid.CreateVersion7();
     public Guid OtherPropertyPositionId { get; } = Guid.CreateVersion7();
 
-    public WorkforceHarness()
+    public WorkforceHarness(bool withoutPropertyContext = false)
     {
-        Workplace = new FixedWorkplace(OrganizationId, PropertyId);
+        Workplace = withoutPropertyContext
+            ? new FixedWorkplace(OrganizationId, Guid.Empty)
+            : new FixedWorkplace(OrganizationId, PropertyId);
         Store.Organizations.Add(new Organization(OrganizationId, "Test Organization"));
         Store.Properties.Add(new Property(PropertyId, OrganizationId, "Test Property", "UTC"));
 
@@ -992,10 +1081,25 @@ internal sealed class WorkforceHarness
         HrCard = new HrEmployeeCardQuery(Store, Clock, Workplace);
         Photos = new EmployeePhotoUseCases(Store, Workplace, PhotoStorage, Clock);
         SgkWorkplaces = new MaintainSgkWorkplaceRegistrationsUseCase(Store, Workplace, Clock);
+        Departments = new MaintainDepartmentsUseCase(Store, Workplace);
+        Positions = new MaintainPositionsUseCase(Store, Workplace);
         SaveOfficial = new SaveOfficialEmploymentProfileUseCase(Store, Clock, Workplace);
         OfficialLookups = new OfficialLookupsQuery(Store);
         EnsureDefaultLeaveTypes = new EnsureDefaultLeaveTypesUseCase(Store, Clock);
+        EnsurePersonnelEnrichmentDefaults = new EnsurePersonnelEnrichmentDefaultsUseCase(Store, Clock);
         LeaveTypeAdmin = new LeaveTypeAdminUseCase(Store, Clock, Workplace);
+        OnboardingCatalog = new OnboardingCatalogQuery(Store, Workplace, EnsurePersonnelEnrichmentDefaults);
+        OnboardingChecklist = new OnboardingChecklistQuery(Store, Workplace, EnsurePersonnelEnrichmentDefaults);
+        SyncOnboardingChecklist = new SyncOnboardingChecklistUseCase(Store, Clock, Workplace, OnboardingChecklist);
+        ListOnboardingRequirements = new ListOnboardingDocumentRequirementsQuery(Store, Workplace, EnsurePersonnelEnrichmentDefaults);
+        SetOnboardingChecklistItem = new SetOnboardingChecklistItemUseCase(Store, Clock, Workplace);
+        CompleteEmploymentOnboarding = new CompleteEmploymentOnboardingUseCase(Store, Workplace, OnboardingChecklist);
+        RenderHrDocumentDocx = new RenderHrDocumentDocxUseCase(Store, Workplace);
+        HrDocumentTemplates = new HrDocumentTemplateQuery(Store, Workplace);
+        PreviewHrDocumentTemplate = new PreviewHrDocumentTemplateUseCase(Store, Clock, Workplace);
+        PreviewHrDocumentTemplateDraft = new PreviewHrDocumentTemplateDraftUseCase(Store, Clock, Workplace);
+        RenderHrDocumentDraftDocx = new RenderHrDocumentDraftDocxUseCase(Store, Clock, Workplace);
+        ListRecruitmentSources = new ListRecruitmentSourcesQuery(Store, Workplace);
         LeaveQuery = new EmployeeLeaveQuery(Store, Clock, Workplace);
         RecordLeaveEntitlement = new RecordLeaveEntitlementUseCase(Store, Clock, Workplace, LeaveQuery);
         RecordLeave = new RecordLeaveUseCase(Store, Clock, Workplace, LeaveQuery);
@@ -1104,7 +1208,8 @@ internal sealed class WorkforceHarness
         OfficialEmploymentWriteModel? officialProfile = null,
         EmploymentWorkforceWriteModel? workforceTerms = null,
         EmploymentBesWriteModel? besSettings = null,
-        DateOnly? seniorityStartDate = null) =>
+        DateOnly? seniorityStartDate = null,
+        IReadOnlyList<EmployeeCertificateDraft>? certificates = null) =>
         new(
             "Ayşe",
             "Yılmaz",
@@ -1116,7 +1221,8 @@ internal sealed class WorkforceHarness
             officialProfile,
             workforceTerms,
             besSettings,
-            seniorityStartDate);
+            seniorityStartDate,
+            certificates);
 
     public OfficialEmploymentWriteModel OfficialWrite(
         Guid? workplaceId = null,
@@ -1172,7 +1278,7 @@ internal sealed class WorkforceHarness
         new(
             null, null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, []);
+            null, null, null, null, null, null, null, null, null, []);
 
     private static readonly (string Code, string Description)[] TestOccupationSeed =
     [

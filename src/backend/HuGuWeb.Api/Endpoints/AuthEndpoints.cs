@@ -2,6 +2,7 @@ using System.Security.Claims;
 using HuGuWeb.Api.Authorization;
 using HuGuWeb.Api.Context;
 using HuGuWeb.Api.Identity;
+using HuGuWeb.Workforce.Application;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -61,7 +62,8 @@ public static class AuthEndpoints
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         AccessSnapshotService accessSnapshot,
-        PropertyAccessService propertyAccess)
+        PropertyAccessService propertyAccess,
+        IWorkforceStore workforceStore)
     {
         if (principal.Identity?.IsAuthenticated != true)
         {
@@ -74,7 +76,13 @@ public static class AuthEndpoints
             return new SessionResponse(false, null);
         }
 
-        var response = await ToUserResponseAsync(httpContext, user, accessSnapshot, propertyAccess, signInManager);
+        var response = await ToUserResponseAsync(
+            httpContext,
+            user,
+            accessSnapshot,
+            propertyAccess,
+            signInManager,
+            workforceStore);
         return new SessionResponse(true, response);
     }
 
@@ -84,7 +92,8 @@ public static class AuthEndpoints
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         AccessSnapshotService accessSnapshot,
-        PropertyAccessService propertyAccess)
+        PropertyAccessService propertyAccess,
+        IWorkforceStore workforceStore)
     {
         var user = await userManager.GetUserAsync(principal);
         if (user is null)
@@ -95,7 +104,13 @@ public static class AuthEndpoints
                 extensions: new Dictionary<string, object?> { ["code"] = "authentication-required" });
         }
 
-        return Results.Ok(await ToUserResponseAsync(httpContext, user, accessSnapshot, propertyAccess, signInManager));
+        return Results.Ok(await ToUserResponseAsync(
+            httpContext,
+            user,
+            accessSnapshot,
+            propertyAccess,
+            signInManager,
+            workforceStore));
     }
 
     private static async Task<IResult> Login(
@@ -105,6 +120,7 @@ public static class AuthEndpoints
         SignInManager<ApplicationUser> signInManager,
         AccessSnapshotService accessSnapshot,
         PropertyAccessService propertyAccess,
+        IWorkforceStore workforceStore,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("HuGuWeb.Api.Authentication");
@@ -137,7 +153,13 @@ public static class AuthEndpoints
         var autoProperty = await propertyAccess.AutoSelectPropertyIdAsync(user.Id, CancellationToken.None);
         WriteActiveProperty(httpContext, autoProperty);
         await signInManager.RefreshSignInAsync(user);
-        return Results.Ok(await ToUserResponseAsync(httpContext, user, accessSnapshot, propertyAccess, signInManager));
+        return Results.Ok(await ToUserResponseAsync(
+            httpContext,
+            user,
+            accessSnapshot,
+            propertyAccess,
+            signInManager,
+            workforceStore));
     }
 
     private static async Task<IResult> Logout(
@@ -157,6 +179,7 @@ public static class AuthEndpoints
         SignInManager<ApplicationUser> signInManager,
         AccessSnapshotService accessSnapshot,
         PropertyAccessService propertyAccess,
+        IWorkforceStore workforceStore,
         ILoggerFactory loggerFactory)
     {
         var logger = loggerFactory.CreateLogger("HuGuWeb.Api.Authentication");
@@ -193,7 +216,13 @@ public static class AuthEndpoints
             }
         }
 
-        return Results.Ok(await ToUserResponseAsync(httpContext, user, accessSnapshot, propertyAccess, signInManager));
+        return Results.Ok(await ToUserResponseAsync(
+            httpContext,
+            user,
+            accessSnapshot,
+            propertyAccess,
+            signInManager,
+            workforceStore));
     }
 
     private static async Task<IResult> SelectProperty(
@@ -203,7 +232,8 @@ public static class AuthEndpoints
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
         AccessSnapshotService accessSnapshot,
-        PropertyAccessService propertyAccess)
+        PropertyAccessService propertyAccess,
+        IWorkforceStore workforceStore)
     {
         var user = await userManager.GetUserAsync(principal);
         if (user is null)
@@ -221,7 +251,13 @@ public static class AuthEndpoints
 
         WriteActiveProperty(httpContext, request.PropertyId);
         await signInManager.RefreshSignInAsync(user);
-        return Results.Ok(await ToUserResponseAsync(httpContext, user, accessSnapshot, propertyAccess, signInManager));
+        return Results.Ok(await ToUserResponseAsync(
+            httpContext,
+            user,
+            accessSnapshot,
+            propertyAccess,
+            signInManager,
+            workforceStore));
     }
 
     private static async Task<CurrentUserResponse> ToUserResponseAsync(
@@ -229,7 +265,8 @@ public static class AuthEndpoints
         ApplicationUser user,
         AccessSnapshotService accessSnapshot,
         PropertyAccessService propertyAccess,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IWorkforceStore workforceStore)
     {
         var selected = ActivePropertyCookie.Read(httpContext);
         var accessible = await propertyAccess.ListAccessiblePropertiesAsync(user.Id, CancellationToken.None);
@@ -260,6 +297,13 @@ public static class AuthEndpoints
             propertySelectionRequired = true;
         }
 
+        string? organizationName = null;
+        if (snapshot.OrganizationId is Guid organizationId)
+        {
+            var organization = await workforceStore.GetOrganizationAsync(organizationId, CancellationToken.None);
+            organizationName = organization?.Name;
+        }
+
         return new CurrentUserResponse(
             user.Id,
             user.Email,
@@ -267,6 +311,7 @@ public static class AuthEndpoints
             snapshot.Permissions,
             snapshot.MembershipId,
             snapshot.OrganizationId,
+            organizationName,
             snapshot.PropertyId,
             snapshot.ScopeType?.ToString(),
             snapshot.EmployeeId,

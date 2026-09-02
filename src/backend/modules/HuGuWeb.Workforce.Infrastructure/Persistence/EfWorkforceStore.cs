@@ -275,6 +275,75 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void RemoveEmployeePhoto(EmployeePhoto photo) => dbContext.EmployeePhotos.Remove(photo);
 
+    public async Task<IReadOnlyList<EmployeeCertificate>> ListEmployeeCertificatesAsync(
+        Guid employeeId,
+        CancellationToken cancellationToken) =>
+        await dbContext.EmployeeCertificates
+            .Where(entity => entity.EmployeeId == employeeId)
+            .OrderBy(entity => entity.SortOrder)
+            .ToListAsync(cancellationToken);
+
+    public void AddEmployeeCertificate(EmployeeCertificate certificate) =>
+        dbContext.EmployeeCertificates.Add(certificate);
+
+    public void RemoveEmployeeCertificate(EmployeeCertificate certificate) =>
+        dbContext.EmployeeCertificates.Remove(certificate);
+
+    public async Task<IReadOnlyList<RecruitmentSource>> ListRecruitmentSourcesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.RecruitmentSources
+            .Where(entity => entity.OrganizationId == organizationId)
+            .OrderBy(entity => entity.SortOrder)
+            .ThenBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<RecruitmentSource?> GetRecruitmentSourceAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.RecruitmentSources.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public void AddRecruitmentSource(RecruitmentSource source) => dbContext.RecruitmentSources.Add(source);
+
+    public async Task<IReadOnlyList<OnboardingDocumentRequirement>> ListOnboardingDocumentRequirementsAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.OnboardingDocumentRequirements
+            .Where(entity => entity.OrganizationId == organizationId)
+            .OrderBy(entity => entity.SortOrder)
+            .ThenBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<OnboardingDocumentRequirement?> GetOnboardingDocumentRequirementAsync(
+        Guid id,
+        CancellationToken cancellationToken) =>
+        dbContext.OnboardingDocumentRequirements.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public void AddOnboardingDocumentRequirement(OnboardingDocumentRequirement requirement) =>
+        dbContext.OnboardingDocumentRequirements.Add(requirement);
+
+    public async Task<IReadOnlyList<EmploymentOnboardingDocumentStatus>> ListEmploymentOnboardingDocumentStatusesAsync(
+        Guid employmentId,
+        CancellationToken cancellationToken) =>
+        await dbContext.EmploymentOnboardingDocumentStatuses
+            .Where(entity => entity.EmploymentId == employmentId)
+            .ToListAsync(cancellationToken);
+
+    public void AddEmploymentOnboardingDocumentStatus(EmploymentOnboardingDocumentStatus status) =>
+        dbContext.EmploymentOnboardingDocumentStatuses.Add(status);
+
+    public async Task<IReadOnlyList<HrDocumentTemplate>> ListHrDocumentTemplatesAsync(
+        Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await dbContext.HrDocumentTemplates
+            .Where(entity => entity.OrganizationId == organizationId)
+            .OrderBy(entity => entity.SortOrder)
+            .ThenBy(entity => entity.Name)
+            .ToListAsync(cancellationToken);
+
+    public Task<HrDocumentTemplate?> GetHrDocumentTemplateAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.HrDocumentTemplates.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public void AddHrDocumentTemplate(HrDocumentTemplate template) => dbContext.HrDocumentTemplates.Add(template);
+
     public Task<SgkWorkplaceRegistration?> GetSgkWorkplaceRegistrationAsync(
         Guid id,
         CancellationToken cancellationToken) =>

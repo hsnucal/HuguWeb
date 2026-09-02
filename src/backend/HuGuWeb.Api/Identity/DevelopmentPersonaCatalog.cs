@@ -125,13 +125,15 @@ public static class DevelopmentPersonaCatalog
             MaintenancePermissions.Read,
             MaintenancePermissions.Manage,
             MaintenancePermissions.Resolve,
-            ..SystemRoleTemplates.DepartmentLeaveApproverPermissions
+            ..SystemRoleTemplates.DepartmentLeaveApproverPermissions,
+            ..SystemRoleTemplates.DepartmentSchedulerOnlyPermissions
         ],
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
         AdditionalRoleCodes:
         [
             SystemRoleTemplates.EmployeeLeaveSelfService,
-            SystemRoleTemplates.DepartmentLeaveApprover
+            SystemRoleTemplates.DepartmentLeaveApprover,
+            SystemRoleTemplates.DepartmentScheduler
         ],
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.MaintenanceManagerEmployeeId,
         LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.MaintenanceManagerLinkId,

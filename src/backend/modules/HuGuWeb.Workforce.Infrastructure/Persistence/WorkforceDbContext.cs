@@ -10,6 +10,9 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public const string NationalIdentityIndexName =
         "IX_EmployeeHrProfiles_OrganizationId_Scheme_NormalizedNumber";
     public const string LeaveTypeCodeIndexName = "IX_LeaveTypes_OrganizationId_Code";
+    public const string RecruitmentSourceCodeIndexName = "IX_RecruitmentSources_OrganizationId_Code";
+    public const string OnboardingRequirementCodeIndexName = "IX_OnboardingDocumentRequirements_OrganizationId_Code";
+    public const string HrDocumentTemplateCodeIndexName = "IX_HrDocumentTemplates_OrganizationId_Code";
     public const string LeaveRecordSourceRequestIndexName = "IX_LeaveRecords_SourceLeaveRequestId";
     public const string ShiftDefinitionCodeIndexName = "IX_ShiftDefinitions_PropertyId_Code";
     public const string ScheduleEntryUniqueIndexName = "IX_ScheduleEntries_EmploymentId_ScheduleDate";
@@ -27,6 +30,7 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<Assignment> Assignments => Set<Assignment>();
     public DbSet<EmployeeHrProfile> EmployeeHrProfiles => Set<EmployeeHrProfile>();
     public DbSet<EmergencyContact> EmergencyContacts => Set<EmergencyContact>();
+    public DbSet<EmployeeCertificate> EmployeeCertificates => Set<EmployeeCertificate>();
     public DbSet<EmployeePhoto> EmployeePhotos => Set<EmployeePhoto>();
     public DbSet<SgkWorkplaceRegistration> SgkWorkplaceRegistrations => Set<SgkWorkplaceRegistration>();
     public DbSet<OfficialEmploymentProfile> OfficialEmploymentProfiles => Set<OfficialEmploymentProfile>();
@@ -47,6 +51,11 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<ShiftDefinition> ShiftDefinitions => Set<ShiftDefinition>();
     public DbSet<ScheduleEntry> ScheduleEntries => Set<ScheduleEntry>();
     public DbSet<ScheduleEntryChange> ScheduleEntryChanges => Set<ScheduleEntryChange>();
+    public DbSet<RecruitmentSource> RecruitmentSources => Set<RecruitmentSource>();
+    public DbSet<OnboardingDocumentRequirement> OnboardingDocumentRequirements => Set<OnboardingDocumentRequirement>();
+    public DbSet<EmploymentOnboardingDocumentStatus> EmploymentOnboardingDocumentStatuses =>
+        Set<EmploymentOnboardingDocumentStatus>();
+    public DbSet<HrDocumentTemplate> HrDocumentTemplates => Set<HrDocumentTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,6 +70,7 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new AssignmentConfiguration());
         modelBuilder.ApplyConfiguration(new EmployeeHrProfileConfiguration());
         modelBuilder.ApplyConfiguration(new EmergencyContactConfiguration());
+        modelBuilder.ApplyConfiguration(new EmployeeCertificateConfiguration());
         modelBuilder.ApplyConfiguration(new EmployeePhotoConfiguration());
         modelBuilder.ApplyConfiguration(new SgkWorkplaceRegistrationConfiguration());
         modelBuilder.ApplyConfiguration(new OfficialEmploymentProfileConfiguration());
@@ -81,6 +91,10 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new ShiftDefinitionConfiguration());
         modelBuilder.ApplyConfiguration(new ScheduleEntryConfiguration());
         modelBuilder.ApplyConfiguration(new ScheduleEntryChangeConfiguration());
+        modelBuilder.ApplyConfiguration(new RecruitmentSourceConfiguration());
+        modelBuilder.ApplyConfiguration(new OnboardingDocumentRequirementConfiguration());
+        modelBuilder.ApplyConfiguration(new EmploymentOnboardingDocumentStatusConfiguration());
+        modelBuilder.ApplyConfiguration(new HrDocumentTemplateConfiguration());
     }
 }
 
@@ -226,6 +240,10 @@ file sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employment>
             table.HasCheckConstraint(
                 "CK_Employments_SeniorityStartDate",
                 "\"SeniorityStartDate\" IS NULL OR \"SeniorityStartDate\" <= \"StartDate\"");
+            table.HasCheckConstraint(
+                "CK_Employments_Probation",
+                "(\"ProbationPeriodMonths\" IS NULL AND \"ProbationStartDate\" IS NULL)"
+                + " OR (\"ProbationPeriodMonths\" = 2 AND \"ProbationStartDate\" IS NOT NULL)");
         });
         builder.HasKey(entity => entity.Id);
         builder.Property(entity => entity.StartDate).HasColumnType("date").IsRequired();
@@ -245,12 +263,28 @@ file sealed class EmploymentConfiguration : IEntityTypeConfiguration<Employment>
         builder.Property(entity => entity.IskurWorkforceStatus).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.WorkPermitStartDate).HasColumnType("date");
         builder.Property(entity => entity.WorkPermitEndDate).HasColumnType("date");
+        builder.Property(entity => entity.WorkType)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+        builder.Property(entity => entity.OnboardingStatus)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+        builder.Property(entity => entity.ProbationPeriodMonths);
+        builder.Property(entity => entity.ProbationStartDate).HasColumnType("date");
+        builder.Ignore(entity => entity.ProbationEndDate);
         builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
         builder.HasOne<Employee>()
             .WithMany()
             .HasForeignKey(entity => entity.EmployeeId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<RecruitmentSource>()
+            .WithMany()
+            .HasForeignKey(entity => entity.RecruitmentSourceId)
+            .OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(entity => entity.EmployeeId);
+        builder.HasIndex(entity => entity.RecruitmentSourceId);
     }
 }
 
@@ -312,7 +346,6 @@ file sealed class EmployeeHrProfileConfiguration : IEntityTypeConfiguration<Empl
         builder.Property(entity => entity.SchoolName).HasMaxLength(ContactValue.EducationTextMaxLength);
         builder.Property(entity => entity.GraduationDate).HasColumnType("date");
         builder.Property(entity => entity.ForeignLanguage).HasConversion<string>().HasMaxLength(32);
-        builder.Property(entity => entity.ArgeProjectCode).HasMaxLength(ContactValue.ArgeProjectCodeMaxLength);
         builder.Property(entity => entity.DrivingLicenceCategory).HasConversion<string>().HasMaxLength(8);
         builder.Property(entity => entity.MilitaryServiceStatus).HasConversion<string>().HasMaxLength(32);
         builder.Property(entity => entity.MilitaryExemptionReason).HasMaxLength(ContactValue.MilitaryReasonMaxLength);
@@ -370,6 +403,24 @@ file sealed class EmergencyContactConfiguration : IEntityTypeConfiguration<Emerg
             .IsUnique()
             .HasFilter("\"IsPrimary\" = TRUE")
             .HasDatabaseName("IX_EmergencyContacts_EmployeeId_Primary");
+    }
+}
+
+file sealed class EmployeeCertificateConfiguration : IEntityTypeConfiguration<EmployeeCertificate>
+{
+    public void Configure(EntityTypeBuilder<EmployeeCertificate> builder)
+    {
+        builder.ToTable("EmployeeCertificates");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Name).HasMaxLength(EmployeeCertificate.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.SortOrder).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.HasOne<Employee>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => entity.EmployeeId);
     }
 }
 
@@ -869,5 +920,104 @@ file sealed class ScheduleEntryChangeConfiguration : IEntityTypeConfiguration<Sc
             .HasDatabaseName(WorkforceDbContext.ScheduleEntryChangeIndexName);
         builder.HasIndex(entity => entity.PreviousShiftDefinitionId);
         builder.HasIndex(entity => entity.NewShiftDefinitionId);
+    }
+}
+
+file sealed class RecruitmentSourceConfiguration : IEntityTypeConfiguration<RecruitmentSource>
+{
+    public void Configure(EntityTypeBuilder<RecruitmentSource> builder)
+    {
+        builder.ToTable("RecruitmentSources");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Code).HasMaxLength(RecruitmentSource.CodeMaxLength).IsRequired();
+        builder.Property(entity => entity.Name).HasMaxLength(RecruitmentSource.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.SortOrder).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.Code })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.RecruitmentSourceCodeIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.IsActive });
+    }
+}
+
+file sealed class OnboardingDocumentRequirementConfiguration : IEntityTypeConfiguration<OnboardingDocumentRequirement>
+{
+    public void Configure(EntityTypeBuilder<OnboardingDocumentRequirement> builder)
+    {
+        builder.ToTable("OnboardingDocumentRequirements");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Code).HasMaxLength(OnboardingDocumentRequirement.CodeMaxLength).IsRequired();
+        builder.Property(entity => entity.Name).HasMaxLength(OnboardingDocumentRequirement.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.SortOrder).IsRequired();
+        builder.Property(entity => entity.IsRequiredByDefault).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.Code })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.OnboardingRequirementCodeIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.IsActive });
+    }
+}
+
+file sealed class EmploymentOnboardingDocumentStatusConfiguration
+    : IEntityTypeConfiguration<EmploymentOnboardingDocumentStatus>
+{
+    public void Configure(EntityTypeBuilder<EmploymentOnboardingDocumentStatus> builder)
+    {
+        builder.ToTable("EmploymentOnboardingDocumentStatuses");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.IsCompleted).IsRequired();
+        builder.Property(entity => entity.CompletedByUserId)
+            .HasMaxLength(EmploymentOnboardingDocumentStatus.UserIdMaxLength);
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<OnboardingDocumentRequirement>()
+            .WithMany()
+            .HasForeignKey(entity => entity.RequirementId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.RequirementId }).IsUnique();
+        builder.HasIndex(entity => entity.RequirementId);
+    }
+}
+
+file sealed class HrDocumentTemplateConfiguration : IEntityTypeConfiguration<HrDocumentTemplate>
+{
+    public void Configure(EntityTypeBuilder<HrDocumentTemplate> builder)
+    {
+        builder.ToTable("HrDocumentTemplates");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Code).HasMaxLength(HrDocumentTemplate.CodeMaxLength).IsRequired();
+        builder.Property(entity => entity.Name).HasMaxLength(HrDocumentTemplate.NameMaxLength).IsRequired();
+        builder.Property(entity => entity.Description).HasMaxLength(HrDocumentTemplate.DescriptionMaxLength);
+        builder.Property(entity => entity.TemplateAssetPath).HasMaxLength(260);
+        builder.Property(entity => entity.Category).HasConversion<string>().HasMaxLength(32).IsRequired();
+        builder.Property(entity => entity.Content).IsRequired();
+        builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.Version).HasMaxLength(HrDocumentTemplate.VersionMaxLength).IsRequired();
+        builder.Property(entity => entity.SortOrder).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.Code })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.HrDocumentTemplateCodeIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.Category, entity.IsActive });
     }
 }

@@ -50,7 +50,22 @@ import {
   type OfficialLookupItem,
   type OfficialLookups,
   type SgkWorkplaceRecord,
+  type WorkType,
 } from './hrApi'
+import {
+  completeEmployeeOnboarding,
+  getOnboardingCatalog,
+  listRecruitmentSources,
+  isOnboardingAlreadyCompleted,
+  onboardingErrorKey,
+  syncEmployeeOnboardingDocuments,
+  type RecruitmentSourceListItem,
+} from './onboardingApi'
+import {
+  completedRequirementIds,
+  emptyOnboardingDraft,
+  type OnboardingDraft,
+} from './onboardingUi'
 import {
   getHrEmployeeErpAccount,
   getHrPersonnelHistory,
@@ -63,26 +78,35 @@ import { useAuthSession } from '../auth/AuthContext'
 import { Link } from 'react-router'
 import { nationalityLabel } from './nationalityDisplay'
 import {
+  derivedProbationEndDate,
   emptyPersonnelForm,
   formFromCard,
   hasPaymentInput,
   isPersonnelFormDirty,
   snapshotOf,
   toHrWrite,
+  WORK_TYPE_VALUES,
   type PersonnelForm,
+  type ProbationPeriodChoice,
 } from './personnelForm'
 import { restrictIdentityInput, TCKN_DIGIT_MAX, digitsOnly } from './personnelInput'
 import {
   firstInvalidTarget,
   invalidPersonnelTabs,
+  invalidWorkSections,
   HrValidationCodes,
   officialSectionForField,
   revalidateKnownErrors,
   validatePersonnelField,
   validatePersonnelForm,
   validationMessageKeyFor,
+  workSectionForField,
+  DEFAULT_WORK_SECTION,
+  WORK_SECTION_IDS,
+  WORK_SECTION_LABEL_KEYS,
   type FieldErrors,
   type OfficialSectionId,
+  type WorkSectionId,
 } from './personnelValidation'
 import {
   resolveUniversityName,
@@ -92,6 +116,7 @@ import {
 import type { DepartmentRecord, EmploymentTerminationReason, PositionRecord } from './workforceApi'
 import { endEmployment, transferEmployee } from './workforceApi'
 import { positionsForDepartment, retainedPositionId } from './assignmentOptions'
+import type { WorkplaceLabels } from './workforceWorkplaceLabels'
 import { toPersistedIban } from './paymentIban'
 import { TurkishIbanField } from './TurkishIbanField'
 import {
@@ -101,9 +126,12 @@ import {
 } from './trProvinces'
 import { employmentStatusTone } from './workforceStatus'
 import { PersonnelLeaveTab } from './PersonnelLeaveTab'
+import { PersonnelOnboardingTab } from './PersonnelOnboardingTab'
 
-type TabId = 'general' | 'identity' | 'work' | 'official' | 'payment' | 'leave' | 'history'
-type CardMode = { type: 'create' } | { type: 'edit'; employeeId: string }
+type TabId = 'general' | 'identity' | 'work' | 'official' | 'onboarding' | 'payment' | 'leave' | 'history'
+type CardMode =
+  | { type: 'create' }
+  | { type: 'edit'; employeeId: string; initialTab?: TabId }
 
 function positionSelectPlaceholder(departmentId: string, t: (key: string) => string) {
   return departmentId === '' ? t('workforce.selectDepartmentFirst') : t('workforce.selectPosition')
@@ -113,6 +141,7 @@ export function PersonnelCard({
   mode,
   departments,
   positions,
+  workplaceLabels,
   canManage,
   canManageWorkforce,
   canReadSensitive,
@@ -124,6 +153,7 @@ export function PersonnelCard({
   mode: CardMode
   departments: DepartmentRecord[]
   positions: PositionRecord[]
+  workplaceLabels: WorkplaceLabels
   canManage: boolean
   canManageWorkforce: boolean
   canReadSensitive: boolean
@@ -137,8 +167,11 @@ export function PersonnelCard({
   const fileInput = useRef<HTMLInputElement>(null)
   const givenNameInput = useRef<HTMLInputElement>(null)
   const continueEditingRef = useRef<HTMLButtonElement>(null)
-  const [tab, setTab] = useState<TabId>('general')
+  const [tab, setTab] = useState<TabId>(
+    mode.type === 'edit' && mode.initialTab ? mode.initialTab : 'general',
+  )
   const [officialSection, setOfficialSection] = useState<OfficialSectionId>('declaration')
+  const [workSection, setWorkSection] = useState<WorkSectionId>(DEFAULT_WORK_SECTION)
   const [dialogPhase, setDialogPhase] = useState<'open' | 'closing'>('open')
   const [card, setCard] = useState<HrEmployeeCard | null>(null)
   const [form, setForm] = useState<PersonnelForm>(() => emptyPersonnelForm(todayIsoDate()))
@@ -155,6 +188,10 @@ export function PersonnelCard({
   const [focusNonce, setFocusNonce] = useState(0)
   const [lookups, setLookups] = useState<OfficialLookups | null>(null)
   const [workplaces, setWorkplaces] = useState<SgkWorkplaceRecord[] | null>(null)
+  const [recruitmentSources, setRecruitmentSources] = useState<RecruitmentSourceListItem[]>([])
+  const [onboardingDraft, setOnboardingDraft] = useState<OnboardingDraft>({})
+  const [onboardingSelectedTemplateIds, setOnboardingSelectedTemplateIds] = useState<string[]>([])
+  const onboardingDraftInitialized = useRef(false)
   const pendingFocus = useRef<string | null>(null)
   const saveLock = useRef(false)
   const createdId = useRef<string | null>(null)
@@ -170,6 +207,38 @@ export function PersonnelCard({
   useEffect(() => {
     formLatest.current = form
   }, [form])
+
+  useEffect(() => {
+    if (mode.type !== 'create' || onboardingDraftInitialized.current) {
+      return
+    }
+
+    let cancelled = false
+    async function loadOnboardingCatalog() {
+      try {
+        const catalog = await getOnboardingCatalog()
+        if (!cancelled) {
+          setOnboardingDraft((current) => {
+            const next = emptyOnboardingDraft(catalog.requirements)
+            for (const [id, checked] of Object.entries(current)) {
+              if (id in next) {
+                next[id] = checked
+              }
+            }
+            return next
+          })
+          onboardingDraftInitialized.current = true
+        }
+      } catch {
+        // Onboarding tab shows its own load error when opened.
+      }
+    }
+
+    void loadOnboardingCatalog()
+    return () => {
+      cancelled = true
+    }
+  }, [mode.type])
 
   useEffect(() => {
     if (mode.type !== 'edit') {
@@ -217,15 +286,21 @@ export function PersonnelCard({
     let cancelled = false
     async function loadOfficial() {
       try {
-        const [lookupRows, workplaceRows] = await Promise.all([listOfficialLookups(), listHrSgkWorkplaces()])
+        const [lookupRows, workplaceRows, sourceRows] = await Promise.all([
+          listOfficialLookups(),
+          listHrSgkWorkplaces(),
+          listRecruitmentSources(),
+        ])
         if (!cancelled) {
           setLookups(lookupRows)
           setWorkplaces(workplaceRows)
+          setRecruitmentSources(sourceRows)
         }
       } catch {
         if (!cancelled) {
           setLookups({ documentTypes: [], applicableLaws: [], insuranceBranches: [], dutyCodes: [], nationalities: [] })
           setWorkplaces([])
+          setRecruitmentSources([])
         }
       }
     }
@@ -256,7 +331,7 @@ export function PersonnelCard({
       }
     })
     return () => cancelAnimationFrame(frame)
-  }, [focusNonce, tab])
+  }, [focusNonce, tab, workSection, officialSection])
 
   function fieldMessage(field: string): string | undefined {
     const code = fieldErrors[field]
@@ -277,6 +352,9 @@ export function PersonnelCard({
     }
     if (target.tab === 'official') {
       setOfficialSection(target.officialSection ?? officialSectionForField(target.field))
+    }
+    if (target.tab === 'work') {
+      setWorkSection(target.workSection ?? workSectionForField(target.field))
     }
     setFocusNonce((value) => value + 1)
   }
@@ -345,12 +423,27 @@ export function PersonnelCard({
         itemIndex === index ? { ...item, ...patch } : item,
       ),
     }
+    formLatest.current = next
     setForm(next)
     setFieldErrors((current) => {
       if (Object.keys(current).length === 0) {
         return current
       }
       const extra = Object.keys(patch).map((key) => `emergencyContacts[${index}].${key}`)
+      return revalidateKnownErrors(current, next, validationContext, extra)
+    })
+  }
+
+  function patchCertificates(nextCertificates: PersonnelForm['certificates']) {
+    const next = { ...formLatest.current, certificates: nextCertificates }
+    formLatest.current = next
+    setForm(next)
+    setSaveNotice(null)
+    setFieldErrors((current) => {
+      if (Object.keys(current).length === 0) {
+        return current
+      }
+      const extra = nextCertificates.map((_, index) => `certificates[${index}].name`)
       return revalidateKnownErrors(current, next, validationContext, extra)
     })
   }
@@ -476,6 +569,21 @@ export function PersonnelCard({
         const employeeId = createdId.current
         await persistPhoto(employeeId)
         try {
+          await syncEmployeeOnboardingDocuments(employeeId, completedRequirementIds(onboardingDraft))
+          try {
+            await completeEmployeeOnboarding(employeeId)
+          } catch (reason) {
+            if (!isOnboardingAlreadyCompleted(reason)) {
+              throw reason
+            }
+          }
+        } catch (reason) {
+          setError(t(onboardingErrorKey(reason)))
+          setTab('onboarding')
+          await onSaved(employeeId)
+          return
+        }
+        try {
           await persistPayment(employeeId)
         } catch (reason) {
           const mapped = hrFieldErrorsFromProblem(reason)
@@ -491,8 +599,7 @@ export function PersonnelCard({
         assignPendingPhoto(null)
         setSnapshot(snapshotOf(draft))
         setFieldErrors({})
-        await onSaved()
-        beginClose()
+        await onSaved(employeeId)
         return
       }
 
@@ -625,6 +732,7 @@ export function PersonnelCard({
     || positions.find((item) => item.id === form.positionId)?.name
     || '—'
   const invalidTabs = invalidPersonnelTabs(fieldErrors, form, mode.type === 'create')
+  const invalidWorkSubs = invalidWorkSections(fieldErrors, form, mode.type === 'create')
 
   return (
     <>
@@ -697,6 +805,7 @@ export function PersonnelCard({
                   ['identity', t('personnel.tabIdentity'), <IdCardIcon key="identity" />],
                   ['work', t('personnel.tabWork'), <BriefcaseIcon key="work" />],
                   ['official', t('personnel.tabOfficial'), <OfficialSealIcon key="official" />],
+                  ['onboarding', t('personnel.tabOnboarding'), <OfficialSealIcon key="onboarding" />],
                   ['payment', t('personnel.tabPayment'), <BanknoteIcon key="payment" />],
                   ...(mode.type === 'edit' && canReadLeave
                     ? ([['leave', t('personnel.leave.tab'), <CalendarIcon key="leave" />]] as const)
@@ -704,7 +813,7 @@ export function PersonnelCard({
                   ['history', t('personnel.tabHistory'), <HistoryClockIcon key="history" />],
                 ] as const
               ).map(([id, label, icon]) => {
-                const tabInvalid = id !== 'leave' && invalidTabs.has(id)
+                const tabInvalid = id !== 'leave' && id !== 'onboarding' && invalidTabs.has(id)
                 return (
                 <button
                   key={id}
@@ -773,6 +882,11 @@ export function PersonnelCard({
                     canManageWorkforce={canManageWorkforce && mode.type === 'edit' && !ended}
                     departments={activeDepartments}
                     positions={activePositions}
+                    workplaceLabels={workplaceLabels}
+                    recruitmentSources={recruitmentSources}
+                    workSection={workSection}
+                    onWorkSection={setWorkSection}
+                    invalidWorkSections={invalidWorkSubs}
                     workMode={workMode}
                     setWorkMode={setWorkMode}
                     transfer={transfer}
@@ -793,6 +907,7 @@ export function PersonnelCard({
                   <OfficialTab
                     form={form}
                     patchForm={patchForm}
+                    patchCertificates={patchCertificates}
                     readOnly={readOnly}
                     lookups={lookups}
                     workplaces={workplaces}
@@ -801,6 +916,34 @@ export function PersonnelCard({
                     officialSection={officialSection}
                     onOfficialSection={setOfficialSection}
                   />
+                ) : null}
+
+                {tab === 'onboarding' ? (
+                  mode.type === 'create' ? (
+                    <PersonnelOnboardingTab
+                      mode="create"
+                      canManage={canManage}
+                      draft={onboardingDraft}
+                      onDraftChange={setOnboardingDraft}
+                      selectedTemplateIds={onboardingSelectedTemplateIds}
+                      onSelectedTemplateIdsChange={setOnboardingSelectedTemplateIds}
+                      documentDraft={{
+                        givenName: form.givenName,
+                        familyName: form.familyName,
+                        employmentStartDate: form.employmentStartDate,
+                        departmentName:
+                          departments.find((item) => item.id === form.departmentId)?.name ?? null,
+                        positionName:
+                          positions.find((item) => item.id === form.positionId)?.name ?? null,
+                      }}
+                    />
+                  ) : (
+                    <PersonnelOnboardingTab
+                      mode="edit"
+                      employeeId={mode.employeeId}
+                      canManage={canManage}
+                    />
+                  )
                 ) : null}
 
                 {tab === 'payment' ? (
@@ -888,6 +1031,7 @@ function Reveal({ children }: { children: ReactNode }) {
 function OfficialTab({
   form,
   patchForm,
+  patchCertificates,
   readOnly,
   lookups,
   workplaces,
@@ -898,6 +1042,7 @@ function OfficialTab({
 }: {
   form: PersonnelForm
   patchForm: (patch: Partial<PersonnelForm>) => void
+  patchCertificates: (certificates: PersonnelForm['certificates']) => void
   readOnly: boolean
   lookups: OfficialLookups | null
   workplaces: SgkWorkplaceRecord[] | null
@@ -1389,16 +1534,57 @@ function OfficialTab({
             <option value="Korean">{t('personnel.langKorean')}</option>
             <option value="Other">{t('personnel.langOther')}</option>
           </SelectField>
-          <TextField
-            id="hr-arge-code"
-            label={t('personnel.argeProjectCode')}
-            value={form.argeProjectCode}
-            onChange={(argeProjectCode) => patchForm({ argeProjectCode })}
-            onBlur={() => blurField('argeProjectCode')}
-            error={fieldMessage('argeProjectCode')}
-            hint={t('personnel.argeProjectHint')}
-            disabled={readOnly}
-          />
+        </div>
+
+        <div className={styles.certificatesBlock}>
+          <h4 className={styles.subLegend}>{t('personnel.sectionCertificates')}</h4>
+          {form.certificates.length === 0 ? (
+            <p className={styles.muted}>{t('personnel.noCertificates')}</p>
+          ) : (
+            form.certificates.map((certificate, index) => (
+              <div key={certificate.id ?? `new-${index}`} className={styles.certificateRow}>
+                <TextField
+                  id={`hr-cert-name-${index}`}
+                  label={t('personnel.certificateName')}
+                  value={certificate.name}
+                  onChange={(name) =>
+                    patchCertificates(
+                      form.certificates.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, name } : item,
+                      ),
+                    )
+                  }
+                  onBlur={() => blurField(`certificates[${index}].name`)}
+                  error={fieldMessage(`certificates[${index}].name`)}
+                  disabled={readOnly}
+                />
+                {!readOnly ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    layout="inline"
+                    onClick={() =>
+                      patchCertificates(form.certificates.filter((_, itemIndex) => itemIndex !== index))
+                    }
+                  >
+                    {t('personnel.removeCertificate')}
+                  </Button>
+                ) : null}
+              </div>
+            ))
+          )}
+          {!readOnly ? (
+            <div className={styles.photoActions}>
+              <Button
+                variant="secondary"
+                size="sm"
+                layout="inline"
+                onClick={() => patchCertificates([...form.certificates, { name: '' }])}
+              >
+                {t('personnel.addCertificate')}
+              </Button>
+            </div>
+          ) : null}
         </div>
       </fieldset>
       ) : null}
@@ -1972,6 +2158,11 @@ function WorkTab({
   canManageWorkforce,
   departments,
   positions,
+  workplaceLabels,
+  recruitmentSources,
+  workSection,
+  onWorkSection,
+  invalidWorkSections: invalidWorkSubs,
   workMode,
   setWorkMode,
   transfer,
@@ -1996,6 +2187,11 @@ function WorkTab({
   canManageWorkforce: boolean
   departments: DepartmentRecord[]
   positions: PositionRecord[]
+  workplaceLabels: WorkplaceLabels
+  recruitmentSources: RecruitmentSourceListItem[]
+  workSection: WorkSectionId
+  onWorkSection: (section: WorkSectionId) => void
+  invalidWorkSections: Set<WorkSectionId>
   workMode: 'none' | 'transfer' | 'end'
   setWorkMode: (mode: 'none' | 'transfer' | 'end') => void
   transfer: { departmentId: string; positionId: string; effectiveDate: string }
@@ -2020,253 +2216,406 @@ function WorkTab({
         : employment?.status === 'Ended'
           ? t('workforce.endedStatus')
           : '—'
+  const probationEnd = derivedProbationEndDate(form.probationPeriodMonths, form.probationStartDate)
+  const selectedSource = recruitmentSources.find((item) => item.id === form.recruitmentSourceId)
+  const orphanRecruitmentSource =
+    form.recruitmentSourceId !== '' && !selectedSource
+      ? form.recruitmentSourceId
+      : null
+  const orphanRecruitmentLabel =
+    form.recruitmentSourceName.trim() !== ''
+      ? form.recruitmentSourceName
+      : t('personnel.recruitmentSourceInactiveKept')
 
   return (
     <div className={styles.workStack}>
-      <fieldset className={styles.section}>
-        <legend className={styles.legend}>{t('personnel.sectionEmployment')}</legend>
-        <div className={styles.grid}>
-          <div className={styles.fact}>
-            <span className={styles.factLabel}>{t('workforce.status')}</span>
-            <span>{statusLabel}</span>
-          </div>
-          {createMode ? (
-            <DateField
-              id="hr-work-start"
-              label={t('workforce.startDate')}
-              value={form.employmentStartDate}
-              onChange={(employmentStartDate) => patchForm({ employmentStartDate })}
-              onBlur={() => blurField('employmentStartDate')}
-              error={fieldMessage('employmentStartDate')}
+      <div className={styles.workSubNav} role="tablist" aria-label={t('personnel.workSubNav')}>
+        {WORK_SECTION_IDS.map((id) => {
+          const selected = workSection === id
+          const sectionInvalid = invalidWorkSubs.has(id)
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-invalid={sectionInvalid || undefined}
+              className={[
+                selected ? styles.workSubNavItemCurrent : styles.workSubNavItem,
+                sectionInvalid ? styles.workSubNavItemInvalid : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => onWorkSection(id)}
+            >
+              {t(WORK_SECTION_LABEL_KEYS[id])}
+            </button>
+          )
+        })}
+      </div>
+
+      {workSection === 'employment' ? (
+        <fieldset className={styles.section}>
+          <legend className={styles.srOnly}>{t('personnel.sectionEmployment')}</legend>
+          <div className={styles.grid}>
+            <div className={styles.fact}>
+              <span className={styles.factLabel}>{t('workforce.status')}</span>
+              <span>{statusLabel}</span>
+            </div>
+            {createMode ? (
+              <DateField
+                id="hr-work-start"
+                label={t('workforce.startDate')}
+                value={form.employmentStartDate}
+                onChange={(employmentStartDate) => patchForm({ employmentStartDate })}
+                onBlur={() => blurField('employmentStartDate')}
+                error={fieldMessage('employmentStartDate')}
+                required
+                disabled={readOnly}
+              />
+            ) : (
+              <div className={styles.fact}>
+                <span className={styles.factLabel}>{t('workforce.startDate')}</span>
+                <span>{employment ? formatDateOnly(employment.startDate, language) : '—'}</span>
+              </div>
+            )}
+            <SelectField
+              id="hr-work-type"
+              label={t('personnel.workType')}
+              value={form.workType}
+              onChange={(value) => patchForm({ workType: value as WorkType | '' })}
+              onBlur={() => blurField('workType')}
+              error={fieldMessage('workType')}
               required
               disabled={readOnly}
+              placeholder={t('personnel.placeholders.workType')}
+            >
+              {WORK_TYPE_VALUES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`personnel.workTypes.${value}`)}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField
+              id="hr-recruitment-source"
+              label={t('personnel.recruitmentSource')}
+              value={form.recruitmentSourceId}
+              onChange={(recruitmentSourceId) => {
+                const selected = recruitmentSources.find((item) => item.id === recruitmentSourceId)
+                patchForm({
+                  recruitmentSourceId,
+                  recruitmentSourceName: selected?.name ?? '',
+                })
+              }}
+              onBlur={() => blurField('recruitmentSourceId')}
+              error={fieldMessage('recruitmentSourceId')}
+              disabled={readOnly}
+              placeholder={t('personnel.placeholders.recruitmentSource')}
+            >
+              {orphanRecruitmentSource ? (
+                <option value={orphanRecruitmentSource}>
+                  {orphanRecruitmentLabel}
+                </option>
+              ) : null}
+              {recruitmentSources.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </SelectField>
+            <DateField
+              id="hr-seniority-start"
+              label={t('personnel.seniorityStartDate')}
+              value={form.seniorityStartDate}
+              onChange={(seniorityStartDate) => patchForm({ seniorityStartDate })}
+              onBlur={() => blurField('seniorityStartDate')}
+              error={fieldMessage('seniorityStartDate')}
+              hint={t('personnel.seniorityHint')}
+              disabled={readOnly}
             />
-          ) : (
-            <div className={styles.fact}>
-              <span className={styles.factLabel}>{t('workforce.startDate')}</span>
-              <span>{employment ? formatDateOnly(employment.startDate, language) : '—'}</span>
-            </div>
-          )}
-          <DateField
-            id="hr-seniority-start"
-            label={t('personnel.seniorityStartDate')}
-            value={form.seniorityStartDate}
-            onChange={(seniorityStartDate) => patchForm({ seniorityStartDate })}
-            onBlur={() => blurField('seniorityStartDate')}
-            error={fieldMessage('seniorityStartDate')}
-            hint={t('personnel.seniorityHint')}
-            disabled={readOnly}
-          />
-          {ended && employment?.endDate ? (
-            <div className={styles.fact}>
-              <span className={styles.factLabel}>{t('personnel.employmentEndDate')}</span>
-              <span>{formatDateOnly(employment.endDate, language)}</span>
-            </div>
-          ) : null}
-        </div>
-      </fieldset>
-
-      <fieldset className={styles.section}>
-        <legend className={styles.legend}>{t('personnel.sectionContract')}</legend>
-        <div className={styles.grid}>
-          <SelectField
-            id="hr-contract-type"
-            label={t('personnel.contractType')}
-            value={form.contractType}
-            onChange={(value) =>
-              patchForm({
-                contractType: value as EmploymentContractType | '',
-                contractEndDate: value === 'FixedTerm' ? form.contractEndDate : '',
-                partTimeMonthlyHours: value === 'PartTime' ? form.partTimeMonthlyHours : '',
-              })
-            }
-            disabled={readOnly}
-            placeholder={t('personnel.placeholders.contractType')}
-          >
-            <option value="Indefinite">{t('personnel.contractIndefinite')}</option>
-            <option value="FixedTerm">{t('personnel.contractFixedTerm')}</option>
-            <option value="PartTime">{t('personnel.contractPartTime')}</option>
-          </SelectField>
-          {form.contractType === 'FixedTerm' ? (
-            <Reveal>
-              <DateField
-                id="hr-contract-end"
-                label={t('personnel.contractEndDate')}
-                value={form.contractEndDate}
-                onChange={(contractEndDate) => patchForm({ contractEndDate })}
-                onBlur={() => blurField('contractEndDate')}
-                error={fieldMessage('contractEndDate')}
-                required
-                disabled={readOnly}
-              />
-            </Reveal>
-          ) : null}
-          {form.contractType === 'PartTime' ? (
-            <Reveal>
-              <TextField
-                id="hr-part-time-hours"
-                label={t('personnel.partTimeMonthlyHours')}
-                value={form.partTimeMonthlyHours}
-                onChange={(partTimeMonthlyHours) => patchForm({ partTimeMonthlyHours })}
-                onBlur={() => blurField('partTimeMonthlyHours')}
-                error={fieldMessage('partTimeMonthlyHours')}
-                required
-                inputMode="decimal"
-                disabled={readOnly}
-              />
-            </Reveal>
-          ) : null}
-        </div>
-      </fieldset>
-
-      <fieldset className={styles.section}>
-        <legend className={styles.legend}>{t('personnel.sectionOrganization')}</legend>
-        <div className={styles.grid}>
-          <div className={styles.fact}>
-            <span className={styles.factLabel}>{t('personnel.organization')}</span>
-            <span className={styles.factValue}>{card?.organizationName || '—'}</span>
           </div>
-          <div className={styles.fact}>
-            <span className={styles.factLabel}>{t('personnel.property')}</span>
-            <span className={styles.factValue}>{card?.propertyName || '—'}</span>
-          </div>
-          {createMode ? (
-            <>
-              <SelectField
-                id="hr-work-department"
-                label={t('workforce.department')}
-                value={form.departmentId}
-                placeholder={t('workforce.selectDepartment')}
-                onChange={(departmentId) => patchForm({ departmentId })}
-                onBlur={() => blurField('departmentId')}
-                error={fieldMessage('departmentId')}
-                required
-                disabled={readOnly}
-              >
-                {departments.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                id="hr-work-position"
-                label={t('workforce.position')}
-                value={form.positionId}
-                placeholder={positionSelectPlaceholder(form.departmentId, t)}
-                onChange={(positionId) => patchForm({ positionId })}
-                onBlur={() => blurField('positionId')}
-                error={fieldMessage('positionId')}
-                required
-                disabled={readOnly || form.departmentId === ''}
-                hint={
-                  form.departmentId !== '' && positionsForDepartment(positions, form.departmentId).length === 0
-                    ? t('personnel.noPositionsForDepartment')
-                    : undefined
-                }
-              >
-                {positionsForDepartment(positions, form.departmentId).map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </SelectField>
-            </>
-          ) : (
-            <>
-              <div className={styles.fact}>
-                <span className={styles.factLabel}>{t('workforce.department')}</span>
-                <span className={styles.factValue}>{card?.currentPrimaryAssignment?.departmentName || '—'}</span>
-              </div>
-              <div className={styles.fact}>
-                <span className={styles.factLabel}>{t('workforce.position')}</span>
-                <span className={styles.factValue}>{card?.currentPrimaryAssignment?.positionName || '—'}</span>
-              </div>
-            </>
-          )}
-        </div>
-        {canManageWorkforce && !createMode && !ended ? (
-          <div className={styles.photoActions}>
-            <Button layout="inline" onClick={() => setWorkMode('transfer')}>
-              {t('workforce.transfer')}
-            </Button>
-          </div>
-        ) : null}
-        {workMode === 'transfer' ? (
-          <form
-            className={styles.section}
-            onSubmit={(event) => {
-              event.preventDefault()
-              onTransfer()
-            }}
-          >
-            <p className={styles.meta}>{t('workforce.transferIntro')}</p>
-            <div className={styles.grid}>
-              <SelectField
-                id="card-transfer-department"
-                label={t('workforce.newDepartment')}
-                value={transfer.departmentId}
-                placeholder={t('workforce.selectDepartment')}
-                onChange={(departmentId) =>
-                  setTransfer((current) => ({
-                    ...current,
-                    departmentId,
-                    positionId: retainedPositionId(positions, departmentId, current.positionId),
-                  }))
-                }
-                required
-              >
-                {departments.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                id="card-transfer-position"
-                label={t('workforce.newPosition')}
-                value={transfer.positionId}
-                placeholder={positionSelectPlaceholder(transfer.departmentId, t)}
-                onChange={(positionId) => setTransfer((current) => ({ ...current, positionId }))}
-                required
-                disabled={transfer.departmentId === ''}
-                hint={
-                  transfer.departmentId !== ''
-                  && positionsForDepartment(positions, transfer.departmentId).length === 0
-                    ? t('personnel.noPositionsForDepartment')
-                    : undefined
-                }
-              >
-                {positionsForDepartment(positions, transfer.departmentId).map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </SelectField>
-              <DateField
-                id="card-transfer-date"
-                label={t('workforce.effectiveDate')}
-                value={transfer.effectiveDate}
-                onChange={(effectiveDate) => setTransfer((current) => ({ ...current, effectiveDate }))}
-                required
-              />
-            </div>
-            <div className={styles.photoActions}>
-              <Button type="submit" layout="inline" loading={saving}>
-                {t('workforce.transferSubmit')}
-              </Button>
-              <Button variant="ghost" onClick={() => setWorkMode('none')}>
-                {t('workforce.cancel')}
-              </Button>
-            </div>
-          </form>
-        ) : null}
-      </fieldset>
+        </fieldset>
+      ) : null}
 
-      {!createMode && (ended || canManageWorkforce) ? (
+      {workSection === 'probation' ? (
         <fieldset className={styles.section}>
-          <legend className={styles.legend}>{t('personnel.sectionTermination')}</legend>
-          {ended ? (
+          <legend className={styles.srOnly}>{t('personnel.sectionProbation')}</legend>
+          <div className={styles.grid}>
+            <SelectField
+              id="hr-probation-period"
+              label={t('personnel.probationPeriod')}
+              value={form.probationPeriodMonths}
+              onChange={(value) => {
+                const next = value as ProbationPeriodChoice
+                if (next === '2') {
+                  patchForm({
+                    probationPeriodMonths: next,
+                    probationStartDate: form.probationStartDate || todayIsoDate(),
+                  })
+                } else {
+                  patchForm({
+                    probationPeriodMonths: '',
+                    probationStartDate: '',
+                  })
+                }
+              }}
+              onBlur={() => blurField('probationPeriodMonths')}
+              error={fieldMessage('probationPeriodMonths')}
+              disabled={readOnly}
+            >
+              <option value="">{t('personnel.probationNone')}</option>
+              <option value="2">{t('personnel.probationTwoMonths')}</option>
+            </SelectField>
+            {form.probationPeriodMonths === '2' ? (
+              <Reveal>
+                <DateField
+                  id="hr-probation-start"
+                  label={t('personnel.probationStartDate')}
+                  value={form.probationStartDate}
+                  onChange={(probationStartDate) => patchForm({ probationStartDate })}
+                  onBlur={() => blurField('probationStartDate')}
+                  error={fieldMessage('probationStartDate')}
+                  required
+                  disabled={readOnly}
+                />
+              </Reveal>
+            ) : null}
+            {form.probationPeriodMonths === '2' ? (
+              <DateField
+                id="hr-probation-end"
+                label={t('personnel.probationEndDate')}
+                value={probationEnd ?? ''}
+                onChange={() => undefined}
+                hint={t('personnel.probationEndHint')}
+                readOnly
+                disabled
+              />
+            ) : null}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {workSection === 'contract' ? (
+        <fieldset className={styles.section}>
+          <legend className={styles.srOnly}>{t('personnel.sectionContract')}</legend>
+          <div className={styles.grid}>
+            <SelectField
+              id="hr-contract-type"
+              label={t('personnel.contractType')}
+              value={form.contractType}
+              onChange={(value) =>
+                patchForm({
+                  contractType: value as EmploymentContractType | '',
+                  contractEndDate: value === 'FixedTerm' ? form.contractEndDate : '',
+                  partTimeMonthlyHours: value === 'PartTime' ? form.partTimeMonthlyHours : '',
+                })
+              }
+              disabled={readOnly}
+              placeholder={t('personnel.placeholders.contractType')}
+            >
+              <option value="Indefinite">{t('personnel.contractIndefinite')}</option>
+              <option value="FixedTerm">{t('personnel.contractFixedTerm')}</option>
+              <option value="PartTime">{t('personnel.contractPartTime')}</option>
+            </SelectField>
+            {form.contractType === 'FixedTerm' ? (
+              <Reveal>
+                <DateField
+                  id="hr-contract-end"
+                  label={t('personnel.contractEndDate')}
+                  value={form.contractEndDate}
+                  onChange={(contractEndDate) => patchForm({ contractEndDate })}
+                  onBlur={() => blurField('contractEndDate')}
+                  error={fieldMessage('contractEndDate')}
+                  required
+                  disabled={readOnly}
+                />
+              </Reveal>
+            ) : null}
+            {form.contractType === 'PartTime' ? (
+              <Reveal>
+                <TextField
+                  id="hr-part-time-hours"
+                  label={t('personnel.partTimeMonthlyHours')}
+                  value={form.partTimeMonthlyHours}
+                  onChange={(partTimeMonthlyHours) => patchForm({ partTimeMonthlyHours })}
+                  onBlur={() => blurField('partTimeMonthlyHours')}
+                  error={fieldMessage('partTimeMonthlyHours')}
+                  required
+                  inputMode="decimal"
+                  disabled={readOnly}
+                />
+              </Reveal>
+            ) : null}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {workSection === 'organization' ? (
+        <fieldset className={styles.section}>
+          <legend className={styles.srOnly}>{t('personnel.sectionOrganization')}</legend>
+          <div className={styles.grid}>
+            <div className={styles.fact}>
+              <span className={styles.factLabel}>{t('personnel.organization')}</span>
+              <span className={styles.factValue}>
+                {createMode
+                  ? workplaceLabels.organizationName || '—'
+                  : card?.organizationName || '—'}
+              </span>
+            </div>
+            <div className={styles.fact}>
+              <span className={styles.factLabel}>{t('personnel.property')}</span>
+              <span className={styles.factValue}>
+                {createMode
+                  ? workplaceLabels.propertyName || '—'
+                  : card?.propertyName || '—'}
+              </span>
+            </div>
+            {createMode ? (
+              <>
+                {workplaceLabels.propertySelectionRequired ? (
+                  <Notice tone="info">{t('personnel.selectPropertyForDepartments')}</Notice>
+                ) : null}
+                {!workplaceLabels.propertySelectionRequired && departments.length === 0 ? (
+                  <Notice tone="info">{t('personnel.noAccessibleDepartments')}</Notice>
+                ) : null}
+                <SelectField
+                  id="hr-work-department"
+                  label={t('workforce.department')}
+                  value={form.departmentId}
+                  placeholder={t('workforce.selectDepartment')}
+                  onChange={(departmentId) => patchForm({ departmentId })}
+                  onBlur={() => blurField('departmentId')}
+                  error={fieldMessage('departmentId')}
+                  required
+                  disabled={readOnly}
+                >
+                  {departments.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  id="hr-work-position"
+                  label={t('workforce.position')}
+                  value={form.positionId}
+                  placeholder={positionSelectPlaceholder(form.departmentId, t)}
+                  onChange={(positionId) => patchForm({ positionId })}
+                  onBlur={() => blurField('positionId')}
+                  error={fieldMessage('positionId')}
+                  required
+                  disabled={readOnly || form.departmentId === ''}
+                  hint={
+                    form.departmentId !== '' && positionsForDepartment(positions, form.departmentId).length === 0
+                      ? t('personnel.noPositionsForDepartment')
+                      : undefined
+                  }
+                >
+                  {positionsForDepartment(positions, form.departmentId).map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+              </>
+            ) : (
+              <>
+                <div className={styles.fact}>
+                  <span className={styles.factLabel}>{t('workforce.department')}</span>
+                  <span className={styles.factValue}>{card?.currentPrimaryAssignment?.departmentName || '—'}</span>
+                </div>
+                <div className={styles.fact}>
+                  <span className={styles.factLabel}>{t('workforce.position')}</span>
+                  <span className={styles.factValue}>{card?.currentPrimaryAssignment?.positionName || '—'}</span>
+                </div>
+              </>
+            )}
+          </div>
+          {canManageWorkforce && !createMode && !ended ? (
+            <div className={styles.photoActions}>
+              <Button layout="inline" onClick={() => setWorkMode('transfer')}>
+                {t('workforce.transfer')}
+              </Button>
+            </div>
+          ) : null}
+          {workMode === 'transfer' ? (
+            <form
+              className={styles.section}
+              onSubmit={(event) => {
+                event.preventDefault()
+                onTransfer()
+              }}
+            >
+              <p className={styles.meta}>{t('workforce.transferIntro')}</p>
+              <div className={styles.grid}>
+                <SelectField
+                  id="card-transfer-department"
+                  label={t('workforce.newDepartment')}
+                  value={transfer.departmentId}
+                  placeholder={t('workforce.selectDepartment')}
+                  onChange={(departmentId) =>
+                    setTransfer((current) => ({
+                      ...current,
+                      departmentId,
+                      positionId: retainedPositionId(positions, departmentId, current.positionId),
+                    }))
+                  }
+                  required
+                >
+                  {departments.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  id="card-transfer-position"
+                  label={t('workforce.newPosition')}
+                  value={transfer.positionId}
+                  placeholder={positionSelectPlaceholder(transfer.departmentId, t)}
+                  onChange={(positionId) => setTransfer((current) => ({ ...current, positionId }))}
+                  required
+                  disabled={transfer.departmentId === ''}
+                  hint={
+                    transfer.departmentId !== ''
+                    && positionsForDepartment(positions, transfer.departmentId).length === 0
+                      ? t('personnel.noPositionsForDepartment')
+                      : undefined
+                  }
+                >
+                  {positionsForDepartment(positions, transfer.departmentId).map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <DateField
+                  id="card-transfer-date"
+                  label={t('workforce.effectiveDate')}
+                  value={transfer.effectiveDate}
+                  onChange={(effectiveDate) => setTransfer((current) => ({ ...current, effectiveDate }))}
+                  required
+                />
+              </div>
+              <div className={styles.photoActions}>
+                <Button type="submit" layout="inline" loading={saving}>
+                  {t('workforce.transferSubmit')}
+                </Button>
+                <Button variant="ghost" onClick={() => setWorkMode('none')}>
+                  {t('workforce.cancel')}
+                </Button>
+              </div>
+            </form>
+          ) : null}
+        </fieldset>
+      ) : null}
+
+      {workSection === 'termination' ? (
+        <fieldset className={styles.section}>
+          <legend className={styles.srOnly}>{t('personnel.sectionTermination')}</legend>
+          {createMode ? (
+            <p className={styles.meta}>{t('personnel.workTerminationCreateHint')}</p>
+          ) : ended ? (
             <div className={styles.grid}>
               <div className={styles.fact}>
                 <span className={styles.factLabel}>{t('personnel.employmentEndDate')}</span>
@@ -2330,7 +2679,9 @@ function WorkTab({
                 </form>
               ) : null}
             </>
-          ) : null}
+          ) : (
+            <p className={styles.meta}>{t('personnel.workTerminationUnavailable')}</p>
+          )}
         </fieldset>
       ) : null}
     </div>

@@ -1,0 +1,135 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+  gap: 1.1rem;
+  align-items: start;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+}
+
+.progress {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.checklist,
+.templateList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.checkItem,
+.templateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.35rem 0.2rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.checkLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-width: 0;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.checkLabel input {
+  margin-top: 0.15rem;
+  accent-color: #862a51;
+}
+
+.requiredMark {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.templateMeta {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.templateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.previewSheet {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.4rem;
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.35rem;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: min(70vh, 40rem);
+}
+
+.printRoot {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  .printRoot,
+  .printRoot * {
+    visibility: visible !important;
+  }
+
+  .printRoot {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #000;
+  }
+
+  .printPage {
+    page-break-after: always;
+    break-after: page;
+    padding: 12mm 14mm;
+    box-sizing: border-box;
+  }
+
+  .printPage:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}
