@@ -250,6 +250,32 @@ public class AttendanceMonthAndSecurityTests
     }
 
     [Fact]
+    public async Task DepartmentScope_AllowedDepartment_CorrectionSucceeds()
+    {
+        var harness = new WorkforceHarness();
+        var hired = await harness.Hire.ExecuteAsync(
+            harness.HireCommand(
+                startDate: new DateOnly(2026, 9, 1),
+                departmentId: harness.OtherDepartmentId,
+                positionId: harness.OtherPositionId),
+            CancellationToken.None);
+        Assert.True(hired.IsSuccess, hired.Error?.Detail);
+
+        var result = await harness.SetAttendanceCorrection.ExecuteAsync(
+            new SetAttendanceCorrectionCommand(
+                hired.Value!.EmploymentId,
+                new DateOnly(2026, 9, 10),
+                "Absent",
+                "in scope",
+                "actor",
+                harness.PropertyId,
+                new HashSet<Guid> { harness.OtherDepartmentId }),
+            CancellationToken.None);
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.Equal(nameof(AttendanceAcceptedKind.Absent), result.Value!.AcceptedKind);
+    }
+
+    [Fact]
     public async Task MissingEmployment_IsNotFound()
     {
         var harness = new WorkforceHarness();

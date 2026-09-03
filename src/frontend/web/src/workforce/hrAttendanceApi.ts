@@ -1,10 +1,12 @@
-import { ApiError, apiRequest } from '../shared/apiClient'
+import { apiRequest } from '../shared/apiClient'
 import {
   ATTENDANCE_CORRECTION_KINDS,
   attendanceCorrectionPath,
   attendanceHistoryPath,
   buildAttendanceMonthPath,
   hrAttendanceErrorKeyFromCode,
+  hrAttendanceErrorKey,
+  hrAttendanceErrorMessage,
   isAttendanceCorrectionKind,
   type AttendanceCorrectionKind,
   type AttendanceMonthQuery,
@@ -21,6 +23,9 @@ export {
   attendanceCorrectionPath,
   attendanceHistoryPath,
   buildAttendanceMonthPath,
+  hrAttendanceErrorKey,
+  hrAttendanceErrorKeyFromCode,
+  hrAttendanceErrorMessage,
   isAttendanceCorrectionKind,
 }
 export type { AttendanceCorrectionKind, AttendanceMonthQuery }
@@ -41,6 +46,7 @@ export type AttendanceDayLeave = {
   leaveTypeId: string
   leaveTypeCode: string | null
   leaveTypeName: string | null
+  systemKind: string | null
   startDate: string
   endDate: string
   amount: number
@@ -125,14 +131,6 @@ export type AttendanceCorrectionHistoryDto = {
 export type SetAttendanceCorrectionInput = {
   kind: AttendanceCorrectionKind
   reason: string
-}
-
-export function hrAttendanceErrorKey(error: unknown): string {
-  if (error instanceof ApiError) {
-    return hrAttendanceErrorKeyFromCode(error.problem?.code)
-  }
-
-  return hrAttendanceErrorKeyFromCode(undefined)
 }
 
 export async function getHrAttendanceMonth(query: AttendanceMonthQuery) {

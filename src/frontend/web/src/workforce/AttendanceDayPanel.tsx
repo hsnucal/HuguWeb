@@ -20,6 +20,7 @@ import {
   ATTENDANCE_REASON_MAX_LENGTH,
   canClearAttendanceCorrection,
   canShowAttendanceCorrectionForm,
+  resolveAttendanceCorrectionEmploymentId,
   shouldShowPastMonthWarning,
   validateAttendanceReason,
   type YearMonth,
@@ -28,13 +29,14 @@ import {
   ATTENDANCE_CORRECTION_KINDS,
   clearHrAttendanceCorrection,
   getHrAttendanceHistory,
-  hrAttendanceErrorKey,
+  hrAttendanceErrorMessage,
   isAttendanceCorrectionKind,
   setHrAttendanceCorrection,
   type AttendanceCorrectionHistoryItem,
   type AttendanceDayResult,
   type AttendanceMonthEmployee,
 } from './hrAttendanceApi'
+import { attendanceLeaveDetailLabel } from './leaveDisplay'
 import styles from './AttendancePage.module.css'
 
 export function AttendanceDayPanel({
@@ -76,15 +78,16 @@ export function AttendanceDayPanel({
   const [confirmClear, setConfirmClear] = useState(false)
   const [history, setHistory] = useState<AttendanceCorrectionHistoryItem[] | null>(null)
   const [historyError, setHistoryError] = useState<string | null>(null)
+  const employmentId = resolveAttendanceCorrectionEmploymentId(day, employee)
+  const localDate = day.localDate
 
   useEffect(() => {
-    const employmentId = day.employmentId ?? employee.employmentId
     if (!employmentId) {
       return
     }
 
     let cancelled = false
-    void getHrAttendanceHistory(employmentId, day.localDate)
+    void getHrAttendanceHistory(employmentId, localDate)
       .then((payload) => {
         if (!cancelled) {
           setHistory(reverseChronological(payload.changes))
@@ -93,14 +96,14 @@ export function AttendanceDayPanel({
       .catch((error: unknown) => {
         if (!cancelled) {
           setHistory([])
-          setHistoryError(t(hrAttendanceErrorKey(error)))
+          setHistoryError(hrAttendanceErrorMessage(error, t))
         }
       })
 
     return () => {
       cancelled = true
     }
-  }, [day.employmentId, day.localDate, employee.employmentId, t])
+  }, [employmentId, localDate, t])
 
   const acceptedKey = attendanceKindLabelKey(day.acceptedKind)
   const sourceKey = attendanceSourceLabelKey(day.source)
@@ -109,8 +112,12 @@ export function AttendanceDayPanel({
   const plannedRange = scheduleClockRange(day.schedule, formatAttendanceClockRange)
 
   async function onSave() {
-    const employmentId = day.employmentId ?? employee.employmentId
-    if (!employmentId || !formVisible) {
+    const employmentId = resolveAttendanceCorrectionEmploymentId(day, employee)
+    if (!formVisible) {
+      return
+    }
+    if (!employmentId) {
+      setFormError(t('attendance.errors.missingEmployment'))
       return
     }
 
@@ -141,15 +148,19 @@ export function AttendanceDayPanel({
       setHistory(reverseChronological(payload.changes))
       setSuccess(t('attendance.successSaved'))
     } catch (error) {
-      setFormError(t(hrAttendanceErrorKey(error)))
+      setFormError(hrAttendanceErrorMessage(error, t))
     } finally {
       setBusy(false)
     }
   }
 
   async function onClear() {
-    const employmentId = day.employmentId ?? employee.employmentId
-    if (!employmentId || !clearVisible) {
+    const employmentId = resolveAttendanceCorrectionEmploymentId(day, employee)
+    if (!clearVisible) {
+      return
+    }
+    if (!employmentId) {
+      setFormError(t('attendance.errors.missingEmployment'))
       return
     }
 
@@ -167,24 +178,25 @@ export function AttendanceDayPanel({
       setSuccess(t('attendance.successCleared'))
     } catch (error) {
       setConfirmClear(false)
-      setFormError(t(hrAttendanceErrorKey(error)))
+      setFormError(hrAttendanceErrorMessage(error, t))
     } finally {
       setBusy(false)
     }
   }
 
   return (
-    <aside className={styles.panel} aria-label={t('attendance.manualCorrection')}>
-      <div className={styles.panelHeader}>
+    <aside className={styles.drawer} data-attendance-drawer="overlay" aria-label={t('attendance.manualCorrection')}>
+      <div className={styles.drawerHeader}>
         <div>
-          <h2 className={styles.panelTitle}>{employeeName}</h2>
-          <p className={styles.panelMeta}>{formatDateOnly(day.localDate, language)}</p>
+          <h2 className={styles.drawerTitle}>{employeeName}</h2>
+          <p className={styles.drawerMeta}>{formatDateOnly(day.localDate, language)}</p>
         </div>
         <Button variant="ghost" size="sm" layout="inline" onClick={onClose}>
           {t('attendance.closePanel')}
         </Button>
       </div>
 
+      <div className={styles.drawerBody}>
       {success ? <Notice tone="success">{success}</Notice> : null}
       {formError ? <Notice tone="danger">{formError}</Notice> : null}
 
@@ -270,9 +282,7 @@ export function AttendanceDayPanel({
           ) : null}
           <dl className={styles.dl}>
             <dt>{t('attendance.leaveType')}</dt>
-            <dd>
-              {[day.leave.leaveTypeName, day.leave.leaveTypeCode].filter(Boolean).join(' · ') || '—'}
-            </dd>
+            <dd>{day.leave ? attendanceLeaveDetailLabel(day.leave, t) : '—'}</dd>
             <dt>{t('attendance.leaveDates')}</dt>
             <dd>
               {formatDateOnly(day.leave.startDate, language)} – {formatDateOnly(day.leave.endDate, language)}
@@ -402,6 +412,7 @@ export function AttendanceDayPanel({
           <p className={styles.muted}>{t('attendance.clearConfirmBody')}</p>
         </WorkspaceDialog>
       ) : null}
+      </div>
     </aside>
   )
 }

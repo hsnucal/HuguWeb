@@ -30,11 +30,13 @@ import {
 import { canManageHrAttendance, canReadHrAttendance } from './hrAccess'
 import {
   getHrAttendanceMonth,
-  hrAttendanceErrorKey,
+  hrAttendanceErrorMessage,
+  type AttendanceDayLeave,
   type AttendanceDayResult,
   type AttendanceMonthDto,
   type AttendanceMonthEmployee,
 } from './hrAttendanceApi'
+import { attendanceLeaveCellLabel, attendanceLeaveDetailLabel } from './leaveDisplay'
 import { resolveDepartmentFilterValue } from './shiftPlanWeek'
 import { workplaceLabelsFromUser } from './workforceWorkplaceLabels'
 import { DEFAULT_LANGUAGE, toAppLanguage } from '../i18n/languages'
@@ -125,7 +127,7 @@ export function AttendancePage() {
         }
       } catch (reason) {
         if (!cancelled) {
-          setError(t(hrAttendanceErrorKey(reason)))
+          setError(hrAttendanceErrorMessage(reason, t))
           setData(null)
         }
       } finally {
@@ -214,6 +216,8 @@ export function AttendancePage() {
     worked: t('attendance.cellWorked'),
     leave: t('attendance.kindLeave'),
     notEmployed: '',
+    leaveCell: (leave: AttendanceDayLeave) => attendanceLeaveCellLabel(leave, t),
+    leaveTooltip: (leave: AttendanceDayLeave) => attendanceLeaveDetailLabel(leave, t),
     notEmployedTooltip: t('attendance.notEmployedTooltip'),
     unresolvedTooltip: t('attendance.unresolvedTooltip'),
     outOfScopeTooltip: t('attendance.outOfScopeTooltip'),
@@ -333,7 +337,7 @@ export function AttendancePage() {
         </ul>
       ) : null}
 
-      <div className={styles.workspace}>
+      <div className={styles.workspace} data-attendance-grid-layout="full">
         <div className={styles.gridColumn}>
           {!data || needsDepartment ? null : data.employees.length === 0 ? (
             <EmptyState
@@ -458,11 +462,11 @@ export function AttendancePage() {
                                 aria-label={aria}
                                 onClick={() => setSelection({ employeeId: employee.employeeId, date })}
                               >
-                                {visible.primary || '\u00a0'}
+                                {visible.primary ? <span className={styles.cellLabel}>{visible.primary}</span> : '\u00a0'}
                               </button>
                             ) : (
                               <span className={className} title={tooltip} aria-label={aria}>
-                                {visible.primary || '\u00a0'}
+                                {visible.primary ? <span className={styles.cellLabel}>{visible.primary}</span> : '\u00a0'}
                               </span>
                             )}
                           </div>
@@ -489,16 +493,24 @@ export function AttendancePage() {
         </div>
 
         {selectedEmployee && selectedDay ? (
-          <AttendanceDayPanel
-            key={`${selectedEmployee.employeeId}-${selectedDay.localDate}`}
-            employee={selectedEmployee}
-            day={selectedDay}
-            canManage={canManage}
-            selectedMonth={month}
-            currentMonth={clockMonth}
-            onClose={() => setSelection(null)}
-            onMutated={reload}
-          />
+          <>
+            <button
+              type="button"
+              className={styles.drawerScrim}
+              aria-label={t('attendance.closePanel')}
+              onClick={() => setSelection(null)}
+            />
+            <AttendanceDayPanel
+              key={`${selectedEmployee.employeeId}-${selectedDay.localDate}`}
+              employee={selectedEmployee}
+              day={selectedDay}
+              canManage={canManage}
+              selectedMonth={month}
+              currentMonth={clockMonth}
+              onClose={() => setSelection(null)}
+              onMutated={reload}
+            />
+          </>
         ) : null}
       </div>
     </div>

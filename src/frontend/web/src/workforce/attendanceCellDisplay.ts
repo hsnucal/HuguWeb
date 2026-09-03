@@ -1,5 +1,5 @@
 import { formatShiftClockRange } from './shiftDefinitionForm.ts'
-import type { AttendanceDayResult } from './hrAttendanceApi.ts'
+import type { AttendanceDayLeave, AttendanceDayResult } from './hrAttendanceApi.ts'
 
 export type AttendanceCellTone =
   | 'worked'
@@ -17,6 +17,8 @@ export type AttendanceCellLabels = {
   worked: string
   leave: string
   notEmployed: string
+  leaveCell?: (leave: AttendanceDayLeave) => string
+  leaveTooltip?: (leave: AttendanceDayLeave) => string
 }
 
 export type AttendanceCellVisible = {
@@ -78,9 +80,12 @@ export function attendanceCellVisible(
   }
 
   if (day.acceptedKind === 'Leave') {
-    const code = day.leave?.leaveTypeCode?.trim()
+    const leaveLabel =
+      (day.leave ? labels.leaveCell?.(day.leave) : undefined)?.trim() ||
+      day.leave?.leaveTypeName?.trim() ||
+      labels.leave
     return {
-      primary: code || day.leave?.leaveTypeName?.trim() || labels.leave,
+      primary: leaveLabel,
       tone: 'leave',
       interactive: true,
       isManual: day.isManual,
@@ -133,7 +138,10 @@ export function attendanceCellTooltipText(
 
   const visible = attendanceCellVisible(day, labels, formatRange)
   if (day.acceptedKind === 'Leave') {
-    return day.leave?.leaveTypeName?.trim() || labels.leaveFallback
+    if (day.leave) {
+      return labels.leaveTooltip?.(day.leave)?.trim() || day.leave.leaveTypeName?.trim() || labels.leaveFallback
+    }
+    return labels.leaveFallback
   }
 
   if (day.acceptedKind === 'Unresolved' || visible.tone === 'unresolved') {

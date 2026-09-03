@@ -497,6 +497,7 @@ public sealed record AttendanceDayLeaveDto(
     Guid LeaveTypeId,
     string? LeaveTypeCode,
     string? LeaveTypeName,
+    LeaveTypeSystemKind? SystemKind,
     DateOnly StartDate,
     DateOnly EndDate,
     decimal Amount);

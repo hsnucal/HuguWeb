@@ -139,6 +139,19 @@ export function attendanceMonthSummary(
   }
 }
 
+export function resolveAttendanceCorrectionEmploymentId(
+  day: { employmentId: string | null | undefined },
+  employee: { employmentId: string | null | undefined },
+): string | null {
+  const fromDay = day.employmentId?.trim()
+  if (fromDay) {
+    return fromDay
+  }
+
+  const fromRow = employee.employmentId?.trim()
+  return fromRow || null
+}
+
 export function canOpenAttendancePanel(coverage: string | null | undefined): boolean {
   return coverage === 'InEmployment'
 }

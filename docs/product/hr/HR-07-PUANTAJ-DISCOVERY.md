@@ -1,8 +1,10 @@
 # HR-07 — Puantaj Discovery
 
-> **Status:** Accepted — Product Owner + CTO domain freeze (2026-09-03).
+> **Status:** Accepted / Completed — Product Owner + CTO domain freeze (2026-09-03). HR-07A and HR-07B PO-accepted as the HR-07 MVP (2026-09-03).
 >
-> Domain and persistence model are **Accepted**. HR-07A (backend foundation) is **Completed**. HR-07B (monthly React grid + top-level sidebar) remains **In Progress / not started**.
+> Domain and persistence model are **Accepted**. HR-07A (backend foundation) is **Completed**. HR-07B (monthly React grid + top-level sidebar) is **Completed / Accepted**. HR-07 overall is **Completed / Accepted** for the operational MVP.
+>
+> Deferred beyond this MVP (not implied to exist): PDKS/punch integration, period locking, official holiday engine, half-day/Partial cells, overtime/payroll/SGK.
 >
 > **Does not supersede** HR-DOMAIN-001, HR-DOMAIN-002, HR-DOMAIN-003, HR-04, HR-05A, HR-05B, or HR-06. Those remain **Accepted**.
 >
@@ -791,10 +793,10 @@ Assumptions: 100+ properties, thousands of employees, one month grid.
 
 | Doc | Status |
 |-----|--------|
-| This file | **Accepted** |
+| This file | **Accepted / Completed** (HR-07 MVP) |
 | [ADR-011](../../architecture/adr/ADR-011-Puantaj-Domain-Model.md) | **Accepted** |
 | HR-07A backend foundation | **Completed** (2026-09-03) |
-| HR-07B monthly grid + sidebar | **Not started** — STOP for PO acceptance before HR-07B |
+| HR-07B monthly grid + sidebar | **Completed / Accepted** (2026-09-03) |
 
 ---
 
@@ -892,9 +894,31 @@ Wrong organization is `attendance-employment-not-found` (no tenant existence lea
 
 Workforce: `20260902201656_AddAttendanceFoundationHr07A` — `AttendanceCorrections` + `AttendanceCorrectionChanges` only.
 
-### Known deferrals (HR-07B and later)
+### Known deferrals (after HR-07 MVP)
 
-Monthly React grid, correction side panel, top-level Puantaj sidebar, past-month UI warning, period lock / `hr.attendance.close` behavior, official holiday engine, punch/PDKS, overtime/payroll/SGK, half-day Partial cells.
+These capabilities are **not** in the accepted MVP. Do not imply they exist:
+
+- PDKS / punch integration (`AttendancePunch`)
+- period locking / `hr.attendance.close` behavior
+- official holiday engine
+- half-day / Partial cells
+- overtime / payroll / SGK
+
+---
+
+## 31. HR-07B implementation (monthly workspace)
+
+> **Status:** Completed / Accepted (2026-09-03). Product Owner manual retest passed.
+
+HR-07B ships the top-level Puantaj sidebar, monthly operational grid, overlay correction/detail drawer, history, and department-scoped reads/writes. It does **not** add an `AttendanceDay` table, mutate `ScheduleEntry` or `LeaveRecord`, or introduce an HR-07B migration.
+
+### PO findings (resolved)
+
+| Finding | Resolution |
+|---------|------------|
+| Internal catalog code `annual` leaked into Puantaj cells/detail | System-known leave types localize via `LeaveType.SystemKind` / known codes. Cells use compact labels (TR `Yİ`, EN `AL`, RU `ОТП`). Detail uses full names (TR `Yıllık İzin`). Custom tenant types keep configured name/code. |
+| Manual correction failed for seeded/existing Personnel (Hasan Uçal succeeded) | Correction PUT requires **EmploymentId**. Using EmployeeId returns `404` `attendance-employment-not-found`. UI writes the day employment id. Dated assignment validation is unchanged. `EmployeeAccountLink` is not required. Department/property authorization was not weakened. |
+| In-flow side panel shrank the 31-column grid | Detail/correction UI is a right overlay drawer. The grid keeps full workspace width; scroll position is preserved. |
 
 ---
 

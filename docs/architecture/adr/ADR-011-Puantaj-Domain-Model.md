@@ -8,7 +8,7 @@
 
 **Accepted** — Product Owner + CTO (2026-09-03)
 
-HR-07A (backend foundation) is authorized and implemented. HR-07B (monthly grid + sidebar) is **not** authorized by this ADR alone; it waits for PO acceptance of HR-07A.
+HR-07A (backend foundation) is authorized and implemented. HR-07B (monthly grid + sidebar) is implemented and **PO-accepted** (2026-09-03). The HR-07 operational MVP is **Completed / Accepted**. PDKS/punch, period lock, official holiday engine, half-day/Partial, and overtime/payroll/SGK remain deferred.
 
 ---
 
@@ -200,7 +200,6 @@ No wage, OT pay, 30-day SGK capping, Elektra/Logo, or TP/SGK persisted ledgers. 
 - Wage / SGK / e-declaration  
 - Bulk copy on the Puantaj screen  
 - Employee self-service timesheet  
-- Sidebar implementation of the top-level IA freeze  
 
 ---
 

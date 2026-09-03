@@ -222,4 +222,106 @@ public class AttendanceCorrectionTests
         Assert.Equal(ScheduleEntryKind.Shift, after.Kind);
         Assert.Equal(before.ShiftDefinitionId, after.ShiftDefinitionId);
     }
+
+    [Fact]
+    public async Task NewlyHiredPersonnel_CorrectionSucceedsWithoutAccountLink()
+    {
+        var harness = new WorkforceHarness();
+        var hired = await harness.Hire.ExecuteAsync(
+            new HireEmployeeCommand("Hasan", "Uçal", Day.AddDays(-1), harness.DepartmentId, harness.PositionId),
+            CancellationToken.None);
+        Assert.True(hired.IsSuccess, hired.Error?.Detail);
+
+        var result = await harness.SetAttendanceCorrection.ExecuteAsync(
+            new SetAttendanceCorrectionCommand(
+                hired.Value!.EmploymentId, Day, "Absent", "new hire note", "actor", harness.PropertyId),
+            CancellationToken.None);
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.Equal(nameof(AttendanceAcceptedKind.Absent), result.Value!.AcceptedKind);
+        Assert.Equal(hired.Value.EmploymentId, result.Value.EmploymentId);
+        Assert.DoesNotContain("AccountLink", typeof(InMemoryWorkforceStore).GetProperties().Select(item => item.Name));
+    }
+
+    [Fact]
+    public async Task SeedShapedHistoricalAssignment_WithScheduleOnApplicableAssignment_CorrectionSucceeds()
+    {
+        var harness = new WorkforceHarness();
+        harness.Clock.Today = new DateOnly(2026, 9, 3);
+        var start = new DateOnly(2026, 1, 1);
+        Assert.True(Employee.TryCreate(
+            Guid.Parse("a1e1c0de-0003-4000-8000-000000000401"),
+            harness.OrganizationId,
+            "Ali",
+            "Tekin",
+            "DEMO-TECH-01",
+            out var employee,
+            out _));
+        var employment = Employment.Open(
+            Guid.Parse("a1e1c0de-0003-4000-8000-000000000402"),
+            employee!.Id,
+            start,
+            harness.Clock.Today);
+        var assignment = Assignment.StartPrimary(
+            Guid.Parse("a1e1c0de-0003-4000-8000-000000000403"),
+            employment.Id,
+            harness.DepartmentId,
+            harness.PositionId,
+            start);
+        harness.Store.AddEmployee(employee);
+        harness.Store.AddEmployment(employment);
+        harness.Store.AddAssignment(assignment);
+
+        var created = await harness.ShiftDefinitionAdmin.CreateAsync(
+            new CreateShiftDefinitionCommand("DAY", "Day", Eight, Sixteen, false, 30, "actor"),
+            CancellationToken.None);
+        Assert.True(created.IsSuccess, created.Error?.Detail);
+        var scheduled = await harness.UpsertSchedule.ExecuteAsync(
+            new UpsertScheduleEntryCommand(
+                employee.Id, Day, ScheduleEntryKind.Shift, created.Value!.Id, null, "actor", harness.PropertyId),
+            CancellationToken.None);
+        Assert.True(scheduled.IsSuccess, scheduled.Error?.Detail);
+        var entry = Assert.Single(harness.Store.ScheduleEntries);
+        Assert.Equal(assignment.Id, entry.AssignmentId);
+
+        var month = await harness.GetAttendanceMonth.ExecuteAsync(
+            2026, 9, null, null, harness.PropertyId, null, CancellationToken.None);
+        Assert.True(month.IsSuccess, month.Error?.Detail);
+        var cell = month.Value!.Employees.Single(item => item.EmployeeId == employee.Id)
+            .Days.Single(item => item.LocalDate == Day);
+        Assert.Equal(nameof(AttendanceCoverage.InEmployment), cell.Coverage);
+        Assert.Equal(assignment.Id, cell.AssignmentId);
+        Assert.Equal(employment.Id, cell.EmploymentId);
+
+        var result = await harness.SetAttendanceCorrection.ExecuteAsync(
+            new SetAttendanceCorrectionCommand(
+                employment.Id, Day, "Absent", "seed-shaped", "actor", harness.PropertyId),
+            CancellationToken.None);
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.Equal(nameof(AttendanceAcceptedKind.Absent), result.Value!.AcceptedKind);
+        Assert.Equal(assignment.Id, harness.Store.AttendanceCorrections.Single().AssignmentId);
+        Assert.Equal(entry.Id, harness.Store.ScheduleEntries.Single().Id);
+    }
+
+    [Fact]
+    public async Task DepartmentScopedEmployee_CorrectionSucceedsWhenDepartmentIsAllowed()
+    {
+        var harness = new WorkforceHarness();
+        var hired = await harness.Hire.ExecuteAsync(
+            harness.HireCommand(startDate: Day.AddDays(-5), departmentId: harness.OtherDepartmentId, positionId: harness.OtherPositionId),
+            CancellationToken.None);
+        Assert.True(hired.IsSuccess, hired.Error?.Detail);
+
+        var result = await harness.SetAttendanceCorrection.ExecuteAsync(
+            new SetAttendanceCorrectionCommand(
+                hired.Value!.EmploymentId,
+                Day,
+                "RestDay",
+                "scoped ok",
+                "actor",
+                harness.PropertyId,
+                new HashSet<Guid> { harness.OtherDepartmentId }),
+            CancellationToken.None);
+        Assert.True(result.IsSuccess, result.Error?.Detail);
+        Assert.Equal(nameof(AttendanceAcceptedKind.RestDay), result.Value!.AcceptedKind);
+    }
 }

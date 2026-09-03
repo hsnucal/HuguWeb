@@ -990,6 +990,30 @@ export type Translations = {
     leaveType: string
     leaveDates: string
     leaveSource: string
+    leaveShort: {
+      Annual: string
+      Unpaid: string
+      Sick: string
+      Marriage: string
+      Paternity: string
+      Maternity: string
+      Bereavement: string
+      Excuse: string
+      Administrative: string
+      Other: string
+    }
+    leaveFull: {
+      Annual: string
+      Unpaid: string
+      Sick: string
+      Marriage: string
+      Paternity: string
+      Maternity: string
+      Bereavement: string
+      Excuse: string
+      Administrative: string
+      Other: string
+    }
     overriddenLeave: string
     manualCorrection: string
     currentCorrection: string
@@ -1029,6 +1053,7 @@ export type Translations = {
       propertyAccessDenied: string
       assignmentNotFound: string
       departmentFilterDenied: string
+      missingEmployment: string
     }
   }
   roomOperations: {

@@ -12,6 +12,7 @@ import {
   validateAttendanceReason,
   weekdayFromIsoDate,
   yearMonthFromTimeZone,
+  resolveAttendanceCorrectionEmploymentId,
 } from './attendanceMonth.ts'
 
 test('property timezone determines the default month, not the browser calendar', () => {
@@ -86,4 +87,14 @@ test('empty correction reason is blocked before save', () => {
   assert.equal(validateAttendanceReason('   '), 'required')
   assert.equal(validateAttendanceReason('No-show'), null)
   assert.equal(validateAttendanceReason('x'.repeat(501)), 'tooLong')
+})
+
+test('correction employment id prefers the day value and never uses the employee id', () => {
+  assert.equal(
+    resolveAttendanceCorrectionEmploymentId(
+      { employmentId: 'a1e1c0de-0003-4000-8000-000000000422' },
+      { employmentId: 'a1e1c0de-0003-4000-8000-000000000421' },
+    ),
+    'a1e1c0de-0003-4000-8000-000000000422',
+  )
 })

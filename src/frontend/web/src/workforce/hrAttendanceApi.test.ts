@@ -7,6 +7,7 @@ import {
   attendanceHistoryPath,
   buildAttendanceMonthPath,
   hrAttendanceErrorKeyFromCode,
+  hrAttendanceErrorMessage,
   isAttendanceCorrectionKind,
 } from './attendancePaths.ts'
 
@@ -70,6 +71,20 @@ test('set correction payload uses named kind, not a numeric enum', () => {
   assert.equal(isAttendanceCorrectionKind('Absent'), true)
   assert.equal(isAttendanceCorrectionKind('Unresolved'), false)
   assert.deepEqual([...ATTENDANCE_CORRECTION_KINDS], ['Worked', 'Leave', 'RestDay', 'Absent'])
+})
+
+test('correction errors prefer localized Problem Details over a generic key', () => {
+  const error = {
+    message: 'fallback',
+    problem: {
+      detail: 'İstenen puantaj tarihini kapsayan birincil bir atama yok.',
+      code: 'attendance-assignment-not-found',
+    },
+  }
+  assert.equal(
+    hrAttendanceErrorMessage(error, () => 'hidden generic'),
+    'İstenen puantaj tarihini kapsayan birincil bir atama yok.',
+  )
 })
 
 test('month change and search stay on attendance monthly query', () => {

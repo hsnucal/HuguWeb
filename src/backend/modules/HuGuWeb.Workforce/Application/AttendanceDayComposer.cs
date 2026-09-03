@@ -58,6 +58,7 @@ internal static class AttendanceDayComposer
                 record.LeaveTypeId,
                 leaveType?.Code,
                 leaveType?.Name,
+                leaveType?.SystemKind,
                 record.StartDate,
                 record.EndDate,
                 record.Amount);

@@ -59,3 +59,41 @@ export function hrAttendanceErrorKeyFromCode(code: string | undefined): string {
 
   return 'attendance.errors.generic'
 }
+
+type AttendanceProblemError = {
+  message: string
+  problem?: {
+    detail?: string
+    code?: string
+  }
+}
+
+function asAttendanceProblemError(error: unknown): AttendanceProblemError | null {
+  if (typeof error !== 'object' || error === null || !('message' in error)) {
+    return null
+  }
+
+  const message = (error as { message: unknown }).message
+  if (typeof message !== 'string') {
+    return null
+  }
+
+  const problem = 'problem' in error ? (error as { problem?: AttendanceProblemError['problem'] }).problem : undefined
+  return { message, problem }
+}
+
+export function hrAttendanceErrorKey(error: unknown): string {
+  return hrAttendanceErrorKeyFromCode(asAttendanceProblemError(error)?.problem?.code)
+}
+
+export function hrAttendanceErrorMessage(error: unknown, translate: (key: string) => string): string {
+  const problemError = asAttendanceProblemError(error)
+  if (problemError) {
+    const detail = problemError.problem?.detail?.trim() || problemError.message.trim()
+    if (detail && detail !== 'Request failed') {
+      return detail
+    }
+  }
+
+  return translate(hrAttendanceErrorKey(error))
+}

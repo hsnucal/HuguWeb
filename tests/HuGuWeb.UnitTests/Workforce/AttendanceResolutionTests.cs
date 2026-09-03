@@ -81,7 +81,23 @@ public class AttendanceResolutionTests
         Assert.Equal("Shift", cell.Schedule!.State);
         Assert.NotNull(cell.Leave);
         Assert.Equal(leaveType.Code, cell.Leave!.LeaveTypeCode);
+        Assert.Equal(LeaveTypeSystemKind.Annual, cell.Leave.SystemKind);
         Assert.Equal(1.0m, cell.Leave.Amount);
+    }
+
+    [Fact]
+    public async Task CustomLeaveType_KeepsConfiguredNameAndHasNoSystemKind()
+    {
+        var harness = new WorkforceHarness();
+        var leaveType = harness.SeedLeaveType("birthday", "Doğum Günü İzni", tracksBalance: false);
+        var (employeeId, _) = await harness.SeedEmploymentAsync(Day.AddDays(-5));
+        await RecordLeaveAsync(harness, employeeId, leaveType.Id, Day, Day, 1.0m);
+
+        var cell = DayOf(await QuerySeptemberAsync(harness), employeeId, Day);
+        Assert.Equal(nameof(AttendanceAcceptedKind.Leave), cell.AcceptedKind);
+        Assert.Equal("birthday", cell.Leave!.LeaveTypeCode);
+        Assert.Equal("Doğum Günü İzni", cell.Leave.LeaveTypeName);
+        Assert.Null(cell.Leave.SystemKind);
     }
 
     [Fact]

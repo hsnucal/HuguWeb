@@ -85,7 +85,7 @@ test('RestDay displays OFF whether derived or manual', () => {
   assert.equal(manual.isManual, true)
 })
 
-test('Leave displays type code and tooltip uses full name', () => {
+test('Leave displays the localized short label, not an internal catalog code', () => {
   const leaveDay = day({
     acceptedKind: 'Leave',
     source: 'Leave',
@@ -93,16 +93,22 @@ test('Leave displays type code and tooltip uses full name', () => {
     leave: {
       leaveRecordId: 'lr1',
       leaveTypeId: 'lt1',
-      leaveTypeCode: 'Yİ',
+      leaveTypeCode: 'annual',
       leaveTypeName: 'Yıllık İzin',
+      systemKind: 'Annual',
       startDate: '2026-09-01',
       endDate: '2026-09-03',
       amount: 3,
     },
   })
-  const visible = attendanceCellVisible(leaveDay, labels)
+  const visible = attendanceCellVisible(leaveDay, {
+    ...labels,
+    leaveCell: () => 'Yİ',
+    leaveTooltip: () => 'Yıllık İzin',
+  })
   assert.equal(visible.primary, 'Yİ')
-  assert.equal(attendanceCellTooltipText(leaveDay, labels), 'Yıllık İzin')
+  assert.equal(visible.primary.toLowerCase().includes('annual'), false)
+  assert.equal(attendanceCellTooltipText(leaveDay, { ...labels, leaveTooltip: () => 'Yıllık İzin' }), 'Yıllık İzin')
 })
 
 test('Absent displays DEV', () => {
