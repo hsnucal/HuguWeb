@@ -3,6 +3,7 @@ export type SidebarIconId =
   | 'rooms'
   | 'wrench'
   | 'people'
+  | 'calendar'
   | 'reservations'
   | 'tasks'
   | 'settings'
@@ -61,6 +62,7 @@ export function buildPrimaryNav(options: {
   canReadHrLeave?: boolean
   canReadHrShiftDefinitions?: boolean
   canReadHrSchedule?: boolean
+  canReadHrAttendance?: boolean
   canRequestHrLeave?: boolean
 }): SidebarNavItem[] {
   const items: SidebarNavItem[] = [
@@ -100,6 +102,15 @@ export function buildPrimaryNav(options: {
         kind: 'link',
         to: workforceTo,
       },
+    })
+  }
+
+  if (options.canReadHrAttendance) {
+    items.push({
+      id: 'attendance',
+      icon: 'calendar',
+      labelKey: 'navigation.attendance',
+      destination: { kind: 'link', to: '/app/attendance' },
     })
   }
 

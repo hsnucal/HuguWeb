@@ -20,6 +20,7 @@ navigation: {
     settings: 'Settings',
     unavailable: '{{label}}, not available yet',
     workforce: 'Workforce',
+    attendance: 'Attendance',
     roomOperations: 'Room Operations',
     technicalService: 'Technical Service',
     myLeave: 'My Leave',

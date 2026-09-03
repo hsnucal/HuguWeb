@@ -54,3 +54,12 @@ export function canReadHrShiftDefinitions(user: CurrentUser | null): boolean {
 export function canManageHrShiftDefinitions(user: CurrentUser | null): boolean {
   return (user?.permissions ?? []).includes('hr.shift-definition.manage')
 }
+
+export function canReadHrAttendance(user: CurrentUser | null): boolean {
+  const permissions = user?.permissions ?? []
+  return permissions.includes('hr.attendance.read') || permissions.includes('hr.attendance.manage')
+}
+
+export function canManageHrAttendance(user: CurrentUser | null): boolean {
+  return (user?.permissions ?? []).includes('hr.attendance.manage')
+}

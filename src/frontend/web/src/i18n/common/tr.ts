@@ -20,6 +20,7 @@ navigation: {
     settings: 'Ayarlar',
     unavailable: '{{label}}, henüz kullanılamıyor',
     workforce: 'Personel',
+    attendance: 'Puantaj',
     roomOperations: 'Oda Operasyonları',
     technicalService: 'Teknik Servis',
     myLeave: 'İzinlerim',

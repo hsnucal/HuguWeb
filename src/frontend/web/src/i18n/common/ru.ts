@@ -20,6 +20,7 @@ navigation: {
     settings: 'Настройки',
     unavailable: '{{label}}, пока недоступно',
     workforce: 'Персонал',
+    attendance: 'Табель',
     roomOperations: 'Операции по номерам',
     technicalService: 'Техническая служба',
     myLeave: 'Мои отпуска',

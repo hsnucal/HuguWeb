@@ -48,7 +48,7 @@ test('workforce without HR read still appears and routes to departments', () => 
   }
 })
 
-test('schedule-only users get Workforce nav routed to shift plan', () => {
+test('hr.leave.request shows My Leave nav destination', () => {
   assert.equal(
     resolveWorkforceNavTo({
       canReadHrEmployees: false,
@@ -135,5 +135,53 @@ test('settings availability follows the permission flag and stays independent of
 test('nav items always carry a label key so collapsed icons stay named', () => {
   for (const item of buildPrimaryNav(permitted)) {
     assert.match(item.labelKey, /^navigation\./)
+  }
+})
+
+test('hr.attendance.read shows Puantaj as a top-level item after Personel', () => {
+  const items = buildPrimaryNav({
+    ...permitted,
+    canReadHrAttendance: true,
+  })
+  const ids = items.map((item) => item.id)
+  assert.ok(ids.includes('attendance'))
+  assert.ok(ids.indexOf('workforce') < ids.indexOf('attendance'))
+  const attendance = items.find((item) => item.id === 'attendance')
+  assert.ok(attendance)
+  assert.equal(attendance.labelKey, 'navigation.attendance')
+  assert.equal(attendance.destination.kind, 'link')
+  if (attendance.destination.kind === 'link') {
+    assert.equal(attendance.destination.to, '/app/attendance')
+  }
+})
+
+test('Puantaj sidebar is hidden without hr.attendance.read', () => {
+  const items = buildPrimaryNav({
+    ...permitted,
+    canReadHrAttendance: false,
+  })
+  assert.equal(
+    items.find((item) => item.id === 'attendance'),
+    undefined,
+  )
+})
+
+test('attendance-only users get a top-level Puantaj destination without Workforce', () => {
+  const items = buildPrimaryNav({
+    canReadRoomOperations: false,
+    canReadMaintenance: false,
+    canReadHrEmployees: false,
+    canReadWorkforce: false,
+    canReadHrAttendance: true,
+  })
+  assert.equal(
+    items.find((item) => item.id === 'workforce'),
+    undefined,
+  )
+  const attendance = items.find((item) => item.id === 'attendance')
+  assert.ok(attendance)
+  assert.equal(attendance.destination.kind, 'link')
+  if (attendance.destination.kind === 'link') {
+    assert.equal(attendance.destination.to, '/app/attendance')
   }
 })

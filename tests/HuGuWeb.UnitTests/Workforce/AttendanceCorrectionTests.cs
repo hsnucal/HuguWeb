@@ -138,12 +138,15 @@ public class AttendanceCorrectionTests
     public async Task ClearWritesHistoryAndPreservesAudit()
     {
         var harness = new WorkforceHarness();
+        var setStamp = new DateTimeOffset(2026, 9, 10, 8, 0, 0, TimeSpan.Zero);
+        harness.Clock.UtcNow = setStamp;
         var (_, employmentId) = await harness.SeedEmploymentAsync(Day.AddDays(-5));
         await harness.SetAttendanceCorrection.ExecuteAsync(
             new SetAttendanceCorrectionCommand(
                 employmentId, Day, "Absent", "no show", "actor", harness.PropertyId),
             CancellationToken.None);
 
+        harness.Clock.UtcNow = setStamp.AddMinutes(5);
         var cleared = await harness.ClearAttendanceCorrection.ExecuteAsync(
             new ClearAttendanceCorrectionCommand(employmentId, Day, "clear-actor", harness.PropertyId),
             CancellationToken.None);

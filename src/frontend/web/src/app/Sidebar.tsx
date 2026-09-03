@@ -14,12 +14,14 @@ import { Tooltip } from '../ui/Tooltip'
 import {
   canReadHrEmployees,
   canReadHrLeave,
+  canReadHrAttendance,
   canReadHrSchedule,
   canReadHrShiftDefinitions,
   canRequestHrLeave,
 } from '../workforce/hrAccess'
 import { canReadWorkforce } from '../workforce/workforceAccess'
 import {
+  CalendarIcon,
   CloseIcon,
   HomeIcon,
   PeopleIcon,
@@ -38,6 +40,7 @@ const icons: Record<SidebarIconId, typeof HomeIcon> = {
   rooms: RoomsIcon,
   wrench: WrenchIcon,
   people: PeopleIcon,
+  calendar: CalendarIcon,
   reservations: ReservationsIcon,
   tasks: TasksIcon,
   settings: SettingsIcon,
@@ -77,6 +80,7 @@ export function Sidebar({
     canReadHrLeave: canReadHrLeave(user),
     canReadHrShiftDefinitions: canReadHrShiftDefinitions(user),
     canReadHrSchedule: canReadHrSchedule(user),
+    canReadHrAttendance: canReadHrAttendance(user),
     canRequestHrLeave: canRequestHrLeave(user),
   })
   const settingsNav = buildSettingsNav(canOpenSettings(user))

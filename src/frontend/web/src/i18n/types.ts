@@ -32,6 +32,7 @@ export type Translations = {
     settings: string
     unavailable: string
     workforce: string
+    attendance: string
     roomOperations: string
     technicalService: string
     myLeave: string
@@ -919,6 +920,115 @@ export type Translations = {
       probationStartMustBeNull: string
       certificateNameRequired: string
       certificateNameTooLong: string
+    }
+  }
+  attendance: {
+    title: string
+    intro: string
+    propertyContext: string
+    prevMonth: string
+    nextMonth: string
+    thisMonth: string
+    monthNav: string
+    monthLabel: string
+    yearLabel: string
+    department: string
+    allDepartments: string
+    selectDepartment: string
+    search: string
+    searchPlaceholder: string
+    loading: string
+    empty: string
+    emptyHint: string
+    emptySearch: string
+    emptySearchHint: string
+    retry: string
+    noAccess: string
+    readOnlyHint: string
+    summaryEmployees: string
+    summaryUnresolved: string
+    summaryAbsent: string
+    colEmployee: string
+    totalsWorked: string
+    totalsLeave: string
+    totalsRest: string
+    totalsAbsent: string
+    totalsUnresolved: string
+    plannedHours: string
+    cellRest: string
+    cellAbsent: string
+    cellUnresolved: string
+    cellWorked: string
+    kindWorked: string
+    kindLeave: string
+    kindRestDay: string
+    kindAbsent: string
+    sourceSchedule: string
+    sourceLeave: string
+    sourceManual: string
+    statusFromPlan: string
+    statusManual: string
+    statusFromLeave: string
+    scheduleShift: string
+    scheduleRest: string
+    scheduleUnscheduled: string
+    notEmployedTooltip: string
+    unresolvedTooltip: string
+    outOfScopeTooltip: string
+    sourceLabel: string
+    statusLabel: string
+    acceptedResult: string
+    employee: string
+    date: string
+    departmentField: string
+    plan: string
+    planState: string
+    shiftName: string
+    plannedTime: string
+    shiftCode: string
+    leave: string
+    leaveType: string
+    leaveDates: string
+    leaveSource: string
+    overriddenLeave: string
+    manualCorrection: string
+    currentCorrection: string
+    correctionKind: string
+    reason: string
+    saveCorrection: string
+    saving: string
+    clearCorrection: string
+    clearConfirmTitle: string
+    clearConfirmBody: string
+    clearConfirm: string
+    cancel: string
+    pastMonthWarning: string
+    successSaved: string
+    successCleared: string
+    history: string
+    historyEmpty: string
+    historySet: string
+    historyClear: string
+    historyPrevious: string
+    historyNew: string
+    historyReason: string
+    historyActor: string
+    historyAt: string
+    closePanel: string
+    cellAria: string
+    needsDepartment: string
+    errors: {
+      generic: string
+      invalidMonth: string
+      outsideEmployment: string
+      reasonRequired: string
+      reasonTooLong: string
+      kindInvalid: string
+      employmentNotFound: string
+      departmentScopeDenied: string
+      propertyAccessDenied: string
+      assignmentNotFound: string
+      departmentFilterDenied: string
     }
   }
   roomOperations: {
