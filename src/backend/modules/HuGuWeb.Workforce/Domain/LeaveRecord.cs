@@ -58,6 +58,15 @@ public sealed class LeaveRecord
 
     public bool IsCancelled => Status == LeaveRecordStatus.Cancelled;
 
+    /// <summary>
+    /// Calendar coverage for Puantaj (Q1). Amount is leave-domain accounting and is not used here.
+    /// Cancelled records never cover a date.
+    /// </summary>
+    public bool CoversCalendarDate(DateOnly localDate) =>
+        Status == LeaveRecordStatus.Recorded
+        && localDate >= StartDate
+        && localDate <= EndDate;
+
     public static bool TryCreate(
         Guid id,
         Guid employmentId,

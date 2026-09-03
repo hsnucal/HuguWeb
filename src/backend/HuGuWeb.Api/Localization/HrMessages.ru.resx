@@ -122,4 +122,24 @@
   <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>Одна или несколько целевых операций не могут быть применены. Копирование не начато.</value></data>
   <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Нечего копировать.</value></data>
   <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>В предыдущей неделе нет записей Shift или RestDay для копирования.</value></data>
+  <data name="error.attendance-invalid-month.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-invalid-month.detail" xml:space="preserve"><value>Год и месяц должны образовывать действительный календарный месяц.</value></data>
+  <data name="error.attendance-outside-employment.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-outside-employment.detail" xml:space="preserve"><value>Дата посещаемости находится вне периода трудовых отношений.</value></data>
+  <data name="error.attendance-correction-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-correction-reason-required.detail" xml:space="preserve"><value>Для корректировки посещаемости необходимо указать причину.</value></data>
+  <data name="error.attendance-correction-reason-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-correction-reason-too-long.detail" xml:space="preserve"><value>Причина корректировки посещаемости слишком длинная.</value></data>
+  <data name="error.attendance-correction-kind-invalid.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-correction-kind-invalid.detail" xml:space="preserve"><value>Вид корректировки должен быть Worked, Leave, RestDay или Absent.</value></data>
+  <data name="error.attendance-employment-not-found.title" xml:space="preserve"><value>Запрошенный ресурс не найден.</value></data>
+  <data name="error.attendance-employment-not-found.detail" xml:space="preserve"><value>Трудовые отношения не найдены.</value></data>
+  <data name="error.attendance-department-scope-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.attendance-department-scope-denied.detail" xml:space="preserve"><value>Охват подразделения не позволяет эту запись посещаемости.</value></data>
+  <data name="error.attendance-property-access-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.attendance-property-access-denied.detail" xml:space="preserve"><value>Эта дата посещаемости относится к объекту вне текущего рабочего охвата.</value></data>
+  <data name="error.attendance-assignment-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>Нет основного назначения, покрывающего запрошенную дату посещаемости.</value></data>
+  <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>Выбранное подразделение недоступно в текущем охвате посещаемости.</value></data>
 </root>

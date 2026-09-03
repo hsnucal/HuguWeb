@@ -17,6 +17,11 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public const string ShiftDefinitionCodeIndexName = "IX_ShiftDefinitions_PropertyId_Code";
     public const string ScheduleEntryUniqueIndexName = "IX_ScheduleEntries_EmploymentId_ScheduleDate";
     public const string ScheduleEntryChangeIndexName = "IX_ScheduleEntryChanges_EmploymentId_ScheduleDate_ChangedAtUtc";
+    public const string AttendanceCorrectionUniqueIndexName = "IX_AttendanceCorrections_EmploymentId_LocalDate";
+    public const string AttendanceCorrectionScopeIndexName =
+        "IX_AttendanceCorrections_OrganizationId_PropertyId_EmploymentId_LocalDate";
+    public const string AttendanceCorrectionChangeIndexName =
+        "IX_AttendanceCorrectionChanges_EmploymentId_LocalDate_ChangedAtUtc";
 
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Property> Properties => Set<Property>();
@@ -51,6 +56,8 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<ShiftDefinition> ShiftDefinitions => Set<ShiftDefinition>();
     public DbSet<ScheduleEntry> ScheduleEntries => Set<ScheduleEntry>();
     public DbSet<ScheduleEntryChange> ScheduleEntryChanges => Set<ScheduleEntryChange>();
+    public DbSet<AttendanceCorrection> AttendanceCorrections => Set<AttendanceCorrection>();
+    public DbSet<AttendanceCorrectionChange> AttendanceCorrectionChanges => Set<AttendanceCorrectionChange>();
     public DbSet<RecruitmentSource> RecruitmentSources => Set<RecruitmentSource>();
     public DbSet<OnboardingDocumentRequirement> OnboardingDocumentRequirements => Set<OnboardingDocumentRequirement>();
     public DbSet<EmploymentOnboardingDocumentStatus> EmploymentOnboardingDocumentStatuses =>
@@ -91,6 +98,8 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new ShiftDefinitionConfiguration());
         modelBuilder.ApplyConfiguration(new ScheduleEntryConfiguration());
         modelBuilder.ApplyConfiguration(new ScheduleEntryChangeConfiguration());
+        modelBuilder.ApplyConfiguration(new AttendanceCorrectionConfiguration());
+        modelBuilder.ApplyConfiguration(new AttendanceCorrectionChangeConfiguration());
         modelBuilder.ApplyConfiguration(new RecruitmentSourceConfiguration());
         modelBuilder.ApplyConfiguration(new OnboardingDocumentRequirementConfiguration());
         modelBuilder.ApplyConfiguration(new EmploymentOnboardingDocumentStatusConfiguration());
@@ -920,6 +929,68 @@ file sealed class ScheduleEntryChangeConfiguration : IEntityTypeConfiguration<Sc
             .HasDatabaseName(WorkforceDbContext.ScheduleEntryChangeIndexName);
         builder.HasIndex(entity => entity.PreviousShiftDefinitionId);
         builder.HasIndex(entity => entity.NewShiftDefinitionId);
+    }
+}
+
+file sealed class AttendanceCorrectionConfiguration : IEntityTypeConfiguration<AttendanceCorrection>
+{
+    public void Configure(EntityTypeBuilder<AttendanceCorrection> builder)
+    {
+        builder.ToTable("AttendanceCorrections");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.LocalDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.Kind).HasConversion<int>().IsRequired();
+        builder.Property(entity => entity.Reason).HasMaxLength(AttendanceCorrection.ReasonMaxLength).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(AttendanceCorrection.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.UpdatedAtUtc).IsRequired();
+        builder.Property(entity => entity.UpdatedByUserId).HasMaxLength(AttendanceCorrection.UserIdMaxLength).IsRequired();
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Property>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PropertyId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Assignment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.AssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.LocalDate })
+            .IsUnique()
+            .HasDatabaseName(WorkforceDbContext.AttendanceCorrectionUniqueIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.PropertyId, entity.EmploymentId, entity.LocalDate })
+            .HasDatabaseName(WorkforceDbContext.AttendanceCorrectionScopeIndexName);
+    }
+}
+
+file sealed class AttendanceCorrectionChangeConfiguration : IEntityTypeConfiguration<AttendanceCorrectionChange>
+{
+    public void Configure(EntityTypeBuilder<AttendanceCorrectionChange> builder)
+    {
+        builder.ToTable("AttendanceCorrectionChanges");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.LocalDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.PreviousKind).HasConversion<int>();
+        builder.Property(entity => entity.NewKind).HasConversion<int>();
+        builder.Property(entity => entity.PreviousReason).HasMaxLength(AttendanceCorrectionChange.ReasonMaxLength);
+        builder.Property(entity => entity.NewReason).HasMaxLength(AttendanceCorrectionChange.ReasonMaxLength);
+        builder.Property(entity => entity.ChangeType).HasConversion<int>().IsRequired();
+        builder.Property(entity => entity.ChangedAtUtc).IsRequired();
+        builder.Property(entity => entity.ChangedByUserId)
+            .HasMaxLength(AttendanceCorrectionChange.UserIdMaxLength)
+            .IsRequired();
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.EmploymentId, entity.LocalDate, entity.ChangedAtUtc })
+            .HasDatabaseName(WorkforceDbContext.AttendanceCorrectionChangeIndexName);
     }
 }
 

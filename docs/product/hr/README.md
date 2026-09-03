@@ -17,6 +17,7 @@ Slice identifiers are product/planning labels. Older Accepted Personel Master te
 | **HR-06** | **Shift & Work Schedule / Vardiya & Çalışma Planı** — Accepted / Completed | sketched inside **HR-06–08** leave / shift / puantaj in Personel Master planning |
 | **HR-06A** | **Shift & Schedule Foundation** — Accepted / Completed | part of HR-06 |
 | **HR-06B** | **Weekly Shift Planning** — Accepted / Completed | part of HR-06 |
+| **HR-07** | **Puantaj / Attendance (operational monthly result)** — **Accepted**. HR-07A backend foundation implemented; HR-07B grid/sidebar not started | sketched as **HR-08** Attendance in older Personel Master planning; later Accepted texts already call future actuals **HR-07** |
 | **Personnel Enrichment + Onboarding Documents** | Certificates, WorkType, Probation, Recruitment Source, Onboarding checklist + printable templates; Department-scheduler seed fix | — |
 
 Current Accepted freeze: [HR-04-Employment-Working-Conditions.md](HR-04-Employment-Working-Conditions.md) — Domain Frozen decisions remain **Accepted**. Implementation is **Accepted**.
@@ -36,3 +37,5 @@ Weekly planning: [HR-06B-Weekly-Shift-Planning.md](HR-06B-Weekly-Shift-Planning.
 Personnel enrichment: [HR-PERSONNEL-ENRICHMENT-ONBOARDING.md](HR-PERSONNEL-ENRICHMENT-ONBOARDING.md) — **Implemented / Awaiting PO Acceptance**. Includes Department manager schedule permission seed fix (`department-scheduler`) and Çalışma Bilgileri nested submenu IA (single edit session; no extra APIs).
 
 Department authorization: [DEPARTMENT_MEMBERSHIP_SCOPE.md](../../security/authorization/DEPARTMENT_MEMBERSHIP_SCOPE.md) — **AUTH-02 Accepted / Completed**.
+
+HR-07 discovery: [HR-07-PUANTAJ-DISCOVERY.md](HR-07-PUANTAJ-DISCOVERY.md) — **Accepted** (2026-09-03). Companion: [ADR-011](../../architecture/adr/ADR-011-Puantaj-Domain-Model.md) — **Accepted**. HR-07A backend foundation is implemented (corrections-only persistence, resolver, monthly/correction/history APIs). HR-07 overall remains **In Progress** until HR-07B (monthly grid + top-level sidebar). WebİK remains reference only. Puantaj is a top-level operational module, not a Personnel Card tab.

@@ -197,6 +197,16 @@ public static class SecurityExtensions
                     HrShiftDefinitionPermissions.Manage));
 
             options.AddPolicy(
+                AuthorizationPolicies.HrAttendanceRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrAttendancePermissions.ClaimType, HrAttendancePermissions.Read)
+                    || context.User.HasClaim(HrAttendancePermissions.ClaimType, HrAttendancePermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrAttendanceManage,
+                policy => policy.RequireClaim(HrAttendancePermissions.ClaimType, HrAttendancePermissions.Manage));
+
+            options.AddPolicy(
                 AuthorizationPolicies.AuthorizationUsersManage,
                 policy => policy.RequireClaim(
                     AuthorizationPermissions.ClaimType,

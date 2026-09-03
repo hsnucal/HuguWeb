@@ -220,6 +220,28 @@ public interface IWorkforceStore
     void RemoveScheduleEntry(ScheduleEntry entry);
     void AddScheduleEntryChange(ScheduleEntryChange change);
 
+    Task<AttendanceCorrection?> GetAttendanceCorrectionAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<AttendanceCorrection>> ListAttendanceCorrectionsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<AttendanceCorrectionChange>> ListAttendanceCorrectionChangesAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<LeaveRecord>> ListRecordedLeaveRecordsOverlappingAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken);
+    void AddAttendanceCorrection(AttendanceCorrection correction);
+    void RemoveAttendanceCorrection(AttendanceCorrection correction);
+    void AddAttendanceCorrectionChange(AttendanceCorrectionChange change);
+
     Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);

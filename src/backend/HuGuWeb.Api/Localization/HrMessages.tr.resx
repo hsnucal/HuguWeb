@@ -122,4 +122,24 @@
   <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>Bir veya daha fazla hedef işlem uygulanamıyor. Kopyalama başlatılmadı.</value></data>
   <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Kopyalanacak kayıt yok.</value></data>
   <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>Önceki haftadan kopyalanacak Shift veya RestDay kaydı yok.</value></data>
+  <data name="error.attendance-invalid-month.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-invalid-month.detail" xml:space="preserve"><value>Yıl ve ay geçerli bir takvim ayı oluşturmalıdır.</value></data>
+  <data name="error.attendance-outside-employment.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-outside-employment.detail" xml:space="preserve"><value>Puantaj tarihi iş ilişkisi dönemi dışındadır.</value></data>
+  <data name="error.attendance-correction-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-correction-reason-required.detail" xml:space="preserve"><value>Puantaj düzeltmesi için neden zorunludur.</value></data>
+  <data name="error.attendance-correction-reason-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-correction-reason-too-long.detail" xml:space="preserve"><value>Puantaj düzeltme nedeni çok uzun.</value></data>
+  <data name="error.attendance-correction-kind-invalid.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-correction-kind-invalid.detail" xml:space="preserve"><value>Düzeltme türü Worked, Leave, RestDay veya Absent olmalıdır.</value></data>
+  <data name="error.attendance-employment-not-found.title" xml:space="preserve"><value>İstenen kayıt bulunamadı.</value></data>
+  <data name="error.attendance-employment-not-found.detail" xml:space="preserve"><value>İş ilişkisi bulunamadı.</value></data>
+  <data name="error.attendance-department-scope-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.attendance-department-scope-denied.detail" xml:space="preserve"><value>Departman kapsamı bu puantaj kaydına izin vermiyor.</value></data>
+  <data name="error.attendance-property-access-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.attendance-property-access-denied.detail" xml:space="preserve"><value>Bu puantaj tarihi mevcut işyeri kapsamı dışındaki bir tesise aittir.</value></data>
+  <data name="error.attendance-assignment-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>İstenen puantaj tarihini kapsayan birincil bir atama yok.</value></data>
+  <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>Seçilen departman mevcut puantaj kapsamında değil.</value></data>
 </root>

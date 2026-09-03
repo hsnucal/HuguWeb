@@ -122,4 +122,24 @@
   <data name="error.schedule-copy-week-blocked.detail" xml:space="preserve"><value>One or more target operations cannot be applied. Copy was not started.</value></data>
   <data name="error.schedule-copy-week-empty.title" xml:space="preserve"><value>Nothing to copy.</value></data>
   <data name="error.schedule-copy-week-empty.detail" xml:space="preserve"><value>No Shift or RestDay entries are available to copy from the previous week.</value></data>
+  <data name="error.attendance-invalid-month.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-invalid-month.detail" xml:space="preserve"><value>Year and month must form a valid calendar month.</value></data>
+  <data name="error.attendance-outside-employment.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-outside-employment.detail" xml:space="preserve"><value>The attendance date is outside the employment period.</value></data>
+  <data name="error.attendance-correction-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-correction-reason-required.detail" xml:space="preserve"><value>A reason is required for an attendance correction.</value></data>
+  <data name="error.attendance-correction-reason-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-correction-reason-too-long.detail" xml:space="preserve"><value>The attendance correction reason is too long.</value></data>
+  <data name="error.attendance-correction-kind-invalid.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-correction-kind-invalid.detail" xml:space="preserve"><value>Attendance correction kind must be Worked, Leave, RestDay, or Absent.</value></data>
+  <data name="error.attendance-employment-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.attendance-employment-not-found.detail" xml:space="preserve"><value>The employment was not found.</value></data>
+  <data name="error.attendance-department-scope-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.attendance-department-scope-denied.detail" xml:space="preserve"><value>Department scope does not allow this attendance record.</value></data>
+  <data name="error.attendance-property-access-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.attendance-property-access-denied.detail" xml:space="preserve"><value>This attendance date belongs to a property outside the current workplace scope.</value></data>
+  <data name="error.attendance-assignment-not-found.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>No primary assignment covers the requested attendance date.</value></data>
+  <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>The selected department is not available in the current attendance scope.</value></data>
 </root>

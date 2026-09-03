@@ -46,6 +46,7 @@ public static class PipelineExtensions
         app.MapHrLeaveEndpoints();
         app.MapHrLeaveRequestEndpoints();
         app.MapHrScheduleEndpoints();
+        app.MapHrAttendanceEndpoints();
         app.MapRoomOperationsEndpoints();
         app.MapMaintenanceEndpoints();
 

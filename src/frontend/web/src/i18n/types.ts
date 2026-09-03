@@ -1116,6 +1116,9 @@ export type Translations = {
       'hr.leave.approve': string
       'hr.schedule.read': string
       'hr.schedule.manage': string
+      'hr.attendance.read': string
+      'hr.attendance.manage': string
+      'hr.attendance.close': string
       'hr.shift-definition.read': string
       'hr.shift-definition.manage': string
       'room-operations.read': string

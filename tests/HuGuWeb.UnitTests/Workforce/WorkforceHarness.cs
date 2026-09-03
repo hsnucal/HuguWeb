@@ -57,6 +57,8 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<ShiftDefinition> ShiftDefinitions { get; } = [];
     public List<ScheduleEntry> ScheduleEntries { get; } = [];
     public List<ScheduleEntryChange> ScheduleEntryChanges { get; } = [];
+    public List<AttendanceCorrection> AttendanceCorrections { get; } = [];
+    public List<AttendanceCorrectionChange> AttendanceCorrectionChanges { get; } = [];
     public List<RecruitmentSource> RecruitmentSources { get; } = [];
     public List<OnboardingDocumentRequirement> OnboardingDocumentRequirements { get; } = [];
     public List<EmploymentOnboardingDocumentStatus> EmploymentOnboardingDocumentStatuses { get; } = [];
@@ -580,6 +582,76 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
 
     public void AddScheduleEntryChange(ScheduleEntryChange change) => ScheduleEntryChanges.Add(change);
 
+    public Task<AttendanceCorrection?> GetAttendanceCorrectionAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken) =>
+        Task.FromResult(AttendanceCorrections.FirstOrDefault(item =>
+            item.EmploymentId == employmentId && item.LocalDate == localDate));
+
+    public Task<IReadOnlyList<AttendanceCorrection>> ListAttendanceCorrectionsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return Task.FromResult<IReadOnlyList<AttendanceCorrection>>([]);
+        }
+
+        return Task.FromResult<IReadOnlyList<AttendanceCorrection>>(
+            AttendanceCorrections
+                .Where(item =>
+                    employmentIds.Contains(item.EmploymentId)
+                    && item.LocalDate >= from
+                    && item.LocalDate <= to)
+                .OrderBy(item => item.LocalDate)
+                .ToArray());
+    }
+
+    public Task<IReadOnlyList<AttendanceCorrectionChange>> ListAttendanceCorrectionChangesAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<AttendanceCorrectionChange>>(
+            AttendanceCorrectionChanges
+                .Where(item => item.EmploymentId == employmentId && item.LocalDate == localDate)
+                .OrderBy(item => item.ChangedAtUtc)
+                .ThenBy(item => item.Id)
+                .ToArray());
+
+    public Task<IReadOnlyList<LeaveRecord>> ListRecordedLeaveRecordsOverlappingAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return Task.FromResult<IReadOnlyList<LeaveRecord>>([]);
+        }
+
+        return Task.FromResult<IReadOnlyList<LeaveRecord>>(
+            LeaveRecords
+                .Where(item =>
+                    employmentIds.Contains(item.EmploymentId)
+                    && item.Status == LeaveRecordStatus.Recorded
+                    && item.StartDate <= to
+                    && item.EndDate >= from)
+                .OrderBy(item => item.StartDate)
+                .ThenBy(item => item.Id)
+                .ToArray());
+    }
+
+    public void AddAttendanceCorrection(AttendanceCorrection correction) => AttendanceCorrections.Add(correction);
+
+    public void RemoveAttendanceCorrection(AttendanceCorrection correction) =>
+        AttendanceCorrections.Remove(correction);
+
+    public void AddAttendanceCorrectionChange(AttendanceCorrectionChange change) =>
+        AttendanceCorrectionChanges.Add(change);
+
     public Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
         if (_transactionSnapshot is not null)
@@ -728,6 +800,8 @@ internal sealed class InMemoryWorkforceSnapshot
     private readonly List<ShiftDefinition> _shiftDefinitions;
     private readonly List<ScheduleEntry> _scheduleEntries;
     private readonly List<ScheduleEntryChange> _scheduleEntryChanges;
+    private readonly List<AttendanceCorrection> _attendanceCorrections;
+    private readonly List<AttendanceCorrectionChange> _attendanceCorrectionChanges;
     private readonly Dictionary<Guid, PersonnelNumberSequence> _sequences;
 
     private InMemoryWorkforceSnapshot(
@@ -763,6 +837,8 @@ internal sealed class InMemoryWorkforceSnapshot
         List<ShiftDefinition> shiftDefinitions,
         List<ScheduleEntry> scheduleEntries,
         List<ScheduleEntryChange> scheduleEntryChanges,
+        List<AttendanceCorrection> attendanceCorrections,
+        List<AttendanceCorrectionChange> attendanceCorrectionChanges,
         Dictionary<Guid, PersonnelNumberSequence> sequences)
     {
         _organizations = organizations;
@@ -797,6 +873,8 @@ internal sealed class InMemoryWorkforceSnapshot
         _shiftDefinitions = shiftDefinitions;
         _scheduleEntries = scheduleEntries;
         _scheduleEntryChanges = scheduleEntryChanges;
+        _attendanceCorrections = attendanceCorrections;
+        _attendanceCorrectionChanges = attendanceCorrectionChanges;
         _sequences = sequences;
     }
 
@@ -838,6 +916,8 @@ internal sealed class InMemoryWorkforceSnapshot
             [.. store.ShiftDefinitions],
             [.. store.ScheduleEntries],
             [.. store.ScheduleEntryChanges],
+            [.. store.AttendanceCorrections],
+            [.. store.AttendanceCorrectionChanges],
             store.Sequences.ToDictionary(item => item.Key, item => item.Value));
 
     public void Restore(InMemoryWorkforceStore store)
@@ -888,6 +968,8 @@ internal sealed class InMemoryWorkforceSnapshot
         Replace(store.ShiftDefinitions, _shiftDefinitions);
         Replace(store.ScheduleEntries, _scheduleEntries);
         Replace(store.ScheduleEntryChanges, _scheduleEntryChanges);
+        Replace(store.AttendanceCorrections, _attendanceCorrections);
+        Replace(store.AttendanceCorrectionChanges, _attendanceCorrectionChanges);
         store.Sequences.Clear();
         foreach (var (key, value) in _sequences)
         {
@@ -998,6 +1080,10 @@ internal sealed class WorkforceHarness
     public GetScheduleWeekQuery GetScheduleWeek { get; }
     public BulkScheduleUseCase BulkSchedule { get; }
     public CopyScheduleWeekUseCase CopyScheduleWeek { get; }
+    public GetAttendanceMonthQuery GetAttendanceMonth { get; }
+    public SetAttendanceCorrectionUseCase SetAttendanceCorrection { get; }
+    public ClearAttendanceCorrectionUseCase ClearAttendanceCorrection { get; }
+    public GetAttendanceCorrectionHistoryQuery GetAttendanceHistory { get; }
     public Guid OtherPropertyId { get; } = Guid.CreateVersion7();
     public Guid OtherPropertyDepartmentId { get; } = Guid.CreateVersion7();
     public Guid OtherPropertyPositionId { get; } = Guid.CreateVersion7();
@@ -1130,6 +1216,10 @@ internal sealed class WorkforceHarness
         GetScheduleWeek = new GetScheduleWeekQuery(Store, Workplace);
         BulkSchedule = new BulkScheduleUseCase(Store, UpsertSchedule, ClearSchedule);
         CopyScheduleWeek = new CopyScheduleWeekUseCase(Store, Workplace, GetScheduleWeek, BulkSchedule);
+        GetAttendanceMonth = new GetAttendanceMonthQuery(Store, Workplace);
+        SetAttendanceCorrection = new SetAttendanceCorrectionUseCase(Store, Clock, Workplace);
+        ClearAttendanceCorrection = new ClearAttendanceCorrectionUseCase(Store, Clock, Workplace);
+        GetAttendanceHistory = new GetAttendanceCorrectionHistoryQuery(Store, Workplace);
     }
 
     public async Task<Guid> SeedDefaultLeaveTypesAsync()

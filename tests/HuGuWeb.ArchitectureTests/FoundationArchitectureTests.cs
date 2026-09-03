@@ -141,6 +141,31 @@ public class FoundationArchitectureTests
         Assert.DoesNotContain("GenericRepository", names);
     }
 
+    [Fact]
+    public void AttendanceCorrection_HasUniqueEmploymentLocalDate_AndNoAttendanceDayTable()
+    {
+        var options = new DbContextOptionsBuilder<WorkforceDbContext>()
+            .UseNpgsql("Host=localhost;Database=huguweb_model_check;Username=huguweb;Password=unused")
+            .Options;
+
+        using var context = new WorkforceDbContext(options);
+        Assert.Null(context.Model.FindEntityType("HuGuWeb.Workforce.Domain.AttendanceDay"));
+        Assert.Null(context.Model.FindEntityType("HuGuWeb.Workforce.Domain.AttendancePunch"));
+        Assert.Null(context.Model.FindEntityType("HuGuWeb.Workforce.Domain.AttendancePeriod"));
+        var correction = context.Model.FindEntityType(typeof(AttendanceCorrection));
+        Assert.NotNull(correction);
+        var unique = correction.GetIndexes().Single(index =>
+            index.IsUnique
+            && index.GetDatabaseName() == WorkforceDbContext.AttendanceCorrectionUniqueIndexName);
+        Assert.Equal(["EmploymentId", "LocalDate"], unique.Properties.Select(property => property.Name).ToArray());
+
+        var history = context.Model.FindEntityType(typeof(AttendanceCorrectionChange));
+        Assert.NotNull(history);
+        Assert.Contains(
+            history.GetIndexes(),
+            index => index.GetDatabaseName() == WorkforceDbContext.AttendanceCorrectionChangeIndexName);
+    }
+
     private static string FindRepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

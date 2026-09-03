@@ -88,6 +88,10 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<GetScheduleWeekQuery>();
         services.AddScoped<BulkScheduleUseCase>();
         services.AddScoped<CopyScheduleWeekUseCase>();
+        services.AddScoped<GetAttendanceMonthQuery>();
+        services.AddScoped<SetAttendanceCorrectionUseCase>();
+        services.AddScoped<ClearAttendanceCorrectionUseCase>();
+        services.AddScoped<GetAttendanceCorrectionHistoryQuery>();
         return services;
     }
 }

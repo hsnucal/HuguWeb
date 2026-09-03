@@ -47,6 +47,8 @@ public static class SystemRoleTemplates
         HrLeavePermissions.Approve,
         HrSchedulePermissions.Read,
         HrSchedulePermissions.Manage,
+        HrAttendancePermissions.Read,
+        HrAttendancePermissions.Manage,
         HrShiftDefinitionPermissions.Read,
         HrShiftDefinitionPermissions.Manage
     ];
@@ -62,7 +64,8 @@ public static class SystemRoleTemplates
         HrSchedulePermissions.Manage,
         HrShiftDefinitionPermissions.Read,
         HrLeavePermissions.Read,
-        HrLeavePermissions.Approve
+        HrLeavePermissions.Approve,
+        HrAttendancePermissions.Read
     ];
 
     /// <summary>
@@ -73,7 +76,8 @@ public static class SystemRoleTemplates
     [
         HrSchedulePermissions.Read,
         HrSchedulePermissions.Manage,
-        HrShiftDefinitionPermissions.Read
+        HrShiftDefinitionPermissions.Read,
+        HrAttendancePermissions.Read
     ];
 
     /// <summary>

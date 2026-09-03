@@ -690,6 +690,75 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void AddScheduleEntryChange(ScheduleEntryChange change) => dbContext.ScheduleEntryChanges.Add(change);
 
+    public Task<AttendanceCorrection?> GetAttendanceCorrectionAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken) =>
+        dbContext.AttendanceCorrections.FirstOrDefaultAsync(
+            entity => entity.EmploymentId == employmentId && entity.LocalDate == localDate,
+            cancellationToken);
+
+    public async Task<IReadOnlyList<AttendanceCorrection>> ListAttendanceCorrectionsAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.AttendanceCorrections
+            .Where(entity =>
+                employmentIds.Contains(entity.EmploymentId)
+                && entity.LocalDate >= from
+                && entity.LocalDate <= to)
+            .OrderBy(entity => entity.LocalDate)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AttendanceCorrectionChange>> ListAttendanceCorrectionChangesAsync(
+        Guid employmentId,
+        DateOnly localDate,
+        CancellationToken cancellationToken) =>
+        await dbContext.AttendanceCorrectionChanges
+            .Where(entity => entity.EmploymentId == employmentId && entity.LocalDate == localDate)
+            .OrderBy(entity => entity.ChangedAtUtc)
+            .ThenBy(entity => entity.Id)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<LeaveRecord>> ListRecordedLeaveRecordsOverlappingAsync(
+        IReadOnlyCollection<Guid> employmentIds,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellationToken)
+    {
+        if (employmentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.LeaveRecords
+            .Where(entity =>
+                employmentIds.Contains(entity.EmploymentId)
+                && entity.Status == LeaveRecordStatus.Recorded
+                && entity.StartDate <= to
+                && entity.EndDate >= from)
+            .OrderBy(entity => entity.StartDate)
+            .ThenBy(entity => entity.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddAttendanceCorrection(AttendanceCorrection correction) =>
+        dbContext.AttendanceCorrections.Add(correction);
+
+    public void RemoveAttendanceCorrection(AttendanceCorrection correction) =>
+        dbContext.AttendanceCorrections.Remove(correction);
+
+    public void AddAttendanceCorrectionChange(AttendanceCorrectionChange change) =>
+        dbContext.AttendanceCorrectionChanges.Add(change);
+
     public async Task<IWorkforceTransaction> BeginTransactionAsync(CancellationToken cancellationToken)
     {
         var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);

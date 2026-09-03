@@ -510,6 +510,38 @@ public sealed record WorkforceError(
             inner.StatusCode,
             MergeBulkErrors(operationIndex, employeeId, scheduleDate, inner.Errors, inner.Code));
 
+    public static WorkforceError AttendanceValidationField(string field, string code, string detail) =>
+        InvalidFields(code, detail, field, code);
+
+    public static WorkforceError AttendanceEmploymentNotFound() =>
+        NotFound(
+            AttendanceValidation.Codes.AttendanceEmploymentNotFound,
+            "The employment was not found.");
+
+    public static WorkforceError AttendanceOutsideEmployment() =>
+        InvalidFields(
+            AttendanceValidation.Codes.AttendanceOutsideEmployment,
+            "The attendance date is outside the employment period.",
+            AttendanceValidation.Fields.LocalDate,
+            AttendanceValidation.Codes.AttendanceOutsideEmployment);
+
+    public static WorkforceError AttendanceAssignmentNotFound() =>
+        InvalidFields(
+            AttendanceValidation.Codes.AttendanceAssignmentNotFound,
+            "No primary assignment covers the requested attendance date.",
+            AttendanceValidation.Fields.LocalDate,
+            AttendanceValidation.Codes.AttendanceAssignmentNotFound);
+
+    public static WorkforceError AttendancePropertyAccessDenied() =>
+        Forbidden(
+            AttendanceValidation.Codes.AttendancePropertyAccessDenied,
+            "This attendance date belongs to a property outside the current workplace scope.");
+
+    public static WorkforceError AttendanceDepartmentScopeDenied() =>
+        Forbidden(
+            AttendanceValidation.Codes.AttendanceDepartmentScopeDenied,
+            "Department scope does not allow this attendance record.");
+
     public static WorkforceError ScheduleCopyWeekBlocked(CopyScheduleWeekPreviewDto preview) =>
         InvalidRequest(
             ScheduleValidation.Codes.ScheduleCopyWeekBlocked,
