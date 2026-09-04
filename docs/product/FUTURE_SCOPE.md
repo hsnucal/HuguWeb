@@ -101,6 +101,23 @@ Integration vendors are not selected during the foundation stage. External syste
 
 ---
 
+## Identity Provisioning / Employee Access
+
+Future employee onboarding should support a dedicated identity lifecycle, separate from HR-08B and from Hire:
+
+1. Employee created
+2. `ApplicationUser` provisioned or invited
+3. `EmployeeAccountLink` created
+4. Organization/Property membership created
+5. Baseline employee role assigned (`employee-leave-self-service` or successor)
+6. First-login / invitation lifecycle
+
+Development seed already creates this shape for demo employees. Production Hire must **not** auto-create logins until this slice is designed.
+
+Do **not** implement this in HR-08B.
+
+---
+
 ## Related Documents
 
 - [Product Vision](PRODUCT_VISION.md)

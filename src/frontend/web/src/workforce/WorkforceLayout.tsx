@@ -6,10 +6,12 @@ import styles from './Workforce.module.css'
 import {
   canReadHrEmployees,
   canReadHrLeave,
+  canReadHrMovements,
   canReadHrSchedule,
   canReadHrShiftDefinitions,
 } from './hrAccess'
 import { canReadWorkforce } from './workforceAccess'
+import { buildWorkforceSubnav } from './workforceSubnav'
 
 export function WorkforceLayout() {
   const { t } = useTranslation()
@@ -19,15 +21,24 @@ export function WorkforceLayout() {
   const canReadLeave = canReadHrLeave(user)
   const canReadShiftDefinitions = canReadHrShiftDefinitions(user)
   const canReadSchedule = canReadHrSchedule(user)
+  const canReadMovements = canReadHrMovements(user)
   const canReadStructure = canReadWorkforce(user)
   const directoryCurrent = location.pathname === '/app/workforce'
+  const subnav = buildWorkforceSubnav({
+    canReadHrEmployees: canReadHr,
+    canReadWorkforce: canReadStructure,
+    canReadHrLeave: canReadLeave,
+    canReadHrShiftDefinitions: canReadShiftDefinitions,
+    canReadHrSchedule: canReadSchedule,
+  })
 
   if (
     !canReadHr &&
     !canReadStructure &&
     !canReadLeave &&
     !canReadShiftDefinitions &&
-    !canReadSchedule
+    !canReadSchedule &&
+    !canReadMovements
   ) {
     return <Notice tone="danger">{t('workforce.noAccess')}</Notice>
   }
@@ -45,6 +56,10 @@ export function WorkforceLayout() {
       return <Navigate to="/app/workforce/shift-plan" replace />
     }
 
+    if (canReadMovements) {
+      return <Navigate to="/app/workforce/movements" replace />
+    }
+
     if (canReadStructure) {
       return <Navigate to="/app/workforce/departments" replace />
     }
@@ -53,30 +68,16 @@ export function WorkforceLayout() {
   return (
     <div className={styles.layout}>
       <nav className={styles.subnav} aria-label={t('workforce.title')}>
-        {canReadHr ? (
-          <NavLink to="/app/workforce" end aria-current={directoryCurrent ? 'page' : undefined}>
-            {t('workforce.directory')}
+        {subnav.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            aria-current={item.end && directoryCurrent ? 'page' : undefined}
+          >
+            {t(item.labelKey)}
           </NavLink>
-        ) : null}
-        {canReadStructure ? (
-          <>
-            <NavLink to="/app/workforce/departments">{t('workforce.departments')}</NavLink>
-            <NavLink to="/app/workforce/positions">{t('workforce.positions')}</NavLink>
-            <NavLink to="/app/workforce/official-settings">{t('workforce.officialSettings')}</NavLink>
-          </>
-        ) : null}
-        {canReadLeave ? (
-          <>
-            <NavLink to="/app/workforce/leave-management">{t('workforce.leaveManagement')}</NavLink>
-            <NavLink to="/app/workforce/leave-types">{t('workforce.leaveTypes')}</NavLink>
-          </>
-        ) : null}
-        {canReadShiftDefinitions ? (
-          <NavLink to="/app/workforce/shift-definitions">{t('workforce.shiftDefinitions')}</NavLink>
-        ) : null}
-        {canReadSchedule ? (
-          <NavLink to="/app/workforce/shift-plan">{t('workforce.shiftPlan')}</NavLink>
-        ) : null}
+        ))}
       </nav>
       <Outlet />
     </div>

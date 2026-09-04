@@ -40,6 +40,7 @@ public static class SecurityExtensions
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddScoped<IAuthorizationStore, EfAuthorizationStore>();
+        builder.Services.AddScoped<MovementActorDisplayService>();
         builder.Services.AddScoped<AccessSnapshotService>();
         builder.Services.AddScoped<SecurityStampRefreshService>();
         builder.Services.AddScoped<LastAdministratorProtectionService>();

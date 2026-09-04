@@ -17,8 +17,17 @@ public class ApiMessagesLocalizationTests
     [InlineData("en", "error.leave-overlap.detail", "This leave overlaps another recorded leave for the same employment.")]
     [InlineData("ru", "error.leave-overlap.detail", "Этот отпуск пересекается с другой записанной записью по тем же трудовым отношениям.")]
     [InlineData("tr", "error.leave-request-overlap.detail", "Başka bir bekleyen/onaylı talep veya kayıtlı izin bu tarihlerle çakışıyor.")]
-    [InlineData("en", "error.leave-request-overlap.detail", "Another pending or approved leave request, or a recorded leave, covers one or more of these dates.")]
-    [InlineData("ru", "error.leave-request-overlap.detail", "Другая ожидающая/одобренная заявка или записанный отпуск пересекается с этими датами.")]
+        [InlineData("en", "error.leave-request-overlap.detail", "Another pending or approved leave request, or a recorded leave, covers one or more of these dates.")]
+        [InlineData("ru", "error.leave-request-overlap.detail", "Другая ожидающая/одобренная заявка или записанный отпуск пересекается с этими датами.")]
+        [InlineData("tr", "error.overlapping-primary-assignment.detail", "Seçtiğiniz geçerlilik tarihi mevcut çalışma geçmişiyle çakışıyor. Lütfen farklı bir tarih seçin.")]
+        [InlineData("en", "error.overlapping-primary-assignment.detail", "The selected effective date conflicts with this employee’s work history. Please choose a different date.")]
+        [InlineData("ru", "error.overlapping-primary-assignment.detail", "Выбранная дата вступления в силу пересекается с текущей трудовой историей. Выберите другую дату.")]
+        [InlineData("tr", "error.invalid-transfer-date.detail", "Seçtiğiniz geçerlilik tarihi mevcut çalışma geçmişiyle çakışıyor. Lütfen farklı bir tarih seçin.")]
+        [InlineData("en", "error.invalid-transfer-date.detail", "The selected effective date conflicts with this employee’s work history. Please choose a different date.")]
+        [InlineData("ru", "error.invalid-transfer-date.detail", "Выбранная дата вступления в силу пересекается с текущей трудовой историей. Выберите другую дату.")]
+        [InlineData("tr", "error.movement-target-not-promotion.detail", "Terfi için hedef pozisyon mevcut pozisyondan daha yüksek bir organizasyon seviyesinde olmalıdır.")]
+        [InlineData("en", "error.movement-target-not-promotion.detail", "The promotion target must be at a higher organizational level than the current position.")]
+        [InlineData("ru", "error.movement-target-not-promotion.detail", "Целевая должность при повышении должна быть на более высоком организационном уровне, чем текущая.")]
     public void ErrorCodes_HaveTrEnRuResources(string culture, string key, string expected)
     {
         CultureInfo.CurrentUICulture = new CultureInfo(culture);

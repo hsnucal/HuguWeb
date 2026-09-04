@@ -4,6 +4,7 @@ export type SidebarIconId =
   | 'wrench'
   | 'people'
   | 'calendar'
+  | 'history'
   | 'reservations'
   | 'tasks'
   | 'settings'
@@ -64,6 +65,7 @@ export function buildPrimaryNav(options: {
   canReadHrSchedule?: boolean
   canReadHrAttendance?: boolean
   canRequestHrLeave?: boolean
+  canReadHrMovements?: boolean
 }): SidebarNavItem[] {
   const items: SidebarNavItem[] = [
     {
@@ -114,6 +116,15 @@ export function buildPrimaryNav(options: {
     })
   }
 
+  if (options.canReadHrMovements) {
+    items.push({
+      id: 'movements',
+      icon: 'history',
+      labelKey: 'navigation.movements',
+      destination: { kind: 'link', to: '/app/workforce/movements' },
+    })
+  }
+
   if (options.canRequestHrLeave) {
     items.push({
       id: 'my-leave',
@@ -131,6 +142,22 @@ export function buildPrimaryNav(options: {
   }
 
   return items
+}
+
+export function isPrimaryNavActive(
+  item: SidebarNavItem,
+  pathname: string,
+  routerIsActive: boolean,
+): boolean {
+  if (item.id === 'workforce' && pathname.startsWith('/app/workforce/movements')) {
+    return false
+  }
+
+  if (item.id === 'movements') {
+    return pathname.startsWith('/app/workforce/movements')
+  }
+
+  return routerIsActive
 }
 
 export function buildSettingsNav(canOpenSettings: boolean): SidebarNavItem {

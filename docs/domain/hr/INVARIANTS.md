@@ -50,14 +50,22 @@ Implementation belongs to Sprint 0.7B. Tests that should exist then are listed i
 
 21. **Position does not grant permissions.**
 22. **Department does not grant permissions.**
-23. **Employee does not require ApplicationUser.** Hiring must not create a login.
+23. **Employee is not ApplicationUser.** Production hiring must not create a login. Schema-level identity remains optional (`EmployeeAccountLink`). Product intent: every **active** employee should be identity-capable; Development seed links active demo employees. See [EMPLOYEE_IDENTITY_ACCESS.md](EMPLOYEE_IDENTITY_ACCESS.md).
+
+---
+
+## Reporting line
+
+24. **WorkforceReportingLine is Employment-to-Employment** in the same Organization. It is not authorization.
+25. **Direct manager OrganizationalLevel equals RequiredManagerLevel** as of the movement EffectiveDate: the minimum active Position.OrganizationalLevel in the organization catalogue strictly greater than the subordinate's covering Position.OrganizationalLevel. Do not use `+100` arithmetic. Do not skip an existing configured level when no eligible manager exists at that level.
+26. **CanManageEmployees is independent of OrganizationalLevel** and does not grant permissions.
 
 ---
 
 ## Official notifications (readiness, not implementation)
 
-24. **Government notification failure must not erase valid internal workforce history.** A committed Hire or End Employment remains valid if SGK or KBS is down, rejects, or is not yet integrated.
-25. HuGuWeb workforce commit and external government submission are **not** one distributed transaction.
+27. **Government notification failure must not erase valid internal workforce history.** A committed Hire or End Employment remains valid if SGK or KBS is down, rejects, or is not yet integrated.
+28. HuGuWeb workforce commit and external government submission are **not** one distributed transaction.
 
 Do not encode SGK/KBS payload rules, retry schedules, or authority-specific field requirements as workforce invariants. Those belong to a future integration slice.
 
@@ -67,7 +75,6 @@ Do not encode SGK/KBS payload rules, retry schedules, or authority-specific fiel
 
 - Daily presence, leave, or sickness
 - User account must exist
-- Manager / reporting line
 - Parent-department tree
 - Temporary-assignment exclusivity rules beyond “not a second Primary”
 - Multi-property assignment exclusivity

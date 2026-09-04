@@ -12,6 +12,7 @@ import { TopBar } from './TopBar'
 import { PropertySelect } from './PropertySelect'
 import { resolveSidebarChrome } from './sidebarChrome'
 import { useNarrowViewport, useSidebarCollapsedPreference } from './useSidebarLayout'
+import { workplacePropertyBannerRequired } from './workplacePropertyBanner'
 import styles from './AppShell.module.css'
 
 export function AppShell() {
@@ -126,7 +127,7 @@ export function AppShell() {
             {drawerVisible ? <CloseIcon /> : <MenuIcon />}
           </button>
           <span className={styles.mobileBrand}>
-            <BrandMark size="sm" tone="inverse" />
+            <BrandMark size="mobile" tone="inverse" />
             HuGu
           </span>
           <span className={styles.mobileUser}>{userLabel}</span>
@@ -157,8 +158,8 @@ export function AppShell() {
           actions={<PropertySelect id="shell-property" />}
         />
 
-        {user?.propertySelectionRequired ? (
-          <div className={styles.main}>
+        {workplacePropertyBannerRequired(location.pathname) && user?.propertySelectionRequired ? (
+          <div className={styles.workplaceNotice}>
             <Notice tone="warning">{t('common.propertySelectionRequired')}</Notice>
           </div>
         ) : null}
@@ -180,6 +181,14 @@ function getFocusable(root: HTMLElement): HTMLElement[] {
 }
 
 function headingFor(pathname: string, t: (key: string) => string) {
+  if (pathname.startsWith('/app/workforce/movements')) {
+    return {
+      kicker: t('navigation.movements'),
+      title: t('movements.title'),
+      subtitle: t('movements.intro'),
+    }
+  }
+
   if (pathname.startsWith('/app/workforce/departments')) {
     return {
       kicker: t('workforce.title'),

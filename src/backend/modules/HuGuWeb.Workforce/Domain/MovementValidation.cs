@@ -29,6 +29,9 @@ public static class MovementValidation
         public const string Overlap = "reporting-line-overlap";
         public const string ManagerNotFound = "reporting-line-manager-not-found";
         public const string OrganizationMismatch = "reporting-line-organization-mismatch";
+        public const string ManagerLevelInvalid = "movement-manager-level-invalid";
+        public const string ManagerCannotManage = "movement-manager-cannot-manage";
+        public const string TargetNotPromotion = "movement-target-not-promotion";
         public const string CancellationReasonRequired = "movement-cancellation-reason-required";
         public const string CancellationReasonTooLong = "movement-cancellation-reason-too-long";
     }

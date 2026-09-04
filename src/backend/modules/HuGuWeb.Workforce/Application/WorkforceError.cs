@@ -244,6 +244,27 @@ public sealed record WorkforceError(
             MovementValidation.Codes.OrganizationMismatch,
             "Manager and subordinate must belong to the same organization.");
 
+    public static WorkforceError MovementManagerLevelInvalid() =>
+        InvalidFields(
+            MovementValidation.Codes.ManagerLevelInvalid,
+            "The selected manager must be at the subordinate's next organizational level.",
+            MovementValidation.Fields.TargetManagerEmploymentId,
+            MovementValidation.Codes.ManagerLevelInvalid);
+
+    public static WorkforceError MovementManagerCannotManage() =>
+        InvalidFields(
+            MovementValidation.Codes.ManagerCannotManage,
+            "The selected manager's position is not allowed to manage employees.",
+            MovementValidation.Fields.TargetManagerEmploymentId,
+            MovementValidation.Codes.ManagerCannotManage);
+
+    public static WorkforceError MovementTargetNotPromotion() =>
+        InvalidFields(
+            MovementValidation.Codes.TargetNotPromotion,
+            "The promotion target must be at a higher organizational level than the current position.",
+            MovementValidation.Fields.TargetPositionId,
+            MovementValidation.Codes.TargetNotPromotion);
+
     public static WorkforceError WorkplaceNotConfigured() =>
         new(
             "workplace-not-configured",

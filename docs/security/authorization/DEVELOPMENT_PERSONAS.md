@@ -24,19 +24,22 @@ Runtime code paths (policies, endpoints, sidebar, calculators) must not contain 
 
 | Email | Role code(s) | EmployeeAccountLink |
 |-------|--------------|---------------------|
-| `dev@localhost` (or `DevelopmentUser:Email`) | `development-superuser` | none (non-employee) |
+| `dev@localhost` (or `DevelopmentUser:Email`) | `development-superuser` | none (non-employee operator) |
 | `hr.manager@localhost` | `hr-manager` + `employee-leave-self-service` (Ankara) | `DEMO-HR-01` |
 | `hr.antalya@localhost` | `hr-manager` + `employee-leave-self-service` (Antalya) | `DEMO-HR-AYT-01` |
-| `hr.corporate@localhost` | `hr-corporate` (organization-wide) | none (non-employee) |
+| `hr.corporate@localhost` | `hr-corporate` (organization-wide) | none (non-employee operator; org-wide HR without a Property assignment) |
 | `roomops.attendant@localhost` | `room-attendant` + `employee-leave-self-service` | `DEMO-HK-01` |
 | `roomops.inspector@localhost` | `room-inspector` + `employee-leave-self-service` | `DEMO-HK-INS-01` |
-| `roomops.manager@localhost` | `room-operations-manager` + `employee-leave-self-service` | `DEMO-HK-MGR-01` |
+| `roomops.manager@localhost` | `room-operations-manager` + `department-leave-approver` + `department-scheduler` + `employee-leave-self-service`; AUTH-02 scope **HK** | `DEMO-HK-MGR-01` |
 | `maintenance.technician@localhost` | `maintenance-technician` + `employee-leave-self-service` | `DEMO-TECH-01` (ENG / ENG-TECH) |
 | `maintenance.manager@localhost` | `maintenance-manager` + `department-leave-approver` + `department-scheduler` + `employee-leave-self-service`; AUTH-02 scope **ENG** | `DEMO-TECH-MGR-01` |
+| `frontoffice.receptionist@localhost` | `employee-leave-self-service` | `DEMO-FO-01` |
 
-Identity bridge is **EmployeeAccountLink only** (deterministic seeded IDs). Runtime never matches by email or PersonnelNumber. ApplicationUser ≠ Employee.
+Identity bridge is **EmployeeAccountLink only** (deterministic seeded IDs). Runtime never matches by email or PersonnelNumber. ApplicationUser ≠ Employee. Every **active seeded Employee** has exactly one link. Operator accounts may remain unlinked.
 
-On Development startup, operational personnel outside the persona fixture set is cleared and persona Employees / Employments / Assignments are re-ensured idempotently.
+Manager relationships are seeded as `WorkforceReportingLine` (Selin Arslan ← Zeynep Demir, Elif Şahin; Murat Kaya ← Ali Tekin). They are not inferred from Position.
+
+On Development startup, operational personnel outside the persona fixture set is cleared and persona Employees / Employments / Assignments / reporting lines are re-ensured idempotently. Department/position applicability is seeded for **each** Property by stable codes.
 
 ## After AUTH-01
 

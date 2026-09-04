@@ -196,4 +196,10 @@
   <data name="error.reporting-line-manager-not-found.detail" xml:space="preserve"><value>The manager employment was not found.</value></data>
   <data name="error.reporting-line-organization-mismatch.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.reporting-line-organization-mismatch.detail" xml:space="preserve"><value>Manager and subordinate must belong to the same organization.</value></data>
+  <data name="error.movement-manager-level-invalid.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-manager-level-invalid.detail" xml:space="preserve"><value>The selected manager must be at the employee's next organizational level.</value></data>
+  <data name="error.movement-manager-cannot-manage.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-manager-cannot-manage.detail" xml:space="preserve"><value>The selected manager's position is not allowed to manage employees.</value></data>
+  <data name="error.movement-target-not-promotion.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-target-not-promotion.detail" xml:space="preserve"><value>The promotion target must be at a higher organizational level than the current position.</value></data>
 </root>

@@ -10,5 +10,9 @@
   <data name="error.position-not-found.detail" xml:space="preserve"><value>Pozisyon bulunamadı.</value></data>
   <data name="error.position-not-available-for-department.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
   <data name="error.position-not-available-for-department.detail" xml:space="preserve"><value>Seçilen pozisyon bu departmanda kullanılamaz.</value></data>
+  <data name="error.overlapping-primary-assignment.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.overlapping-primary-assignment.detail" xml:space="preserve"><value>Seçtiğiniz geçerlilik tarihi mevcut çalışma geçmişiyle çakışıyor. Lütfen farklı bir tarih seçin.</value></data>
+  <data name="error.invalid-transfer-date.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.invalid-transfer-date.detail" xml:space="preserve"><value>Seçtiğiniz geçerlilik tarihi mevcut çalışma geçmişiyle çakışıyor. Lütfen farklı bir tarih seçin.</value></data>
 </root>
 

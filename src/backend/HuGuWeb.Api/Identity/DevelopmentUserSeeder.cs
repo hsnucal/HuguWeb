@@ -189,7 +189,7 @@ public static class DevelopmentUserSeeder
         {
             membership = new UserMembership
             {
-                Id = Guid.CreateVersion7(),
+                Id = persona.MembershipId ?? Guid.CreateVersion7(),
                 UserId = userId,
                 OrganizationId = organizationId,
                 PropertyId = propertyId,
@@ -207,6 +207,7 @@ public static class DevelopmentUserSeeder
 
         DeactivateObsoleteSeedMemberships(memberships, organizationId, propertyId, membership.Id);
 
+        var desiredRoleIds = new HashSet<Guid>();
         foreach (var roleCode in persona.AssignedRoleCodes)
         {
             var role = await store.FindRoleByCodeAsync(organizationId, roleCode, CancellationToken.None);
@@ -215,6 +216,7 @@ public static class DevelopmentUserSeeder
                 continue;
             }
 
+            desiredRoleIds.Add(role.Id);
             if (membership.RoleAssignments.All(item => item.RoleId != role.Id))
             {
                 store.AddAssignment(new UserRoleAssignment
@@ -224,6 +226,11 @@ public static class DevelopmentUserSeeder
                     RoleId = role.Id
                 });
             }
+        }
+
+        foreach (var extra in membership.RoleAssignments.Where(item => !desiredRoleIds.Contains(item.RoleId)).ToArray())
+        {
+            store.RemoveAssignment(extra);
         }
 
         await EnsureDepartmentScopesAsync(store, workforce, logger, membership, persona);

@@ -18,6 +18,13 @@ public sealed class ListPersonnelMovementsQuery(
         }
 
         var organizationId = workplace.Value.Organization.Id;
+        if (filter.PropertyId is { } requestedProperty
+            && filter.AccessiblePropertyIds is not null
+            && !filter.AccessiblePropertyIds.Contains(requestedProperty))
+        {
+            return Array.Empty<PersonnelMovementListItemDto>();
+        }
+
         IReadOnlyCollection<Guid>? employmentIds = null;
         if (filter.EmployeeId is { } employeeId)
         {
@@ -117,6 +124,12 @@ public sealed class ListPersonnelMovementsQuery(
                 continue;
             }
 
+            if (filter.PropertyId is { } propertyId
+                && (propertyIds.Count == 0 || !propertyIds.Contains(propertyId)))
+            {
+                continue;
+            }
+
             items.Add(item);
         }
 
@@ -131,7 +144,8 @@ public sealed record ListPersonnelMovementsFilter(
     Guid? DepartmentId,
     Guid? EmployeeId,
     string? Search,
-    IReadOnlySet<Guid>? AccessiblePropertyIds);
+    IReadOnlySet<Guid>? AccessiblePropertyIds,
+    Guid? PropertyId = null);
 
 public sealed class GetPersonnelMovementQuery(
     IWorkforceStore store,
@@ -171,7 +185,8 @@ public sealed class GetPersonnelMovementQuery(
                 DepartmentId: null,
                 EmployeeId: detail.EmployeeId,
                 Search: null,
-                accessiblePropertyIds),
+                accessiblePropertyIds,
+                PropertyId: null),
             cancellationToken);
         if (!filtered.IsSuccess || filtered.Value!.All(item => item.Id != movement.Id))
         {

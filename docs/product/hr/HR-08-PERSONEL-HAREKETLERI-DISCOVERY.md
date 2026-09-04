@@ -1,6 +1,6 @@
 # HR-08 — Personel Hareketleri Discovery
 
-> **Status:** **Accepted** — Product Owner + CTO (2026-09-04). Q1–Q10 frozen below. **HR-08A** foundation is **Accepted / Completed**. **HR-08 overall remains In Progress** until HR-08B. HR-08B (top-level UI / card history) remains deferred and is **not** implemented. This document does **not** authorize HR-08B.
+> **Status:** **Accepted** — Product Owner + CTO (2026-09-04). Q1–Q10 frozen below. **HR-08A:** **Completed**. **HR-08B:** **Accepted / Completed**. **HR-08 overall:** **Completed**.
 >
 > This document does **not** supersede HR-DOMAIN-001, HR-DOMAIN-002, HR-DOMAIN-003, HR-04, HR-05A, HR-05B, HR-06, HR-07, or AUTH-02. Those remain **Accepted**.
 >
@@ -785,7 +785,9 @@ See also §31 PO list.
 
 **HR-08A Accepted / Completed** (2026-09-04) after live PO/CTO acceptance: DepartmentChange, PositionChange, Promotion, ManagerChange, future movement + cancel, same-Organization PropertyTransfer, dual-Property authorization, legacy Personnel Card Transfer API, list/detail DTOs, Problem Details, dated Puantaj, and shared active-Property request context.
 
-**HR-08 overall remains In Progress** until HR-08B.
+**HR-08B Accepted / Completed** (2026-09-05) after live PO/CTO acceptance: top-level Personel Hareketleri UI, wizard, detail drawer, card history, Finding 05 hierarchy, and brand integration.
+
+**HR-08 overall:** **Completed**.
 
 See [ADR-012 HR-08A implementation freeze](../../architecture/adr/ADR-012-Workforce-Movements-And-Reporting-Line.md) for lifecycle derivation, cancel/delete of never-effective Assignment rows, legacy Transfer type mapping (`AssignmentChange`), leave/schedule block policies, dual-Property authorization, and permission grants.
 

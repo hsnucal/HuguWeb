@@ -47,6 +47,8 @@ public sealed class MaintainPositionsUseCase(
                 workplace.Value.Property.Id,
                 command.Name,
                 command.Code,
+                command.OrganizationalLevel,
+                command.CanManageEmployees,
                 out var position,
                 out var error))
         {
@@ -97,6 +99,17 @@ public sealed class MaintainPositionsUseCase(
         if (command.CodeProvided && !position.TryChangeCode(command.Code, out var codeError))
         {
             return WorkforceError.InvalidRequest("invalid-position", codeError!);
+        }
+
+        if (command.OrganizationalLevel is { } organizationalLevel
+            && !position.TrySetOrganizationalLevel(organizationalLevel, out var levelError))
+        {
+            return WorkforceError.InvalidRequest("invalid-position", levelError!);
+        }
+
+        if (command.CanManageEmployees is { } canManageEmployees)
+        {
+            position.SetCanManageEmployees(canManageEmployees);
         }
 
         if (command.IsActive is true)
@@ -179,10 +192,23 @@ public sealed class MaintainPositionsUseCase(
     }
 
     private static PositionRecord ToRecord(Position position, IReadOnlyList<Guid> departmentIds) =>
-        new(position.Id, position.PropertyId, position.Name, position.Code, position.IsActive, departmentIds);
+        new(
+            position.Id,
+            position.PropertyId,
+            position.Name,
+            position.Code,
+            position.IsActive,
+            position.OrganizationalLevel,
+            position.CanManageEmployees,
+            departmentIds);
 }
 
-public sealed record CreatePositionCommand(string Name, string? Code, IReadOnlyList<Guid>? DepartmentIds);
+public sealed record CreatePositionCommand(
+    string Name,
+    string? Code,
+    IReadOnlyList<Guid>? DepartmentIds,
+    int OrganizationalLevel = Position.DefaultOrganizationalLevel,
+    bool CanManageEmployees = false);
 
 public sealed record UpdatePositionCommand(
     Guid Id,
@@ -190,7 +216,9 @@ public sealed record UpdatePositionCommand(
     string? Code,
     bool CodeProvided,
     bool? IsActive,
-    IReadOnlyList<Guid>? DepartmentIds);
+    IReadOnlyList<Guid>? DepartmentIds,
+    int? OrganizationalLevel = null,
+    bool? CanManageEmployees = null);
 
 public sealed record PositionRecord(
     Guid Id,
@@ -198,4 +226,6 @@ public sealed record PositionRecord(
     string Name,
     string? Code,
     bool IsActive,
+    int OrganizationalLevel,
+    bool CanManageEmployees,
     IReadOnlyList<Guid> ApplicableDepartmentIds);

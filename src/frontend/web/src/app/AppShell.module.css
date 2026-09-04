@@ -40,6 +40,11 @@
   padding: 0.25rem var(--space-page-gutter) 2.25rem;
 }
 
+.workplaceNotice {
+  flex: none;
+  padding: 0.25rem var(--space-page-gutter) 0;
+}
+
 .mobileBar {
   display: none;
 }

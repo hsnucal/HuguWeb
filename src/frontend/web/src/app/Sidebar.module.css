@@ -77,10 +77,11 @@
 }
 
 .collapsed .brandToggle {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.5rem;
+  height: 2.5rem;
   margin-inline: auto;
   padding: 0;
+  overflow: hidden;
 }
 
 .collapsed .brandToggleWrap {
@@ -102,10 +103,7 @@
 }
 
 .collapsed .wordmark {
-  width: 0;
-  opacity: 0;
-  transform: translateX(-0.35rem);
-  pointer-events: none;
+  display: none;
 }
 
 .drawerClose {

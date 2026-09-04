@@ -1134,6 +1134,9 @@ internal sealed class WorkforceHarness
     public Guid InactivePositionId { get; } = Guid.CreateVersion7();
     public Guid OtherDepartmentId { get; } = Guid.CreateVersion7();
     public Guid OtherPositionId { get; } = Guid.CreateVersion7();
+    public Guid Level200PositionId { get; } = Guid.CreateVersion7();
+    public Guid Level300PositionId { get; } = Guid.CreateVersion7();
+    public Guid Level400PositionId { get; } = Guid.CreateVersion7();
 
     public FakeClock Clock { get; } = new();
     public InMemoryWorkforceStore Store { get; } = new();
@@ -1147,6 +1150,8 @@ internal sealed class WorkforceHarness
     public CancelWorkforceMovementUseCase CancelMovement { get; }
     public ListPersonnelMovementsQuery ListMovements { get; }
     public GetPersonnelMovementQuery GetMovement { get; }
+    public ListMovementStructureQuery ListMovementStructure { get; }
+    public ListManagerCandidatesQuery ListManagerCandidates { get; }
     public EndEmploymentUseCase EndEmployment { get; }
     public ActiveWorkforceQuery ActiveWorkforce { get; }
     public EmployeeHistoryQuery History { get; }
@@ -1216,12 +1221,18 @@ internal sealed class WorkforceHarness
         AddDepartment(DepartmentId, "Kat Hizmetleri", active: true);
         AddDepartment(InactiveDepartmentId, "Kapalı Departman", active: false);
         AddDepartment(OtherDepartmentId, "Ön Büro", active: true);
-        AddPosition(PositionId, "Kat Görevlisi", active: true);
-        AddPosition(InactivePositionId, "Kapalı Pozisyon", active: false);
-        AddPosition(OtherPositionId, "Resepsiyon Görevlisi", active: true);
+        AddPosition(PositionId, "Kat Görevlisi", active: true, 100, false);
+        AddPosition(InactivePositionId, "Kapalı Pozisyon", active: false, 100, false);
+        AddPosition(OtherPositionId, "Resepsiyon Görevlisi", active: true, 100, false);
+        AddPosition(Level200PositionId, "Kat Şefi", active: true, 200, true);
+        AddPosition(Level300PositionId, "Müdür", active: true, 300, true);
+        AddPosition(Level400PositionId, "Genel Müdür", active: true, 400, true);
         AddApplicability(DepartmentId, PositionId);
         AddApplicability(OtherDepartmentId, PositionId);
         AddApplicability(OtherDepartmentId, OtherPositionId);
+        AddApplicability(DepartmentId, Level200PositionId);
+        AddApplicability(DepartmentId, Level300PositionId);
+        AddApplicability(DepartmentId, Level400PositionId);
 
         foreach (var (code, description) in OfficialLookupCatalog.DocumentTypes)
         {
@@ -1268,6 +1279,8 @@ internal sealed class WorkforceHarness
             OtherPropertyId,
             "Other Property Position",
             code: null,
+            200,
+            true,
             out var otherPos,
             out _));
         Store.Positions.Add(otherPos!);
@@ -1281,6 +1294,8 @@ internal sealed class WorkforceHarness
         CancelMovement = new CancelWorkforceMovementUseCase(Store, Clock, Workplace);
         ListMovements = new ListPersonnelMovementsQuery(Store, Clock, Workplace);
         GetMovement = new GetPersonnelMovementQuery(Store, Clock, Workplace);
+        ListMovementStructure = new ListMovementStructureQuery(Store, Workplace);
+        ListManagerCandidates = new ListManagerCandidatesQuery(Store, Workplace);
         EndEmployment = new EndEmploymentUseCase(Store, Workplace);
         ActiveWorkforce = new ActiveWorkforceQuery(Store, Clock, Workplace);
         History = new EmployeeHistoryQuery(Store, Clock, Workplace);
@@ -1513,9 +1528,22 @@ internal sealed class WorkforceHarness
         Store.Departments.Add(department!);
     }
 
-    private void AddPosition(Guid id, string name, bool active)
+    private void AddPosition(
+        Guid id,
+        string name,
+        bool active,
+        int organizationalLevel = Position.DefaultOrganizationalLevel,
+        bool canManageEmployees = false)
     {
-        Assert.True(Position.TryCreate(id, PropertyId, name, null, out var position, out _));
+        Assert.True(Position.TryCreate(
+            id,
+            PropertyId,
+            name,
+            null,
+            organizationalLevel,
+            canManageEmployees,
+            out var position,
+            out _));
         if (!active)
         {
             position!.Deactivate();

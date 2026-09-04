@@ -133,12 +133,12 @@ public class WorkforceMovementHr08ATests
         Assert.Equal(MovementValidation.Codes.SameTarget, same.Error!.Code);
 
         var promoted = await harness.CreateMovement.ExecuteAsync(
-            Promotion(hired.EmploymentId, harness.OtherPositionId),
+            Promotion(hired.EmploymentId, harness.Level200PositionId),
             CancellationToken.None);
         Assert.True(promoted.IsSuccess, promoted.Error?.Detail);
         Assert.Equal(PersonnelMovementType.Promotion, promoted.Value!.Type);
         Assert.Equal(harness.DepartmentId, promoted.Value.NewAssignment!.DepartmentId);
-        Assert.Equal(harness.OtherPositionId, promoted.Value.NewAssignment.PositionId);
+        Assert.Equal(harness.Level200PositionId, promoted.Value.NewAssignment.PositionId);
         Assert.Equal(2, harness.Store.Assignments.Count);
     }
 
@@ -231,9 +231,10 @@ public class WorkforceMovementHr08ATests
     {
         var harness = new WorkforceHarness();
         var subordinate = await HirePastAsync(harness);
-        var managerA = await HireNamedAsync(harness, "Ali", "Manager");
-        var managerB = await HireNamedAsync(harness, "Bora", "Boss");
-        var managerC = await HireNamedAsync(harness, "Cem", "Chief");
+        var managerA = await HireNamedAsync(harness, "Ali", "Manager", harness.Level200PositionId);
+        var managerPeer = await HireNamedAsync(harness, "Bora", "Peer", harness.Level200PositionId);
+        var managerB = await HireNamedAsync(harness, "Bora", "Boss", harness.Level300PositionId);
+        var managerC = await HireNamedAsync(harness, "Cem", "Chief", harness.Level400PositionId);
 
         var initial = await harness.CreateMovement.ExecuteAsync(
             ManagerChange(subordinate.EmploymentId, managerA.EmploymentId),
@@ -249,7 +250,7 @@ public class WorkforceMovementHr08ATests
         Assert.Equal(managerA.EmploymentId, todayLine!.ManagerEmploymentId);
 
         var changed = await harness.CreateMovement.ExecuteAsync(
-            ManagerChange(subordinate.EmploymentId, managerB.EmploymentId, harness.Clock.Today.AddDays(2)),
+            ManagerChange(subordinate.EmploymentId, managerPeer.EmploymentId, harness.Clock.Today.AddDays(2)),
             CancellationToken.None);
         Assert.True(changed.IsSuccess, changed.Error?.Detail);
         Assert.Equal(harness.Clock.Today.AddDays(1), harness.Store.ReportingLines.Single(item => item.Id == todayLine.Id).EffectiveTo);
@@ -266,13 +267,40 @@ public class WorkforceMovementHr08ATests
             ManagerChange(managerB.EmploymentId, managerC.EmploymentId),
             CancellationToken.None)).IsSuccess);
 
+        var junior = await HireNamedAsync(harness, "Deniz", "Staff");
+        var supervisor = await HireNamedAsync(harness, "Ece", "Lead", harness.Level200PositionId);
+        Assert.True((await harness.CreateMovement.ExecuteAsync(
+            ManagerChange(junior.EmploymentId, supervisor.EmploymentId),
+            CancellationToken.None)).IsSuccess);
+        harness.AddApplicability(harness.DepartmentId, harness.Level300PositionId);
+        Assert.True((await harness.CreateMovement.ExecuteAsync(
+            Promotion(junior.EmploymentId, harness.Level300PositionId) with
+            {
+                EffectiveDate = harness.Clock.Today.AddDays(5)
+            },
+            CancellationToken.None)).IsSuccess);
         var twoNode = await harness.CreateMovement.ExecuteAsync(
-            ManagerChange(managerB.EmploymentId, managerA.EmploymentId, harness.Clock.Today.AddDays(5)),
+            ManagerChange(supervisor.EmploymentId, junior.EmploymentId, harness.Clock.Today.AddDays(5)),
             CancellationToken.None);
         Assert.Equal(MovementValidation.Codes.Cycle, twoNode.Error!.Code);
 
+        var first = await HireNamedAsync(harness, "Fatih", "One");
+        var second = await HireNamedAsync(harness, "Gizem", "Two", harness.Level200PositionId);
+        var third = await HireNamedAsync(harness, "Hakan", "Three", harness.Level300PositionId);
+        Assert.True((await harness.CreateMovement.ExecuteAsync(
+            ManagerChange(first.EmploymentId, second.EmploymentId),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await harness.CreateMovement.ExecuteAsync(
+            ManagerChange(second.EmploymentId, third.EmploymentId),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await harness.CreateMovement.ExecuteAsync(
+            Promotion(first.EmploymentId, harness.Level400PositionId) with
+            {
+                EffectiveDate = harness.Clock.Today.AddDays(6)
+            },
+            CancellationToken.None)).IsSuccess);
         var threeNode = await harness.CreateMovement.ExecuteAsync(
-            ManagerChange(managerC.EmploymentId, managerA.EmploymentId, harness.Clock.Today.AddDays(6)),
+            ManagerChange(third.EmploymentId, first.EmploymentId, harness.Clock.Today.AddDays(6)),
             CancellationToken.None);
         Assert.Equal(MovementValidation.Codes.Cycle, threeNode.Error!.Code);
     }
@@ -357,7 +385,7 @@ public class WorkforceMovementHr08ATests
             CancellationToken.None);
         Assert.True(outside.IsSuccess, outside.Error?.Detail);
 
-        var manager = await HireNamedAsync(harness, "Yönetici", "Kişi");
+        var manager = await HireNamedAsync(harness, "Yönetici", "Kişi", harness.Level200PositionId);
         var managerMove = await harness.CreateMovement.ExecuteAsync(
             ManagerChange(hired.EmploymentId, manager.EmploymentId, new DateOnly(2026, 9, 15)),
             CancellationToken.None);
@@ -540,10 +568,16 @@ public class WorkforceMovementHr08ATests
     private static async Task<(Guid EmployeeId, Guid EmploymentId)> HireNamedAsync(
         WorkforceHarness harness,
         string given,
-        string family)
+        string family,
+        Guid? positionId = null)
     {
         var hired = await harness.Hire.ExecuteAsync(
-            new HireEmployeeCommand(given, family, harness.Clock.Today.AddDays(-10), harness.DepartmentId, harness.PositionId),
+            new HireEmployeeCommand(
+                given,
+                family,
+                harness.Clock.Today.AddDays(-10),
+                harness.DepartmentId,
+                positionId ?? harness.PositionId),
             CancellationToken.None);
         Assert.True(hired.IsSuccess, hired.Error?.Detail);
         return (hired.Value!.EmployeeId, hired.Value.EmploymentId);

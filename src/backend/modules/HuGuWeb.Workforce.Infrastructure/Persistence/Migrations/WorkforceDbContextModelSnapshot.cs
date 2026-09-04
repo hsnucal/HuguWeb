@@ -1474,6 +1474,9 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("CanManageEmployees")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -1481,6 +1484,9 @@ namespace HuGuWeb.Workforce.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("OrganizationalLevel")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("PropertyId")
                         .HasColumnType("uuid");

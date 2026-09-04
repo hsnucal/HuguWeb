@@ -36,6 +36,8 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<CancelWorkforceMovementUseCase>();
         services.AddScoped<ListPersonnelMovementsQuery>();
         services.AddScoped<GetPersonnelMovementQuery>();
+        services.AddScoped<ListMovementStructureQuery>();
+        services.AddScoped<ListManagerCandidatesQuery>();
         services.AddScoped<EndEmploymentUseCase>();
         services.AddScoped<MaintainDepartmentsUseCase>();
         services.AddScoped<MaintainPositionsUseCase>();

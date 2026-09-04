@@ -174,6 +174,8 @@ file sealed class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.Property(entity => entity.Name).HasMaxLength(Position.NameMaxLength).IsRequired();
         builder.Property(entity => entity.Code).HasMaxLength(Position.CodeMaxLength);
         builder.Property(entity => entity.IsActive).IsRequired();
+        builder.Property(entity => entity.OrganizationalLevel).IsRequired();
+        builder.Property(entity => entity.CanManageEmployees).IsRequired();
         builder.Property<DateTimeOffset>("CreatedAtUtc").HasDefaultValueSql("now()");
         builder.HasOne<Property>()
             .WithMany()

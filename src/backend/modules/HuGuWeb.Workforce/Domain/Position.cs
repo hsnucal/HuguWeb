@@ -4,19 +4,30 @@ public sealed class Position
 {
     public const int NameMaxLength = 200;
     public const int CodeMaxLength = 32;
+    public const int DefaultOrganizationalLevel = 100;
 
     private Position()
     {
         Name = string.Empty;
+        OrganizationalLevel = DefaultOrganizationalLevel;
     }
 
-    private Position(Guid id, Guid propertyId, string name, string? code, bool isActive)
+    private Position(
+        Guid id,
+        Guid propertyId,
+        string name,
+        string? code,
+        bool isActive,
+        int organizationalLevel,
+        bool canManageEmployees)
     {
         Id = id;
         PropertyId = propertyId;
         Name = name;
         Code = code;
         IsActive = isActive;
+        OrganizationalLevel = organizationalLevel;
+        CanManageEmployees = canManageEmployees;
     }
 
     public Guid Id { get; private set; }
@@ -24,12 +35,33 @@ public sealed class Position
     public string Name { get; private set; }
     public string? Code { get; private set; }
     public bool IsActive { get; private set; }
+    public int OrganizationalLevel { get; private set; }
+    public bool CanManageEmployees { get; private set; }
 
     public static bool TryCreate(
         Guid id,
         Guid propertyId,
         string? name,
         string? code,
+        out Position? position,
+        out string? error) =>
+        TryCreate(
+            id,
+            propertyId,
+            name,
+            code,
+            DefaultOrganizationalLevel,
+            canManageEmployees: false,
+            out position,
+            out error);
+
+    public static bool TryCreate(
+        Guid id,
+        Guid propertyId,
+        string? name,
+        string? code,
+        int organizationalLevel,
+        bool canManageEmployees,
         out Position? position,
         out string? error)
     {
@@ -44,7 +76,19 @@ public sealed class Position
             return false;
         }
 
-        position = new Position(id, propertyId, normalizedName, normalizedCode, isActive: true);
+        if (!TryNormalizeOrganizationalLevel(organizationalLevel, out error))
+        {
+            return false;
+        }
+
+        position = new Position(
+            id,
+            propertyId,
+            normalizedName,
+            normalizedCode,
+            isActive: true,
+            organizationalLevel,
+            canManageEmployees);
         return true;
     }
 
@@ -62,6 +106,20 @@ public sealed class Position
         return true;
     }
 
+    public bool TrySetOrganizationalLevel(int organizationalLevel, out string? error)
+    {
+        if (!TryNormalizeOrganizationalLevel(organizationalLevel, out error))
+        {
+            return false;
+        }
+
+        OrganizationalLevel = organizationalLevel;
+        return true;
+    }
+
+    public void SetCanManageEmployees(bool canManageEmployees) =>
+        CanManageEmployees = canManageEmployees;
+
     public void Activate() => IsActive = true;
 
     public void Deactivate() => IsActive = false;
@@ -69,6 +127,18 @@ public sealed class Position
     private bool ApplyName(string name)
     {
         Name = name;
+        return true;
+    }
+
+    public static bool TryNormalizeOrganizationalLevel(int organizationalLevel, out string? error)
+    {
+        if (organizationalLevel < 1)
+        {
+            error = "Organizational level must be 1 or greater.";
+            return false;
+        }
+
+        error = null;
         return true;
     }
 

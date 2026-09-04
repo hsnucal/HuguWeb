@@ -27,8 +27,9 @@ Not on:
 |---------|---------|
 | **Authentication** | Identity (ADR-007). Who the user is. |
 | **Authorization** | HuGu membership/roles/permissions (ADR-008, ADR-010). What they may do, where. |
-| **Employee** | Workforce person. Not a login. |
+| **Employee** | Workforce person. Not the login account. |
 | **ApplicationUser** | ERP login account. |
+| **EmployeeAccountLink** | Connects them when the employee is identity-capable. |
 | **Permission** | Stable application capability (`hr.employee.manage`). Code-owned. |
 | **Role** | Named bundle of permissions. Database-owned. Never checked by name at runtime. |
 | **Excel** | Future import/provisioning channel. Never a runtime identity store. |

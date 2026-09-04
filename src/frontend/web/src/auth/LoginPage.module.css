@@ -138,6 +138,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 0;
   max-width: 26rem;
   animation: identityIn var(--motion-duration-enter) var(--motion-easing-enter) both;
 }

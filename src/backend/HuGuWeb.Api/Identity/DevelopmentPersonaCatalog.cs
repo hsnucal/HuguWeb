@@ -11,6 +11,7 @@ public sealed record DevelopmentPersonaDefinition(
     IReadOnlyList<string>? AdditionalRoleCodes = null,
     Guid? LinkedEmployeeId = null,
     Guid? LinkedAccountLinkId = null,
+    Guid? MembershipId = null,
     IReadOnlyList<string>? DepartmentScopeCodes = null)
 {
     public IReadOnlyList<string> AssignedRoleCodes
@@ -56,7 +57,8 @@ public static class DevelopmentPersonaCatalog
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
         AdditionalRoleCodes: LeaveSelfServiceRole,
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.HrManagerEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.HrManagerLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.HrManagerLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000002"));
 
     public static readonly DevelopmentPersonaDefinition HotelBHumanResourcesManager = new(
         "hr.antalya@localhost",
@@ -65,14 +67,16 @@ public static class DevelopmentPersonaCatalog
         DevelopmentWorkforceSeeder.AntalyaPropertyId,
         AdditionalRoleCodes: LeaveSelfServiceRole,
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.AntalyaHrManagerEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.AntalyaHrManagerLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.AntalyaHrManagerLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000007"));
 
     /// <summary>Non-employee corporate/system persona — no EmployeeAccountLink.</summary>
     public static readonly DevelopmentPersonaDefinition CorporateHumanResources = new(
         "hr.corporate@localhost",
         SystemRoleTemplates.CorporateHr,
         SystemRoleTemplates.HumanResourcesPermissions,
-        PropertyId: null);
+        PropertyId: null,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000009"));
 
     public static readonly DevelopmentPersonaDefinition RoomOperationsAttendant = new(
         "roomops.attendant@localhost",
@@ -81,7 +85,8 @@ public static class DevelopmentPersonaCatalog
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
         AdditionalRoleCodes: LeaveSelfServiceRole,
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.RoomAttendantEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomAttendantLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomAttendantLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000003"));
 
     public static readonly DevelopmentPersonaDefinition RoomOperationsInspector = new(
         "roomops.inspector@localhost",
@@ -90,16 +95,30 @@ public static class DevelopmentPersonaCatalog
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
         AdditionalRoleCodes: LeaveSelfServiceRole,
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.RoomInspectorEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomInspectorLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomInspectorLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000005"));
 
     public static readonly DevelopmentPersonaDefinition RoomOperationsManager = new(
         "roomops.manager@localhost",
         SystemRoleTemplates.RoomOperationsManager,
-        [RoomOperationsPermissions.Read, RoomOperationsPermissions.Manage, RoomOperationsPermissions.Inspect],
+        [
+            RoomOperationsPermissions.Read,
+            RoomOperationsPermissions.Manage,
+            RoomOperationsPermissions.Inspect,
+            ..SystemRoleTemplates.DepartmentLeaveApproverPermissions,
+            ..SystemRoleTemplates.DepartmentSchedulerOnlyPermissions
+        ],
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
-        AdditionalRoleCodes: LeaveSelfServiceRole,
+        AdditionalRoleCodes:
+        [
+            SystemRoleTemplates.EmployeeLeaveSelfService,
+            SystemRoleTemplates.DepartmentLeaveApprover,
+            SystemRoleTemplates.DepartmentScheduler
+        ],
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.RoomOpsManagerEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomOpsManagerLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.RoomOpsManagerLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000006"),
+        DepartmentScopeCodes: ["HK"]);
 
     /// <summary>
     /// Operational hotel employee persona: maintenance resolve + leave self-service.
@@ -116,7 +135,8 @@ public static class DevelopmentPersonaCatalog
         DevelopmentWorkforceSeeder.AnkaraPropertyId,
         AdditionalRoleCodes: LeaveSelfServiceRole,
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianEmployeeId,
-        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianLinkId);
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.MaintenanceTechnicianLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000001"));
 
     public static readonly DevelopmentPersonaDefinition MaintenanceManager = new(
         "maintenance.manager@localhost",
@@ -137,7 +157,17 @@ public static class DevelopmentPersonaCatalog
         ],
         LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.MaintenanceManagerEmployeeId,
         LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.MaintenanceManagerLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000004"),
         DepartmentScopeCodes: ["ENG"]);
+
+    public static readonly DevelopmentPersonaDefinition FrontOfficeReceptionist = new(
+        "frontoffice.receptionist@localhost",
+        SystemRoleTemplates.EmployeeLeaveSelfService,
+        SystemRoleTemplates.EmployeeLeaveSelfServicePermissions,
+        DevelopmentWorkforceSeeder.AnkaraPropertyId,
+        LinkedEmployeeId: DevelopmentPersonaEmployeeFixtures.FrontOfficeReceptionistEmployeeId,
+        LinkedAccountLinkId: DevelopmentPersonaEmployeeFixtures.FrontOfficeReceptionistLinkId,
+        MembershipId: Guid.Parse("b1e1c0de-0006-4000-8000-000000000008"));
 
     public static IReadOnlyList<DevelopmentPersonaDefinition> AdditionalPersonas { get; } =
     [
@@ -148,7 +178,8 @@ public static class DevelopmentPersonaCatalog
         RoomOperationsInspector,
         RoomOperationsManager,
         MaintenanceTechnician,
-        MaintenanceManager
+        MaintenanceManager,
+        FrontOfficeReceptionist
     ];
 
     public static DevelopmentPersonaDefinition Broad(string? configuredEmail)

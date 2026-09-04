@@ -69,6 +69,22 @@ public static class DevelopmentPersonaEmployeeFixtures
     public static readonly Guid AntalyaHrManagerLinkId =
         Guid.Parse("b1e1c0de-0002-4000-8000-000000000007");
 
+    public static readonly Guid FrontOfficeReceptionistEmployeeId =
+        Guid.Parse("a1e1c0de-0003-4000-8000-000000000471");
+    public static readonly Guid FrontOfficeReceptionistEmploymentId =
+        Guid.Parse("a1e1c0de-0003-4000-8000-000000000472");
+    public static readonly Guid FrontOfficeReceptionistAssignmentId =
+        Guid.Parse("a1e1c0de-0003-4000-8000-000000000473");
+    public static readonly Guid FrontOfficeReceptionistLinkId =
+        Guid.Parse("b1e1c0de-0002-4000-8000-000000000008");
+
+    public static readonly Guid HousekeepingAttendantReportingLineId =
+        Guid.Parse("a1e1c0de-0005-4000-8000-000000000001");
+    public static readonly Guid HousekeepingInspectorReportingLineId =
+        Guid.Parse("a1e1c0de-0005-4000-8000-000000000002");
+    public static readonly Guid MaintenanceTechnicianReportingLineId =
+        Guid.Parse("a1e1c0de-0005-4000-8000-000000000003");
+
     public static readonly DateOnly EmploymentStartDate = new(2026, 1, 1);
 
     public static IReadOnlyList<PersonaEmployeeFixture> All { get; } =
@@ -174,8 +190,38 @@ public static class DevelopmentPersonaEmployeeFixtures
             "Aksoy",
             "HR",
             "İnsan Kaynakları",
-            Guid.Parse("a1e1c0de-0001-4000-8000-000000000201"),
-            "HR-OFF")
+            DevelopmentWorkplaceCatalog.AntalyaHumanResourcesDepartmentId,
+            "HR-OFF"),
+        new(
+            "frontoffice.receptionist@localhost",
+            FrontOfficeReceptionistEmployeeId,
+            FrontOfficeReceptionistEmploymentId,
+            FrontOfficeReceptionistAssignmentId,
+            FrontOfficeReceptionistLinkId,
+            DevelopmentWorkforceSeeder.AnkaraPropertyId,
+            "DEMO-FO-01",
+            "Hasan",
+            "Uçal",
+            "FO",
+            "Ön Büro",
+            DevelopmentWorkforceSeeder.FrontOfficeDepartmentId,
+            "FO-REC")
+    ];
+
+    public static IReadOnlyList<PersonaReportingLineFixture> ReportingLines { get; } =
+    [
+        new(
+            HousekeepingAttendantReportingLineId,
+            RoomAttendantEmploymentId,
+            RoomOpsManagerEmploymentId),
+        new(
+            HousekeepingInspectorReportingLineId,
+            RoomInspectorEmploymentId,
+            RoomOpsManagerEmploymentId),
+        new(
+            MaintenanceTechnicianReportingLineId,
+            MaintenanceTechnicianEmploymentId,
+            MaintenanceManagerEmploymentId)
     ];
 
     public static IReadOnlySet<Guid> EmployeeIds { get; } =
@@ -201,3 +247,8 @@ public sealed record PersonaEmployeeFixture(
     string PositionCode,
     IReadOnlyList<string>? AlternateDepartmentCodes = null,
     IReadOnlyList<string>? AlternatePositionCodes = null);
+
+public sealed record PersonaReportingLineFixture(
+    Guid Id,
+    Guid SubordinateEmploymentId,
+    Guid ManagerEmploymentId);

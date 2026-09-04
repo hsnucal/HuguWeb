@@ -370,6 +370,22 @@ public sealed class CreateWorkforceMovementUseCase(
                     return WorkforceError.MovementSameTarget();
                 }
 
+                if (command.Type == PersonnelMovementType.Promotion)
+                {
+                    var sourcePosition = await store.GetPositionAsync(current.PositionId, cancellationToken);
+                    if (sourcePosition is null)
+                    {
+                        return WorkforceError.PositionNotFound();
+                    }
+
+                    if (!PromotionHierarchy.IsHigherLevel(
+                            sourcePosition.OrganizationalLevel,
+                            position.OrganizationalLevel))
+                    {
+                        return WorkforceError.MovementTargetNotPromotion();
+                    }
+                }
+
                 return new AssignmentDestinationPair(currentDepartment, position, sourceProperty);
             }
             case PersonnelMovementType.PropertyTransfer:
@@ -527,10 +543,22 @@ public sealed class CreateWorkforceMovementUseCase(
                 return WorkforceError.ReportingLineOrganizationMismatch();
             }
 
-            managerEmployment.RefreshLifecycle(clock.Today);
+            managerEmployment.RefreshLifecycle(command.EffectiveDate);
             if (!managerEmployment.Period.Contains(command.EffectiveDate) || managerEmployment.IsEnded)
             {
                 return WorkforceError.ReportingLineManagerNotFound();
+            }
+
+            var hierarchyError = await ManagerHierarchyEligibility.ValidateCandidateAsync(
+                store,
+                organization.Id,
+                employment.Id,
+                managerEmploymentId,
+                command.EffectiveDate,
+                cancellationToken);
+            if (hierarchyError is not null)
+            {
+                return hierarchyError;
             }
 
             if (await WouldCreateCycleAsync(

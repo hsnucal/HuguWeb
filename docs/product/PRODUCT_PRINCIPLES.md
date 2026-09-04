@@ -55,6 +55,12 @@ HuGuWeb is designed for hotels and hospitality as the first target industry. Do 
 
 ---
 
+## Every active employee is identity-capable
+
+HuGuWeb is an employee-facing platform. An active employee should be able to authenticate. That is not the same as granting HR permissions. `Employee` remains workforce identity; `ApplicationUser` remains authentication identity; `EmployeeAccountLink` connects them. See [Employee identity access](../domain/hr/EMPLOYEE_IDENTITY_ACCESS.md).
+
+---
+
 ## Simplicity is a feature
 
 Complexity must provide measurable value.

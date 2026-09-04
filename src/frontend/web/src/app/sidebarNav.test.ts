@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { buildPrimaryNav, buildSettingsNav, resolveWorkforceNavTo } from './sidebarNav.ts'
+import { buildPrimaryNav, buildSettingsNav, isPrimaryNavActive, resolveWorkforceNavTo } from './sidebarNav.ts'
 import { resolveSidebarChrome } from './sidebarChrome.ts'
 
 function destinationIds(options: Parameters<typeof buildPrimaryNav>[0]) {
@@ -184,4 +184,51 @@ test('attendance-only users get a top-level Puantaj destination without Workforc
   if (attendance.destination.kind === 'link') {
     assert.equal(attendance.destination.to, '/app/attendance')
   }
+})
+
+test('hr.movements.read shows Personel Hareketleri near Puantaj', () => {
+  const items = buildPrimaryNav({
+    ...permitted,
+    canReadHrAttendance: true,
+    canReadHrMovements: true,
+  })
+  const ids = items.map((item) => item.id)
+  assert.ok(ids.includes('movements'))
+  assert.ok(ids.indexOf('workforce') < ids.indexOf('movements'))
+  const movements = items.find((item) => item.id === 'movements')
+  assert.ok(movements)
+  assert.equal(movements.icon, 'history')
+  assert.equal(movements.labelKey, 'navigation.movements')
+  assert.equal(movements.destination.kind, 'link')
+  if (movements.destination.kind === 'link') {
+    assert.equal(movements.destination.to, '/app/workforce/movements')
+  }
+})
+
+test('Personel Hareketleri sidebar is hidden without hr.movements.read', () => {
+  const items = buildPrimaryNav({
+    ...permitted,
+    canReadHrMovements: false,
+  })
+  assert.equal(
+    items.find((item) => item.id === 'movements'),
+    undefined,
+  )
+})
+
+test('movements route highlights Personel Hareketleri not Personel', () => {
+  const items = buildPrimaryNav({
+    ...permitted,
+    canReadHrAttendance: true,
+    canReadHrMovements: true,
+  })
+  const workforce = items.find((item) => item.id === 'workforce')
+  const movements = items.find((item) => item.id === 'movements')
+  assert.ok(workforce)
+  assert.ok(movements)
+  assert.equal(isPrimaryNavActive(workforce, '/app/workforce/movements', true), false)
+  assert.equal(isPrimaryNavActive(workforce, '/app/workforce', true), true)
+  assert.equal(isPrimaryNavActive(workforce, '/app/workforce/departments', true), true)
+  assert.equal(isPrimaryNavActive(movements, '/app/workforce/movements', true), true)
+  assert.equal(isPrimaryNavActive(movements, '/app/workforce', false), false)
 })

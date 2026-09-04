@@ -24,6 +24,7 @@ navigation: {
     roomOperations: 'Oda Operasyonları',
     technicalService: 'Teknik Servis',
     myLeave: 'İzinlerim',
+    movements: 'Personel Hareketleri',
     openMenu: 'Menüyü aç',
     closeMenu: 'Menüyü kapat',
   },

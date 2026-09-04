@@ -33,6 +33,13 @@ public class DevelopmentPersonaEmployeeMappingTests
                 && item.PersonnelNumber == "DEMO-HR-01"
                 && item.DepartmentCode == "HR"
                 && item.PositionCode == "HR-OFF");
+        Assert.Contains(
+            DevelopmentPersonaEmployeeFixtures.All,
+            item => item.PersonaEmail == "frontoffice.receptionist@localhost"
+                && item.PersonnelNumber == "DEMO-FO-01"
+                && item.GivenName == "Hasan"
+                && item.DepartmentCode == "FO"
+                && item.PositionCode == "FO-REC");
     }
 
     [Fact]

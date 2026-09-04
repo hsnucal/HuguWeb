@@ -36,6 +36,7 @@ export type Translations = {
     roomOperations: string
     technicalService: string
     myLeave: string
+    movements: string
     openMenu: string
     closeMenu: string
   }
@@ -241,6 +242,8 @@ export type Translations = {
     createDepartment: string
     createPosition: string
     applicableDepartments: string
+    organizationalLevel: string
+    canManageEmployees: string
     rename: string
     save: string
     cancel: string
@@ -1057,6 +1060,149 @@ export type Translations = {
       assignmentNotFound: string
       departmentFilterDenied: string
       missingEmployment: string
+    }
+  }
+  movements: {
+    title: string
+    intro: string
+    new: string
+    loading: string
+    retry: string
+    noAccess: string
+    empty: string
+    emptyFiltered: string
+    columns: {
+      personnel: string
+      type: string
+      previous: string
+      next: string
+      effectiveDate: string
+      status: string
+      reason: string
+      actor: string
+      createdAt: string
+    }
+    actorSystem: string
+    actorUnknown: string
+    filters: {
+      allProperties: string
+      allTypes: string
+      dateFrom: string
+      dateTo: string
+      employee: string
+      employeeHint: string
+      employeePinned: string
+      clearEmployee: string
+    }
+    types: {
+      DepartmentChange: string
+      PositionChange: string
+      Promotion: string
+      PropertyTransfer: string
+      ManagerChange: string
+      AssignmentChange: string
+      unknown: string
+    }
+    lifecycle: {
+      Scheduled: string
+      Effective: string
+      Cancelled: string
+      unknown: string
+    }
+    detail: {
+      title: string
+      previous: string
+      next: string
+      scheduledHint: string
+      cancelledAt: string
+      cancelledBy: string
+      cancellationReason: string
+    }
+    cancel: {
+      action: string
+      title: string
+      body: string
+      reason: string
+      confirm: string
+      success: string
+    }
+    wizard: {
+      back: string
+      next: string
+      save: string
+      success: string
+      selectType: string
+      employeeSearchHint: string
+      dateHint: string
+      targetDepartment: string
+      targetPosition: string
+      targetProperty: string
+      targetManager: string
+      positionKept: string
+      positionRequiredForDepartment: string
+      promotionHint: string
+      scheduledNotice: string
+      currentManagerUnknown: string
+      managerSelected: string
+      changeSelection: string
+      noManagerCandidates: string
+      noPromotionTargets: string
+      managerLevelHint: string
+      steps: {
+        personnel: string
+        type: string
+        date: string
+        target: string
+        reason: string
+        review: string
+      }
+      invalid: {
+        type: string
+        date: string
+        reason: string
+        target: string
+      }
+    }
+    card: {
+      title: string
+      empty: string
+      viewAll: string
+    }
+    errors: {
+      generic: string
+      invalidType: string
+      reasonRequired: string
+      reasonTooLong: string
+      noteTooLong: string
+      effectiveDateInvalid: string
+      employmentNotFound: string
+      assignmentNotFound: string
+      sameTarget: string
+      positionNotApplicable: string
+      propertyAccessDenied: string
+      crossOrganization: string
+      pendingLeaveConflict: string
+      scheduleConflict: string
+      notCancellable: string
+      alreadyEffective: string
+      alreadyCancelled: string
+      notFound: string
+      targetPositionRequired: string
+      targetDepartmentRequired: string
+      targetPropertyRequired: string
+      selfManager: string
+      reportingCycle: string
+      reportingOverlap: string
+      managerNotFound: string
+      organizationMismatch: string
+      managerLevelInvalid: string
+      managerCannotManage: string
+      targetNotPromotion: string
+      cancellationReasonRequired: string
+      cancellationReasonTooLong: string
+      dateConflict: string
+      dateConflictWithBound: string
+      editEffectiveDate: string
     }
   }
   roomOperations: {

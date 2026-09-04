@@ -31,7 +31,7 @@ Authenticated users **do not** fall back to `Workforce:PropertyId` or to the fir
 - `ScopeType`
 - `OccurredAtUtc` from `TimeProvider`
 
-`Employee` is not `ApplicationUser`. Not every user is an Employee; not every Employee has a User.
+`Employee` is not `ApplicationUser`. Not every user is an Employee (operator accounts such as `dev@localhost` and `hr.corporate@localhost` may remain unlinked). Product intent: every **active** Employee should be identity-capable via `EmployeeAccountLink`. Development seed follows that for demo employees. Production hire still does not auto-provision a login.
 
 Do not scatter `HttpContext` claim lookups through domain use cases. Domain must not reference `HttpContext`.
 

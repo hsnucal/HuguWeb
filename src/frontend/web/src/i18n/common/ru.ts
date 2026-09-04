@@ -24,6 +24,7 @@ navigation: {
     roomOperations: 'Операции по номерам',
     technicalService: 'Техническая служба',
     myLeave: 'Мои отпуска',
+    movements: 'Кадровые перемещения',
     openMenu: 'Открыть меню',
     closeMenu: 'Закрыть меню',
   },

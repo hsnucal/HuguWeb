@@ -196,4 +196,10 @@
   <data name="error.reporting-line-manager-not-found.detail" xml:space="preserve"><value>Трудоустройство руководителя не найдено.</value></data>
   <data name="error.reporting-line-organization-mismatch.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.reporting-line-organization-mismatch.detail" xml:space="preserve"><value>Руководитель и подчинённый должны принадлежать одной организации.</value></data>
+  <data name="error.movement-manager-level-invalid.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-manager-level-invalid.detail" xml:space="preserve"><value>Выбранный руководитель должен быть на следующем организационном уровне сотрудника.</value></data>
+  <data name="error.movement-manager-cannot-manage.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-manager-cannot-manage.detail" xml:space="preserve"><value>Должность выбранного руководителя не позволяет управлять сотрудниками.</value></data>
+  <data name="error.movement-target-not-promotion.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-target-not-promotion.detail" xml:space="preserve"><value>Целевая должность при повышении должна быть на более высоком организационном уровне, чем текущая.</value></data>
 </root>

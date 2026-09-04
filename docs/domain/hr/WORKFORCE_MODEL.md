@@ -12,7 +12,8 @@ Employee is the workforce identity of a person employed (now or in the past) by 
 - Manually assigned in the first implementation. Do not implement automatic numbering now.
 - Must **not** be reused after employment ends.
 - Core identity: given name, family name, personnel number.
-- ApplicationUser is **not** required. Sprint 0.7B must **not** implement Employee/User linking. Hiring must not create a login.
+- `ApplicationUser` is **not** the Employee. Hiring in production must **not** create a login.
+- Product intent: every **active** employee should be identity-capable (`ApplicationUser` + `EmployeeAccountLink`). See [EMPLOYEE_IDENTITY_ACCESS.md](EMPLOYEE_IDENTITY_ACCESS.md). Development seed links active demo employees. Production provisioning is a separate future slice.
 
 Employee records are **not deleted** when someone leaves.
 
@@ -88,9 +89,9 @@ No time-of-day assignment boundaries. Primary assignments must not overlap. Hist
 
 ## Manager / reporting line
 
-**Deferred.** Do not implement `ReportsToEmployeeId` in Sprint 0.7B. Do not build an org chart, matrix management, or supervisor hierarchy.
+`WorkforceReportingLine` is the effective-dated Employment-to-Employment manager relationship.
 
-Management hierarchy may be added later as a separate concern. It is not required to hire, transfer, or end employment.
+Direct manager eligibility uses Position **OrganizationalLevel** (vertical catalogue) and **CanManageEmployees** (independent eligibility flag). Required manager level is the next configured active level above the subordinate as of EffectiveDate. OrganizationalLevel is not authorization. CanManageEmployees is not authorization. Do not infer a manager from title, role, or missing supervisors at the next level.
 
 ---
 

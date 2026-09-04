@@ -28,7 +28,7 @@ Employee → Employment → Assignment → (Department, Position)
 | **Employment** | Work relationship period and lifecycle | Daily attendance; government submission state |
 | **Assignment** | Where/in which position, for a period | Permission; pay grade as authorization |
 | **Department / Position** | Customer-defined structure / title | Permissions |
-| **ApplicationUser** | Authentication | Employee identity |
+| **ApplicationUser** | Authentication | Employee identity. Login does not grant HR authorization. |
 
 Do **not** denormalize current Department/Position onto Employee in the write model. The card header **reads** current Primary Assignment.
 

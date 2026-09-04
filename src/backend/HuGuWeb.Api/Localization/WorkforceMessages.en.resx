@@ -10,5 +10,9 @@
   <data name="error.position-not-found.detail" xml:space="preserve"><value>The position was not found.</value></data>
   <data name="error.position-not-available-for-department.title" xml:space="preserve"><value>The request is invalid.</value></data>
   <data name="error.position-not-available-for-department.detail" xml:space="preserve"><value>The selected position cannot be used in this department.</value></data>
+  <data name="error.overlapping-primary-assignment.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.overlapping-primary-assignment.detail" xml:space="preserve"><value>The selected effective date conflicts with this employee’s work history. Please choose a different date.</value></data>
+  <data name="error.invalid-transfer-date.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.invalid-transfer-date.detail" xml:space="preserve"><value>The selected effective date conflicts with this employee’s work history. Please choose a different date.</value></data>
 </root>
 

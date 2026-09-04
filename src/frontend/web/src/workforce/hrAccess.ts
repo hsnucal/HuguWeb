@@ -63,3 +63,12 @@ export function canReadHrAttendance(user: CurrentUser | null): boolean {
 export function canManageHrAttendance(user: CurrentUser | null): boolean {
   return (user?.permissions ?? []).includes('hr.attendance.manage')
 }
+
+export function canReadHrMovements(user: CurrentUser | null): boolean {
+  const permissions = user?.permissions ?? []
+  return permissions.includes('hr.movements.read') || permissions.includes('hr.movements.manage')
+}
+
+export function canManageHrMovements(user: CurrentUser | null): boolean {
+  return (user?.permissions ?? []).includes('hr.movements.manage')
+}

@@ -53,6 +53,9 @@ public static class DevelopmentPersonaEmployeeSeeder
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await EnsureReportingLinesAsync(dbContext, cancellationToken);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
         logger.LogInformation(
             "Development persona employees ensured ({Count}).",
             DevelopmentPersonaEmployeeFixtures.All.Count);
@@ -84,27 +87,41 @@ public static class DevelopmentPersonaEmployeeSeeder
             "Kat Hizmetleri",
             "HK",
             cancellationToken);
+        await EnsureDepartmentByCodeAsync(
+            dbContext,
+            DevelopmentWorkforceSeeder.AnkaraPropertyId,
+            DevelopmentWorkforceSeeder.FrontOfficeDepartmentId,
+            "Ön Büro",
+            "FO",
+            cancellationToken);
 
         await EnsureDepartmentByCodeAsync(
             dbContext,
             DevelopmentWorkforceSeeder.AntalyaPropertyId,
-            Guid.Parse("a1e1c0de-0001-4000-8000-000000000201"),
+            DevelopmentWorkplaceCatalog.AntalyaHumanResourcesDepartmentId,
             "İnsan Kaynakları",
             "HR",
             cancellationToken);
         await EnsureDepartmentByCodeAsync(
             dbContext,
             DevelopmentWorkforceSeeder.AntalyaPropertyId,
-            Guid.Parse("a1e1c0de-0001-4000-8000-000000000204"),
+            DevelopmentWorkplaceCatalog.AntalyaTechnicalDepartmentId,
             "Teknik Servis",
             "ENG",
             cancellationToken);
         await EnsureDepartmentByCodeAsync(
             dbContext,
             DevelopmentWorkforceSeeder.AntalyaPropertyId,
-            Guid.Parse("a1e1c0de-0001-4000-8000-000000000202"),
+            DevelopmentWorkplaceCatalog.AntalyaHousekeepingDepartmentId,
             "Kat Hizmetleri",
             "HK",
+            cancellationToken);
+        await EnsureDepartmentByCodeAsync(
+            dbContext,
+            DevelopmentWorkforceSeeder.AntalyaPropertyId,
+            DevelopmentWorkplaceCatalog.AntalyaFrontOfficeDepartmentId,
+            "Ön Büro",
+            "FO",
             cancellationToken);
 
         foreach (var propertyId in new[]
@@ -117,6 +134,7 @@ public static class DevelopmentPersonaEmployeeSeeder
             await EnsurePositionAsync(dbContext, propertyId, "İK Uzmanı", "HR-OFF", cancellationToken);
             await EnsurePositionAsync(dbContext, propertyId, "Kat Görevlisi", "HK-ATT", cancellationToken);
             await EnsurePositionAsync(dbContext, propertyId, "Kat Hizmetleri Sorumlusu", "HK-SUP", cancellationToken);
+            await EnsurePositionAsync(dbContext, propertyId, "Resepsiyon Görevlisi", "FO-REC", cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -167,7 +185,15 @@ public static class DevelopmentPersonaEmployeeSeeder
             return;
         }
 
-        if (!Position.TryCreate(Guid.CreateVersion7(), propertyId, name, code, out var position, out var error)
+        if (!Position.TryCreate(
+                Guid.CreateVersion7(),
+                propertyId,
+                name,
+                code,
+                DevelopmentWorkplaceCatalog.HierarchyForCode(code).OrganizationalLevel,
+                DevelopmentWorkplaceCatalog.HierarchyForCode(code).CanManageEmployees,
+                out var position,
+                out var error)
             || position is null)
         {
             throw new InvalidOperationException($"Development position ensure failed for {code}: {error}");
@@ -286,5 +312,31 @@ public static class DevelopmentPersonaEmployeeSeeder
         }
 
         return null;
+    }
+
+    private static async Task EnsureReportingLinesAsync(
+        WorkforceDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        foreach (var line in DevelopmentPersonaEmployeeFixtures.ReportingLines)
+        {
+            if (await dbContext.WorkforceReportingLines.AnyAsync(item => item.Id == line.Id, cancellationToken))
+            {
+                continue;
+            }
+
+            if (!await dbContext.Employments.AnyAsync(item => item.Id == line.SubordinateEmploymentId, cancellationToken)
+                || !await dbContext.Employments.AnyAsync(item => item.Id == line.ManagerEmploymentId, cancellationToken))
+            {
+                continue;
+            }
+
+            dbContext.WorkforceReportingLines.Add(WorkforceReportingLine.Start(
+                line.Id,
+                DevelopmentWorkforceSeeder.OrganizationId,
+                line.SubordinateEmploymentId,
+                line.ManagerEmploymentId,
+                DevelopmentPersonaEmployeeFixtures.EmploymentStartDate));
+        }
     }
 }

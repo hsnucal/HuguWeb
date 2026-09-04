@@ -37,6 +37,8 @@ export function PositionsPage() {
   const [departments, setDepartments] = useState<DepartmentRecord[]>([])
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
+  const [createLevel, setCreateLevel] = useState('100')
+  const [createCanManage, setCreateCanManage] = useState(false)
   const [createDepartments, setCreateDepartments] = useState<string[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -74,9 +76,11 @@ export function PositionsPage() {
   async function onCreate() {
     setError(null)
     try {
-      await createPosition(name, code, createDepartments)
+      await createPosition(name, code, createDepartments, Number.parseInt(createLevel, 10) || 100, createCanManage)
       setName('')
       setCode('')
+      setCreateLevel('100')
+      setCreateCanManage(false)
       setCreateDepartments([])
       setRows(sortedRecords(await listPositions()))
     } catch (reason) {
@@ -91,6 +95,8 @@ export function PositionsPage() {
         name: row.name,
         code: row.code,
         departmentIds: row.applicableDepartmentIds,
+        organizationalLevel: row.organizationalLevel,
+        canManageEmployees: row.canManageEmployees,
       })
       setEditingId(null)
       setRows(sortedRecords(await listPositions()))
@@ -135,7 +141,22 @@ export function PositionsPage() {
               required
             />
             <TextField id="position-code" label={t('workforce.code')} value={code} onChange={setCode} />
+            <TextField
+              id="position-level"
+              label={t('workforce.organizationalLevel')}
+              value={createLevel}
+              onChange={setCreateLevel}
+            />
           </div>
+          <label className={styles.choiceOption} htmlFor="position-can-manage">
+            <input
+              id="position-can-manage"
+              type="checkbox"
+              checked={createCanManage}
+              onChange={(event) => setCreateCanManage(event.target.checked)}
+            />
+            {t('workforce.canManageEmployees')}
+          </label>
           <DepartmentPicker
             idPrefix="position-create"
             departments={departments}
@@ -177,6 +198,39 @@ export function PositionsPage() {
                       )
                     }
                   />
+                  <TextField
+                    id={`position-level-${row.id}`}
+                    label={t('workforce.organizationalLevel')}
+                    value={String(row.organizationalLevel)}
+                    onChange={(value) =>
+                      setRows((current) =>
+                        sortedRecords(
+                          (current ?? []).map((item) =>
+                            item.id === row.id
+                              ? { ...item, organizationalLevel: Number.parseInt(value, 10) || item.organizationalLevel }
+                              : item,
+                          ),
+                        ),
+                      )
+                    }
+                  />
+                  <label className={styles.choiceOption} htmlFor={`position-manage-${row.id}`}>
+                    <input
+                      id={`position-manage-${row.id}`}
+                      type="checkbox"
+                      checked={row.canManageEmployees}
+                      onChange={(event) =>
+                        setRows((current) =>
+                          sortedRecords(
+                            (current ?? []).map((item) =>
+                              item.id === row.id ? { ...item, canManageEmployees: event.target.checked } : item,
+                            ),
+                          ),
+                        )
+                      }
+                    />
+                    {t('workforce.canManageEmployees')}
+                  </label>
                   <DepartmentPicker
                     idPrefix={`position-edit-${row.id}`}
                     departments={departments}
@@ -203,6 +257,10 @@ export function PositionsPage() {
                 <span className={styles.personName}>{row.name}</span>
               )}
               <span className={styles.muted}>{row.code}</span>
+              <span className={styles.muted}>
+                {t('workforce.organizationalLevel')} {row.organizationalLevel}
+                {row.canManageEmployees ? ` · ${t('workforce.canManageEmployees')}` : ''}
+              </span>
               <StatusBadge tone={row.isActive ? 'success' : 'neutral'}>
                 {row.isActive ? t('workforce.activeStatus') : t('workforce.inactive')}
               </StatusBadge>

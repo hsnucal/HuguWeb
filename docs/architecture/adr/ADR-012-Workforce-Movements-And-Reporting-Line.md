@@ -8,7 +8,7 @@
 
 **Accepted** — Product Owner + CTO (2026-09-04)
 
-This ADR freezes domain direction for **Personel Hareketleri / Workforce Movements**. **HR-08A is Accepted / Completed** (Assignment-compatible movements, `PersonnelMovement`, `WorkforceReportingLine`, APIs, permissions, shared active-Property context). It does **not** authorize the HR-08B React workspace or sidebar. **HR-08 overall remains In Progress** until HR-08B.
+This ADR freezes domain direction for **Personel Hareketleri / Workforce Movements**. **HR-08A:** **Completed**. **HR-08B:** **Accepted / Completed**. **HR-08 overall:** **Completed**.
 
 Does not supersede HR-DOMAIN-001, HR-04 (manager still unimplemented), HR-05B, HR-06, HR-07, ADR-010, or ADR-011.
 
@@ -139,6 +139,8 @@ Department/Property movements do **not** silently rewrite reporting line; the fl
 
 Self-manager and as-of cycles are forbidden.
 
+Direct manager eligibility is the **next configured active `Position.OrganizationalLevel`**, not every higher level and not `level + 100`. `CanManageEmployees` is an independent Position flag (not authorization). If that next level exists but has no eligible manager, do **not** fall through to a higher level.
+
 ### 10. Reporting-line temporal semantics
 
 Same DateOnly rule as Assignment. Future-dated manager changes are allowed if movements are. Matrix / org-chart / department-head inference are deferred.
@@ -230,10 +232,8 @@ Not a distinct MVP movement type until product meaning is frozen. Do not add a g
 
 ## Deferred items
 
-HR-08A implemented foundation entities, APIs, and permissions. Still deferred (HR-08B and later):
+HR-08A implemented foundation entities, APIs, and permissions. HR-08B implemented the top-level workspace, wizard, detail drawer, and card history. Still deferred:
 
-- Top-level Personel Hareketleri sidebar, list UI, Yeni Hareket workflow, movement detail UI
-- Personnel Card read-only movement history
 - Rename legacy Personnel Card “Görev değişikliği” UI copy
 - `hr.movements.approve` and kurul-style workflow
 - Görev Değişikliği as a distinct movement type
@@ -270,12 +270,15 @@ HR-08A implemented foundation entities, APIs, and permissions. Still deferred (H
 - Pending `LeaveRequest` whose range **splits** D (`Start < D && End >= D`) **blocks** assignment movements. Recorded `LeaveRecord` does not. `ManagerChange` is not blocked by leave.
 - Future `ScheduleEntry` or `AttendanceCorrection` on/after D still pinned to the old Assignment **blocks** the movement (no automatic migration).
 - Reporting line is Employment-to-Employment, same Organization, **cross-Property allowed**, one covering primary manager per date, 2- and N-node cycle rejection.
+- Direct manager candidates must match **exactly** `RequiredManagerLevel` = minimum active Position.OrganizationalLevel in the organization catalogue that is strictly greater than the subordinate's Assignment/Position level **as of EffectiveDate**. `CanManageEmployees` must be true. No skip, no title/role inference.
+- Promotion remains `TargetPosition.OrganizationalLevel` may skip levels; it is not coupled to the direct-manager next-level rule.
 - Permissions: `hr.movements.read` / `hr.movements.manage` granted to HR Manager/Specialist/Corporate templates. `hr.movements.approve` catalogued, not granted. Department scheduler is not granted manage.
 - PropertyTransfer authorization: source **and** destination in the caller’s accessible properties, or organization-wide membership (`PropertyId` null). Dual-Property rule is not weakened for corporate HR.
 - List visibility: a movement is visible if any of its source/destination Assignment properties (or covering Assignment property for ManagerChange) overlaps the caller’s accessible set.
 - Shared active Property: `ActivePropertyCookie.Bind` + `ActiveWorkplaceResolution` so `/me` and `IWorkplaceContext` agree on the same request as `PUT /api/auth/property` / `RefreshSignIn`. Property-scoped membership cannot escalate via cookie. Org-wide users may select an authorized Property. Unauthorized selection is rejected. **No** first/default Property fallback. This lives in request context, not in HR/movement use cases.
 - Migration: `20260903214422_AddWorkforceMovementsAndReportingLinesHr08A` (tables `PersonnelMovements`, `WorkforceReportingLines`). Exactly one HR-08A migration.
-- HR-08B (sidebar, list UI, wizard, card history) remains deferred and unimplemented. HR-08 overall stays **In Progress** until HR-08B.
+- HR-08B Finding 05 adds `Position.OrganizationalLevel` and `Position.CanManageEmployees` (`20260904140000_AddPositionOrganizationalLevelAndCanManageEmployees`). Direct-manager next-level rule is enforced on save and on `GET /api/hr/movements/manager-candidates`.
+- **HR-08B Accepted / Completed** (2026-09-05): sidebar, list UI, wizard, card history, hierarchy fields, and HuGuWeb brand. **HR-08 overall:** **Completed**.
 
 ---
 

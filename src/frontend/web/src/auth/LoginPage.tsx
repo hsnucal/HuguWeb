@@ -73,7 +73,7 @@ export function LoginPage() {
 
       <div className={styles.stage}>
         <section className={styles.identity} aria-label="HuGu">
-          <BrandMark size="lg" />
+          <BrandMark size="login" label="HuGuWeb" />
           <p className={styles.wordmark}>HuGu</p>
           <p className={styles.statement}>{t('auth.hotelOperations')}</p>
         </section>

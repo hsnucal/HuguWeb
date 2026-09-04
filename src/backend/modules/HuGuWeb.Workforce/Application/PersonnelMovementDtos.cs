@@ -22,6 +22,8 @@ public sealed record ReportingLineSummaryDto(
     DateOnly EffectiveFrom,
     DateOnly? EffectiveTo);
 
+public sealed record MovementActorDto(string? Id, string? DisplayName);
+
 public sealed record PersonnelMovementListItemDto(
     Guid Id,
     Guid EmploymentId,
@@ -39,6 +41,7 @@ public sealed record PersonnelMovementListItemDto(
     ReportingLineSummaryDto? PreviousReportingLine,
     ReportingLineSummaryDto? NewReportingLine,
     string CreatedByUserId,
+    MovementActorDto Actor,
     DateTimeOffset CreatedAtUtc);
 
 public sealed record PersonnelMovementDetailDto(
@@ -58,8 +61,10 @@ public sealed record PersonnelMovementDetailDto(
     ReportingLineSummaryDto? PreviousReportingLine,
     ReportingLineSummaryDto? NewReportingLine,
     string CreatedByUserId,
+    MovementActorDto Actor,
     DateTimeOffset CreatedAtUtc,
     string? CancelledByUserId,
+    MovementActorDto? CancelledBy,
     DateTimeOffset? CancelledAtUtc,
     string? CancellationReason);
 
@@ -90,8 +95,12 @@ internal static class PersonnelMovementComposer
             item.PreviousReportingLine,
             item.NewReportingLine,
             item.CreatedByUserId,
+            item.Actor,
             item.CreatedAtUtc,
             movement.CancelledByUserId,
+            string.IsNullOrWhiteSpace(movement.CancelledByUserId)
+                ? null
+                : MovementActorNaming.Unresolved(movement.CancelledByUserId),
             movement.CancelledAtUtc,
             movement.CancellationReason);
     }
@@ -136,6 +145,7 @@ internal static class PersonnelMovementComposer
             previousLine,
             newLine,
             movement.CreatedByUserId,
+            MovementActorNaming.Unresolved(movement.CreatedByUserId),
             movement.CreatedAtUtc);
     }
 

@@ -24,6 +24,7 @@ navigation: {
     roomOperations: 'Room Operations',
     technicalService: 'Technical Service',
     myLeave: 'My Leave',
+    movements: 'Workforce Movements',
     openMenu: 'Open menu',
     closeMenu: 'Close menu',
   },

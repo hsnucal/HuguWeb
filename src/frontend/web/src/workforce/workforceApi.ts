@@ -15,6 +15,8 @@ export type PositionRecord = {
   name: string
   code: string | null
   isActive: boolean
+  organizationalLevel: number
+  canManageEmployees: boolean
   applicableDepartmentIds: string[]
 }
 
@@ -106,20 +108,35 @@ export async function listPositions() {
   return apiRequest<PositionRecord[]>('/api/workforce/positions')
 }
 
-export async function createPosition(name: string, code: string, departmentIds: string[]) {
+export async function createPosition(
+  name: string,
+  code: string,
+  departmentIds: string[],
+  organizationalLevel: number,
+  canManageEmployees: boolean,
+) {
   return apiRequest<PositionRecord>('/api/workforce/positions', {
     method: 'POST',
     body: JSON.stringify({
       name,
       code: code.trim() === '' ? null : code,
       departmentIds,
+      organizationalLevel,
+      canManageEmployees,
     }),
   })
 }
 
 export async function updatePosition(
   id: string,
-  body: { name?: string; code?: string | null; isActive?: boolean; departmentIds?: string[] },
+  body: {
+    name?: string
+    code?: string | null
+    isActive?: boolean
+    departmentIds?: string[]
+    organizationalLevel?: number
+    canManageEmployees?: boolean
+  },
 ) {
   return apiRequest<PositionRecord>(`/api/workforce/positions/${id}`, {
     method: 'PATCH',

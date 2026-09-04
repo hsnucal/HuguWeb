@@ -120,7 +120,12 @@ public static class WorkforceEndpoints
         CancellationToken cancellationToken)
     {
         var result = await useCase.CreateAsync(
-            new CreatePositionCommand(request.Name, request.Code, request.DepartmentIds),
+            new CreatePositionCommand(
+                request.Name,
+                request.Code,
+                request.DepartmentIds,
+                request.OrganizationalLevel ?? Position.DefaultOrganizationalLevel,
+                request.CanManageEmployees ?? false),
             cancellationToken);
         return result.IsSuccess
             ? Results.Created($"/api/workforce/positions/{result.Value!.Id}", result.Value)
@@ -140,7 +145,9 @@ public static class WorkforceEndpoints
                 request.Code,
                 request.Name is not null || request.Code is not null,
                 request.IsActive,
-                request.DepartmentIds),
+                request.DepartmentIds,
+                request.OrganizationalLevel,
+                request.CanManageEmployees),
             cancellationToken);
         return result.ToHttp();
     }
@@ -272,13 +279,20 @@ public static class WorkforceEndpoints
 
 public sealed record CreateDepartmentRequest(string Name, string? Code);
 
-public sealed record CreatePositionRequest(string Name, string? Code, IReadOnlyList<Guid>? DepartmentIds);
+public sealed record CreatePositionRequest(
+    string Name,
+    string? Code,
+    IReadOnlyList<Guid>? DepartmentIds,
+    int? OrganizationalLevel,
+    bool? CanManageEmployees);
 
 public sealed record PatchNamedRecordRequest(
     string? Name,
     string? Code,
     bool? IsActive,
-    IReadOnlyList<Guid>? DepartmentIds);
+    IReadOnlyList<Guid>? DepartmentIds,
+    int? OrganizationalLevel,
+    bool? CanManageEmployees);
 
 public sealed record HireEmployeeRequest(
     string GivenName,

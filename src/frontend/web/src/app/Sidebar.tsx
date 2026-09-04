@@ -1,5 +1,5 @@
 import type { Ref } from 'react'
-import { NavLink } from 'react-router'
+import { NavLink, useLocation } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuthSession } from '../auth/AuthContext'
 import { canOpenSettings } from '../authorization/authorizationAccess'
@@ -15,6 +15,7 @@ import {
   canReadHrEmployees,
   canReadHrLeave,
   canReadHrAttendance,
+  canReadHrMovements,
   canReadHrSchedule,
   canReadHrShiftDefinitions,
   canRequestHrLeave,
@@ -23,6 +24,7 @@ import { canReadWorkforce } from '../workforce/workforceAccess'
 import {
   CalendarIcon,
   CloseIcon,
+  HistoryClockIcon,
   HomeIcon,
   PeopleIcon,
   ReservationsIcon,
@@ -32,7 +34,13 @@ import {
   TasksIcon,
   WrenchIcon,
 } from '../ui/icons'
-import { buildPrimaryNav, buildSettingsNav, type SidebarIconId, type SidebarNavItem } from './sidebarNav'
+import {
+  buildPrimaryNav,
+  buildSettingsNav,
+  isPrimaryNavActive,
+  type SidebarIconId,
+  type SidebarNavItem,
+} from './sidebarNav'
 import styles from './Sidebar.module.css'
 
 const icons: Record<SidebarIconId, typeof HomeIcon> = {
@@ -41,6 +49,7 @@ const icons: Record<SidebarIconId, typeof HomeIcon> = {
   wrench: WrenchIcon,
   people: PeopleIcon,
   calendar: CalendarIcon,
+  history: HistoryClockIcon,
   reservations: ReservationsIcon,
   tasks: TasksIcon,
   settings: SettingsIcon,
@@ -81,6 +90,7 @@ export function Sidebar({
     canReadHrShiftDefinitions: canReadHrShiftDefinitions(user),
     canReadHrSchedule: canReadHrSchedule(user),
     canReadHrAttendance: canReadHrAttendance(user),
+    canReadHrMovements: canReadHrMovements(user),
     canRequestHrLeave: canRequestHrLeave(user),
   })
   const settingsNav = buildSettingsNav(canOpenSettings(user))
@@ -102,7 +112,7 @@ export function Sidebar({
         {isDrawer ? (
           <>
             <div className={styles.brandIdentity}>
-              <BrandMark tone="inverse" />
+              <BrandMark size="sidebar" tone="inverse" />
               <span className={styles.wordmark}>HuGu</span>
             </div>
             <button
@@ -123,8 +133,8 @@ export function Sidebar({
               aria-expanded={!railCollapsed}
               onClick={onToggleCollapsed}
             >
-              <BrandMark tone="inverse" />
-              <span className={styles.wordmark}>HuGu</span>
+              <BrandMark size={railCollapsed ? 'sidebarCollapsed' : 'sidebar'} tone="inverse" />
+              {!railCollapsed ? <span className={styles.wordmark}>HuGu</span> : null}
             </button>
           </div>
         )}
@@ -206,6 +216,7 @@ function SidebarNavEntry({
   onNavigate: () => void
 }) {
   const { t } = useTranslation()
+  const location = useLocation()
   const Icon = icons[item.icon]
   const unavailable = t('navigation.unavailable', { label })
   const body = (
@@ -237,7 +248,9 @@ function SidebarNavEntry({
         to={to}
         end={end}
         aria-label={railCollapsed ? label : undefined}
-        className={({ isActive }) => (isActive ? styles.current : styles.item)}
+        className={({ isActive }) =>
+          isPrimaryNavActive(item, location.pathname, isActive) ? styles.current : styles.item
+        }
         onClick={onNavigate}
       >
         {body}

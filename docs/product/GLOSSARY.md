@@ -267,7 +267,7 @@ A time-boxed development cycle with a defined goal, requirements, implementation
 
 ## Employee / Personel
 
-**Status:** Accepted identity in [HR-DOMAIN-001](../domain/hr/HR-DOMAIN-001-Organization-Workforce-Foundation.md). **Not** `ApplicationUser`. **Not** a permission. Technical id is the PK; `PersonnelNumber` (Sicil No) is the business identifier.
+**Status:** Accepted identity in [HR-DOMAIN-001](../domain/hr/HR-DOMAIN-001-Organization-Workforce-Foundation.md). **Not** `ApplicationUser`. **Not** a permission. Technical id is the PK; `PersonnelNumber` (Sicil No) is the business identifier. Product intent: every **active** employee should be identity-capable; the login remains a separate `ApplicationUser` joined by `EmployeeAccountLink`. See [Employee identity access](../domain/hr/EMPLOYEE_IDENTITY_ACCESS.md).
 
 ---
 

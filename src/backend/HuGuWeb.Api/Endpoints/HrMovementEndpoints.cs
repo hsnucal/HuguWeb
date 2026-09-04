@@ -16,6 +16,10 @@ public static class HrMovementEndpoints
 
         group.MapGet("/", ListMovements)
             .WithName("ListHrPersonnelMovements");
+        group.MapGet("/structure", GetMovementStructure)
+            .WithName("GetHrMovementStructure");
+        group.MapGet("/manager-candidates", ListManagerCandidates)
+            .WithName("ListHrManagerCandidates");
         group.MapGet("/{id:guid}", GetMovement)
             .WithName("GetHrPersonnelMovement");
         group.MapPost("/", CreateMovement)
@@ -36,9 +40,11 @@ public static class HrMovementEndpoints
         string? type,
         Guid? departmentId,
         Guid? employeeId,
+        Guid? propertyId,
         string? search,
         ClaimsPrincipal user,
         ListPersonnelMovementsQuery query,
+        MovementActorDisplayService actors,
         IAuthorizationStore authorizationStore,
         PropertyAccessService propertyAccess,
         IWorkplaceContext workplace,
@@ -63,8 +69,54 @@ public static class HrMovementEndpoints
                 departmentId,
                 employeeId,
                 search,
-                scope),
+                scope,
+                propertyId),
             cancellationToken);
+        if (!result.IsSuccess)
+        {
+            return result.ToHttp();
+        }
+
+        var items = await actors.EnrichListAsync(result.Value!, cancellationToken);
+        return Results.Ok(items);
+    }
+
+    private static async Task<IResult> GetMovementStructure(
+        Guid propertyId,
+        ClaimsPrincipal user,
+        ListMovementStructureQuery query,
+        IAuthorizationStore authorizationStore,
+        PropertyAccessService propertyAccess,
+        IWorkplaceContext workplace,
+        CancellationToken cancellationToken)
+    {
+        var scope = await MovementAccess.AccessiblePropertyIdsAsync(
+            user,
+            authorizationStore,
+            propertyAccess,
+            workplace.OrganizationId,
+            cancellationToken);
+        var result = await query.ExecuteAsync(propertyId, scope, cancellationToken);
+        return result.ToHttp();
+    }
+
+    private static async Task<IResult> ListManagerCandidates(
+        Guid employmentId,
+        DateOnly effectiveDate,
+        ClaimsPrincipal user,
+        ListManagerCandidatesQuery query,
+        IAuthorizationStore authorizationStore,
+        PropertyAccessService propertyAccess,
+        IWorkplaceContext workplace,
+        CancellationToken cancellationToken)
+    {
+        var scope = await MovementAccess.AccessiblePropertyIdsAsync(
+            user,
+            authorizationStore,
+            propertyAccess,
+            workplace.OrganizationId,
+            cancellationToken);
+        var result = await query.ExecuteAsync(employmentId, effectiveDate, scope, cancellationToken);
         return result.ToHttp();
     }
 
@@ -72,6 +124,7 @@ public static class HrMovementEndpoints
         Guid id,
         ClaimsPrincipal user,
         GetPersonnelMovementQuery query,
+        MovementActorDisplayService actors,
         IAuthorizationStore authorizationStore,
         PropertyAccessService propertyAccess,
         IWorkplaceContext workplace,
@@ -84,13 +137,20 @@ public static class HrMovementEndpoints
             workplace.OrganizationId,
             cancellationToken);
         var result = await query.ExecuteAsync(id, scope, cancellationToken);
-        return result.ToHttp();
+        if (!result.IsSuccess)
+        {
+            return result.ToHttp();
+        }
+
+        var item = await actors.EnrichDetailAsync(result.Value!, cancellationToken);
+        return Results.Ok(item);
     }
 
     private static async Task<IResult> CreateMovement(
         [FromBody] CreatePersonnelMovementRequest request,
         ClaimsPrincipal user,
         CreateWorkforceMovementUseCase useCase,
+        MovementActorDisplayService actors,
         IAuthorizationStore authorizationStore,
         PropertyAccessService propertyAccess,
         IWorkplaceContext workplace,
@@ -123,9 +183,13 @@ public static class HrMovementEndpoints
                 ActorUserId(user),
                 scope),
             cancellationToken);
-        return result.IsSuccess
-            ? Results.Created($"/api/hr/movements/{result.Value!.Id}", result.Value)
-            : result.Error!.ToHttp();
+        if (!result.IsSuccess)
+        {
+            return result.Error!.ToHttp();
+        }
+
+        var item = await actors.EnrichDetailAsync(result.Value!, cancellationToken);
+        return Results.Created($"/api/hr/movements/{item.Id}", item);
     }
 
     private static async Task<IResult> CancelMovement(
@@ -133,6 +197,7 @@ public static class HrMovementEndpoints
         [FromBody] CancelPersonnelMovementRequest request,
         ClaimsPrincipal user,
         CancelWorkforceMovementUseCase useCase,
+        MovementActorDisplayService actors,
         IAuthorizationStore authorizationStore,
         PropertyAccessService propertyAccess,
         IWorkplaceContext workplace,
@@ -147,7 +212,13 @@ public static class HrMovementEndpoints
         var result = await useCase.ExecuteAsync(
             new CancelPersonnelMovementCommand(id, request.Reason, ActorUserId(user), scope),
             cancellationToken);
-        return result.ToHttp();
+        if (!result.IsSuccess)
+        {
+            return result.ToHttp();
+        }
+
+        var item = await actors.EnrichDetailAsync(result.Value!, cancellationToken);
+        return Results.Ok(item);
     }
 
     private static bool TryParsePublicType(string? value, out PersonnelMovementType type, out WorkforceError? error)

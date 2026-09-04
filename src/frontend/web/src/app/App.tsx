@@ -13,6 +13,7 @@ import { MyLeavePage } from '../workforce/MyLeavePage'
 import { ShiftDefinitionsPage } from '../workforce/ShiftDefinitionsPage'
 import { ShiftPlanPage } from '../workforce/ShiftPlanPage'
 import { AttendancePage } from '../workforce/AttendancePage'
+import { PersonnelMovementsPage } from '../workforce/PersonnelMovementsPage'
 import { WorkforceLayout } from '../workforce/WorkforceLayout'
 import { AuthorizationLayout } from '../authorization/AuthorizationLayout'
 import { UsersPage } from '../authorization/UsersPage'
@@ -43,6 +44,7 @@ export function App() {
         <Route path="technical-service/:issueId" element={<IssueDetailPage />} />
         <Route path="my/leave" element={<MyLeavePage />} />
         <Route path="attendance" element={<AttendancePage />} />
+        <Route path="workforce/movements" element={<PersonnelMovementsPage />} />
         <Route path="workforce" element={<WorkforceLayout />}>
           <Route index element={<ActiveWorkforcePage />} />
           <Route path="departments" element={<DepartmentsPage />} />

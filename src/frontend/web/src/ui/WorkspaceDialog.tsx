@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { CloseIcon } from './icons'
 import styles from './Dialog.module.css'
 
 const CLOSE_FALLBACK_MS = 280
@@ -17,13 +18,15 @@ export function WorkspaceDialog({
   closing = false,
   onCloseAnimationComplete,
   bodyOverflow = 'auto',
+  showClose = false,
+  closeLabel,
 }: {
   title: string
   subtitle?: string
   onRequestClose: () => void
   children: ReactNode
   footer?: ReactNode
-  size?: 'workspace' | 'confirm' | 'compact'
+  size?: 'workspace' | 'confirm' | 'compact' | 'dialog'
   initialFocusRef?: RefObject<HTMLElement | null>
   stacked?: boolean
   inert?: boolean
@@ -31,6 +34,8 @@ export function WorkspaceDialog({
   closing?: boolean
   onCloseAnimationComplete?: () => void
   bodyOverflow?: 'auto' | 'hidden'
+  showClose?: boolean
+  closeLabel?: string
 }) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -135,7 +140,8 @@ export function WorkspaceDialog({
   }, [closing])
 
   const panelClass = [
-    size === 'confirm' ? styles.confirm : size === 'compact' ? styles.compact : styles.workspace,
+    size === 'confirm' ? styles.confirm : size === 'compact' || size === 'dialog' ? styles.compact : styles.workspace,
+    size === 'dialog' ? styles.dialog : '',
     entered ? styles.panelEntered : styles.panelEnter,
     closing ? styles.panelClosing : '',
   ]
@@ -178,10 +184,17 @@ export function WorkspaceDialog({
           </h2>
         ) : (
           <div className={styles.header}>
-            <h2 id={titleId} className={styles.title}>
-              {title}
-            </h2>
-            {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+            <div className={styles.headerCopy}>
+              <h2 id={titleId} className={styles.title}>
+                {title}
+              </h2>
+              {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+            </div>
+            {showClose ? (
+              <button type="button" className={styles.close} aria-label={closeLabel ?? title} onClick={onRequestClose}>
+                <CloseIcon />
+              </button>
+            ) : null}
           </div>
         )}
         <div className={`${styles.body} ${bodyOverflow === 'hidden' ? styles.bodyContained : ''}`}>{children}</div>

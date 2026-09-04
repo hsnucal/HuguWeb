@@ -79,17 +79,43 @@ public class DevelopmentPersonaTests
     }
 
     [Fact]
-    public void RoomOperationsManager_HasFullRoomOperations_NoWorkforce()
+    public void RoomOperationsManager_HasRoomOperationsAndHkDepartmentManagerRoles_NoHrAdmin()
     {
         var persona = DevelopmentPersonaCatalog.RoomOperationsManager;
 
         Assert.Equal("roomops.manager@localhost", persona.Email);
-        Assert.Equal(
-            [RoomOperationsPermissions.Read, RoomOperationsPermissions.Manage, RoomOperationsPermissions.Inspect],
-            persona.Permissions);
+        Assert.Contains(RoomOperationsPermissions.Read, persona.Permissions);
+        Assert.Contains(RoomOperationsPermissions.Manage, persona.Permissions);
+        Assert.Contains(RoomOperationsPermissions.Inspect, persona.Permissions);
+        Assert.Contains(SystemRoleTemplates.EmployeeLeaveSelfService, persona.AssignedRoleCodes);
+        Assert.Contains(SystemRoleTemplates.DepartmentLeaveApprover, persona.AssignedRoleCodes);
+        Assert.Contains(SystemRoleTemplates.DepartmentScheduler, persona.AssignedRoleCodes);
+        Assert.Equal(["HK"], persona.DepartmentScopeCodes);
+        Assert.Contains(HrLeavePermissions.Read, persona.Permissions);
+        Assert.Contains(HrLeavePermissions.Approve, persona.Permissions);
+        Assert.DoesNotContain(HrLeavePermissions.Manage, persona.Permissions);
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.employee.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("hr.official.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void FrontOfficeReceptionist_IsSelfServiceOnly()
+    {
+        var persona = DevelopmentPersonaCatalog.FrontOfficeReceptionist;
+
+        Assert.Equal("frontoffice.receptionist@localhost", persona.Email);
+        Assert.Equal(SystemRoleTemplates.EmployeeLeaveSelfService, persona.RoleCode);
+        Assert.Equal(SystemRoleTemplates.EmployeeLeaveSelfServicePermissions, persona.Permissions);
+        Assert.Equal([HrLeavePermissions.Request], persona.Permissions);
+        Assert.Equal(DevelopmentPersonaEmployeeFixtures.FrontOfficeReceptionistEmployeeId, persona.LinkedEmployeeId);
+        Assert.DoesNotContain(HrEmployeePermissions.Read, persona.Permissions);
+        Assert.DoesNotContain(HrEmployeePermissions.Manage, persona.Permissions);
+        Assert.DoesNotContain(HrLeavePermissions.Manage, persona.Permissions);
+        Assert.DoesNotContain(AuthorizationPermissions.UsersManage, persona.Permissions);
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("workforce.", StringComparison.Ordinal));
+        Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("room-operations.", StringComparison.Ordinal));
         Assert.DoesNotContain(persona.Permissions, value => value.StartsWith("maintenance.", StringComparison.Ordinal));
     }
 

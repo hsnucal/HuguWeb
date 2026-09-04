@@ -127,6 +127,8 @@ import {
 import { employmentStatusTone } from './workforceStatus'
 import { PersonnelLeaveTab } from './PersonnelLeaveTab'
 import { PersonnelOnboardingTab } from './PersonnelOnboardingTab'
+import { PersonnelCardMovementHistory } from './PersonnelCardMovementHistory'
+import { canReadHrMovements } from './hrAccess'
 
 type TabId = 'general' | 'identity' | 'work' | 'official' | 'onboarding' | 'payment' | 'leave' | 'history'
 type CardMode =
@@ -163,6 +165,8 @@ export function PersonnelCard({
   onSaved: (employeeId?: string) => Promise<void> | void
 }) {
   const { t, i18n } = useTranslation()
+  const { user } = useAuthSession()
+  const canReadMovements = canReadHrMovements(user)
   const language = toAppLanguage(i18n.resolvedLanguage ?? i18n.language) ?? DEFAULT_LANGUAGE
   const fileInput = useRef<HTMLInputElement>(null)
   const givenNameInput = useRef<HTMLInputElement>(null)
@@ -900,6 +904,8 @@ export function PersonnelCard({
                     onEnd={() => void onEnd()}
                     fieldMessage={fieldMessage}
                     blurField={blurField}
+                    employeeId={mode.type === 'edit' ? mode.employeeId : null}
+                    canReadMovements={canReadMovements}
                   />
                 ) : null}
 
@@ -2176,6 +2182,8 @@ function WorkTab({
   onEnd,
   fieldMessage,
   blurField,
+  employeeId,
+  canReadMovements,
 }: {
   form: PersonnelForm
   patchForm: (patch: Partial<PersonnelForm>) => void
@@ -2205,6 +2213,8 @@ function WorkTab({
   onEnd: () => void
   fieldMessage: (field: string) => string | undefined
   blurField: (field: string) => void
+  employeeId: string | null
+  canReadMovements: boolean
 }) {
   const { t } = useTranslation()
   const employment = card?.currentEmployment ?? card?.employments[0]
@@ -2606,6 +2616,9 @@ function WorkTab({
                 </Button>
               </div>
             </form>
+          ) : null}
+          {!createMode && canReadMovements ? (
+            <PersonnelCardMovementHistory employeeId={employeeId} canRead={canReadMovements} />
           ) : null}
         </fieldset>
       ) : null}

@@ -10,5 +10,9 @@
   <data name="error.position-not-found.detail" xml:space="preserve"><value>Должность не найдена.</value></data>
   <data name="error.position-not-available-for-department.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
   <data name="error.position-not-available-for-department.detail" xml:space="preserve"><value>Выбранная должность недоступна в этом подразделении.</value></data>
+  <data name="error.overlapping-primary-assignment.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.overlapping-primary-assignment.detail" xml:space="preserve"><value>Выбранная дата вступления в силу пересекается с текущей трудовой историей. Выберите другую дату.</value></data>
+  <data name="error.invalid-transfer-date.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.invalid-transfer-date.detail" xml:space="preserve"><value>Выбранная дата вступления в силу пересекается с текущей трудовой историей. Выберите другую дату.</value></data>
 </root>
 
