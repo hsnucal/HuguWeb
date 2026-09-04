@@ -38,7 +38,7 @@ public sealed class HuGuUserClaimsPrincipalFactory(
         }
 
         var selectedPropertyId = httpContextAccessor.HttpContext is { } http
-            ? ActivePropertyCookie.Read(http)
+            ? ActivePropertyCookie.ResolveSelection(http)
             : null;
         var snapshot = await new AccessSnapshotService(authorizationStore)
             .GetSnapshotAsync(user.Id, selectedPropertyId, CancellationToken.None);

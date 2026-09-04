@@ -155,6 +155,95 @@ public sealed record WorkforceError(
             "same-assignment",
             "The employee is already assigned to this department and position on the effective date.");
 
+    public static WorkforceError MovementInvalidType() =>
+        InvalidFields(
+            MovementValidation.Codes.InvalidType,
+            "The movement type is not supported.",
+            MovementValidation.Fields.Type,
+            MovementValidation.Codes.InvalidType);
+
+    public static WorkforceError MovementField(string field, string code, string detail) =>
+        InvalidFields(code, detail, field, code);
+
+    public static WorkforceError MovementEmploymentNotFound() =>
+        NotFound(MovementValidation.Codes.EmploymentNotFound, "The employment was not found.");
+
+    public static WorkforceError MovementNotFound() =>
+        NotFound(MovementValidation.Codes.NotFound, "The personnel movement was not found.");
+
+    public static WorkforceError MovementSameTarget() =>
+        InvalidRequest(
+            MovementValidation.Codes.SameTarget,
+            "The movement target is the same as the current assignment or manager.");
+
+    public static WorkforceError MovementPositionNotApplicable() =>
+        InvalidFields(
+            MovementValidation.Codes.PositionNotApplicable,
+            "The selected position cannot be used in the target department.",
+            MovementValidation.Fields.TargetPositionId,
+            MovementValidation.Codes.PositionNotApplicable);
+
+    public static WorkforceError MovementPropertyAccessDenied() =>
+        Forbidden(
+            MovementValidation.Codes.PropertyAccessDenied,
+            "Movement manage permission does not cover the required property.");
+
+    public static WorkforceError MovementCrossOrganizationNotSupported() =>
+        InvalidRequest(
+            MovementValidation.Codes.CrossOrganizationNotSupported,
+            "Cross-organization transfer is not a personnel movement. End employment and hire in the destination organization.");
+
+    public static WorkforceError MovementPendingLeaveConflict() =>
+        Conflict(
+            MovementValidation.Codes.PendingLeaveConflict,
+            "Pending leave request conflict.",
+            "A pending leave request spans the movement effective date. Withdraw or complete the leave request before changing assignment.");
+
+    public static WorkforceError MovementScheduleConflict() =>
+        Conflict(
+            MovementValidation.Codes.ScheduleConflict,
+            "Schedule conflict.",
+            "Future schedule entries or attendance corrections reference the current assignment on or after the movement date. Adjust the schedule before moving.");
+
+    public static WorkforceError MovementNotCancellable() =>
+        InvalidRequest(
+            MovementValidation.Codes.NotCancellable,
+            "This movement cannot be cancelled.");
+
+    public static WorkforceError MovementAlreadyEffective() =>
+        InvalidRequest(
+            MovementValidation.Codes.AlreadyEffective,
+            "An effective movement cannot be cancelled. Record a new movement to reverse or correct it.");
+
+    public static WorkforceError MovementAlreadyCancelled() =>
+        Conflict(
+            MovementValidation.Codes.AlreadyCancelled,
+            "Movement is already cancelled.",
+            "A cancelled movement cannot be cancelled again.");
+
+    public static WorkforceError ReportingLineSelfManager() =>
+        InvalidRequest(
+            MovementValidation.Codes.SelfManager,
+            "An employment cannot report to itself.");
+
+    public static WorkforceError ReportingLineCycle() =>
+        InvalidRequest(
+            MovementValidation.Codes.Cycle,
+            "This manager change would create a reporting-line cycle.");
+
+    public static WorkforceError ReportingLineOverlap() =>
+        InvalidRequest(
+            MovementValidation.Codes.Overlap,
+            "Direct manager ranges cannot overlap. The previous line must end the day before the new line starts.");
+
+    public static WorkforceError ReportingLineManagerNotFound() =>
+        NotFound(MovementValidation.Codes.ManagerNotFound, "The manager employment was not found.");
+
+    public static WorkforceError ReportingLineOrganizationMismatch() =>
+        InvalidRequest(
+            MovementValidation.Codes.OrganizationMismatch,
+            "Manager and subordinate must belong to the same organization.");
+
     public static WorkforceError WorkplaceNotConfigured() =>
         new(
             "workplace-not-configured",

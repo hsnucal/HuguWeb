@@ -7,6 +7,8 @@ public sealed class TransferEmployeeUseCase(
     IWorkforceClock clock,
     IWorkplaceContext workplaceContext)
 {
+    private readonly CreateWorkforceMovementUseCase _create = new(store, clock, workplaceContext);
+
     public async Task<WorkforceResult<TransferredEmployee>> ExecuteAsync(
         TransferEmployeeCommand command,
         CancellationToken cancellationToken)
@@ -35,11 +37,6 @@ public sealed class TransferEmployeeUseCase(
             return WorkforceError.PositionNotFound();
         }
 
-        var applicable = await store.IsPositionApplicableToDepartmentAsync(
-            department.Id,
-            position.Id,
-            cancellationToken);
-
         var employments = await store.ListEmploymentsAsync(employee.Id, cancellationToken);
         var currentEmployment = CurrentEmployment.Find(employments);
         if (!currentEmployment.IsSuccess)
@@ -48,55 +45,72 @@ public sealed class TransferEmployeeUseCase(
         }
 
         currentEmployment.Value!.RefreshLifecycle(clock.Today);
-
         var assignments = await store.ListAssignmentsAsync(currentEmployment.Value.Id, cancellationToken);
-        var plan = TransferPlanner.Plan(
-            currentEmployment.Value,
-            assignments,
-            department,
-            position,
-            applicable,
-            command.EffectiveDate);
-        if (!plan.IsSuccess)
-        {
-            return plan.Error!;
-        }
-
-        if (!plan.Value.CurrentPrimary.TryCloseOn(plan.Value.PreviousEndDate, out var closeError))
-        {
-            return closeError == "Assignment end date must be on or after the start date."
-                ? WorkforceError.InvalidAssignmentPeriod()
-                : WorkforceError.InvalidTransferDate();
-        }
-
-        var next = Assignment.StartPrimary(
-            Guid.CreateVersion7(),
-            currentEmployment.Value.Id,
-            plan.Value.NewDepartmentId,
-            plan.Value.NewPositionId,
-            plan.Value.NewStartDate);
-
-        var planned = assignments
-            .Where(item => item.Id != plan.Value.CurrentPrimary.Id)
-            .Append(plan.Value.CurrentPrimary)
-            .Append(next)
+        var overlapping = PrimaryAssignments.OrderedPrimaries(assignments)
+            .Where(item => item.Period.Overlaps(new DatePeriod(command.EffectiveDate, null)))
             .ToArray();
-
-        if (PrimaryAssignments.HasOverlap(planned))
+        var current = overlapping.Length == 1 ? overlapping[0] : null;
+        var type = PersonnelMovementType.AssignmentChange;
+        var allowAssignmentChange = true;
+        if (current is not null)
         {
-            return WorkforceError.OverlappingPrimaryAssignment();
+            var currentDepartment = await store.GetDepartmentAsync(current.DepartmentId, cancellationToken);
+            var sourcePropertyId = currentDepartment?.PropertyId;
+            var destPropertyId = department.PropertyId;
+            var deptChanged = current.DepartmentId != department.Id;
+            var posChanged = current.PositionId != position.Id;
+            if (sourcePropertyId is { } source && source != destPropertyId)
+            {
+                type = PersonnelMovementType.PropertyTransfer;
+                allowAssignmentChange = false;
+            }
+            else if (deptChanged && posChanged)
+            {
+                type = PersonnelMovementType.AssignmentChange;
+            }
+            else if (deptChanged)
+            {
+                type = PersonnelMovementType.DepartmentChange;
+                allowAssignmentChange = false;
+            }
+            else
+            {
+                type = PersonnelMovementType.PositionChange;
+                allowAssignmentChange = false;
+            }
         }
 
-        store.AddAssignment(next);
-        await store.SaveChangesAsync(cancellationToken);
+        var created = await _create.ExecuteAsync(
+            new CreatePersonnelMovementCommand(
+                command.EmployeeId,
+                EmploymentId: null,
+                type,
+                command.EffectiveDate,
+                department.PropertyId,
+                department.Id,
+                position.Id,
+                TargetManagerEmploymentId: null,
+                ClearManager: false,
+                command.Reason ?? "Assignment change",
+                Note: null,
+                command.ActorUserId ?? "system",
+                command.AccessiblePropertyIds,
+                allowAssignmentChange,
+                UseLegacyErrorCodes: true),
+            cancellationToken);
+        if (!created.IsSuccess)
+        {
+            return created.Error!;
+        }
 
+        var detail = created.Value!;
         return new TransferredEmployee(
             employee.Id,
-            currentEmployment.Value.Id,
-            plan.Value.CurrentPrimary.Id,
-            plan.Value.PreviousEndDate,
-            next.Id,
-            next.StartDate,
+            detail.EmploymentId,
+            detail.PreviousAssignment!.Id,
+            detail.PreviousAssignment.EndDate!.Value,
+            detail.NewAssignment!.Id,
+            detail.NewAssignment.StartDate,
             department.Id,
             position.Id);
     }
@@ -106,7 +120,10 @@ public sealed record TransferEmployeeCommand(
     Guid EmployeeId,
     Guid DepartmentId,
     Guid PositionId,
-    DateOnly EffectiveDate);
+    DateOnly EffectiveDate,
+    string? Reason = null,
+    string? ActorUserId = null,
+    IReadOnlySet<Guid>? AccessiblePropertyIds = null);
 
 public sealed record TransferredEmployee(
     Guid EmployeeId,

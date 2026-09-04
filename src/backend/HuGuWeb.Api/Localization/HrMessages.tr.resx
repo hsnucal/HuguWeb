@@ -142,4 +142,58 @@
   <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>İstenen puantaj tarihini kapsayan birincil bir atama yok.</value></data>
   <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
   <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>Seçilen departman mevcut puantaj kapsamında değil.</value></data>
+  <data name="error.movement-invalid-type.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-invalid-type.detail" xml:space="preserve"><value>Bu hareket türü desteklenmiyor.</value></data>
+  <data name="error.movement-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-reason-required.detail" xml:space="preserve"><value>Personel hareketi için iş nedeni zorunludur.</value></data>
+  <data name="error.movement-reason-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-reason-too-long.detail" xml:space="preserve"><value>Hareket nedeni çok uzun.</value></data>
+  <data name="error.movement-note-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-note-too-long.detail" xml:space="preserve"><value>Hareket notu çok uzun.</value></data>
+  <data name="error.movement-effective-date-invalid.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-effective-date-invalid.detail" xml:space="preserve"><value>Hareket yürürlük tarihi geçersiz.</value></data>
+  <data name="error.movement-employment-not-found.title" xml:space="preserve"><value>Kaynak bulunamadı.</value></data>
+  <data name="error.movement-employment-not-found.detail" xml:space="preserve"><value>İstihdam kaydı bulunamadı.</value></data>
+  <data name="error.movement-assignment-not-found.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-assignment-not-found.detail" xml:space="preserve"><value>Hareket yürürlük tarihini kapsayan birincil atama yok.</value></data>
+  <data name="error.movement-same-target.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-same-target.detail" xml:space="preserve"><value>Hedef, mevcut atama veya yönetici ile aynı.</value></data>
+  <data name="error.movement-position-not-applicable.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-position-not-applicable.detail" xml:space="preserve"><value>Seçilen pozisyon hedef departmanda kullanılamaz.</value></data>
+  <data name="error.movement-property-access-denied.title" xml:space="preserve"><value>Erişim reddedildi.</value></data>
+  <data name="error.movement-property-access-denied.detail" xml:space="preserve"><value>Hareket yönetimi bu tesisi kapsamıyor.</value></data>
+  <data name="error.movement-cross-organization-not-supported.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-cross-organization-not-supported.detail" xml:space="preserve"><value>Kuruluşlar arası transfer bir personel hareketi değildir.</value></data>
+  <data name="error.movement-pending-leave-conflict.title" xml:space="preserve"><value>Bekleyen izin çatışması.</value></data>
+  <data name="error.movement-pending-leave-conflict.detail" xml:space="preserve"><value>Bekleyen bir izin talebi hareket yürürlük tarihini kapsıyor.</value></data>
+  <data name="error.movement-schedule-conflict.title" xml:space="preserve"><value>Çizelge çatışması.</value></data>
+  <data name="error.movement-schedule-conflict.detail" xml:space="preserve"><value>Hareket tarihinden itibaren mevcut atamaya bağlı çizelge veya puantaj düzeltmesi var.</value></data>
+  <data name="error.movement-not-cancellable.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-not-cancellable.detail" xml:space="preserve"><value>Bu hareket iptal edilemez.</value></data>
+  <data name="error.movement-already-effective.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-already-effective.detail" xml:space="preserve"><value>Yürürlükteki hareket iptal edilemez. Düzeltme için yeni hareket kaydedin.</value></data>
+  <data name="error.movement-already-cancelled.title" xml:space="preserve"><value>Hareket zaten iptal edildi.</value></data>
+  <data name="error.movement-already-cancelled.detail" xml:space="preserve"><value>İptal edilmiş hareket yeniden iptal edilemez.</value></data>
+  <data name="error.movement-not-found.title" xml:space="preserve"><value>Kaynak bulunamadı.</value></data>
+  <data name="error.movement-not-found.detail" xml:space="preserve"><value>Personel hareketi bulunamadı.</value></data>
+  <data name="error.movement-target-position-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-target-position-required.detail" xml:space="preserve"><value>Hedef pozisyon zorunludur.</value></data>
+  <data name="error.movement-target-department-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-target-department-required.detail" xml:space="preserve"><value>Hedef departman zorunludur.</value></data>
+  <data name="error.movement-target-property-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-target-property-required.detail" xml:space="preserve"><value>Hedef tesis zorunludur.</value></data>
+  <data name="error.movement-cancellation-reason-required.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-cancellation-reason-required.detail" xml:space="preserve"><value>İptal nedeni zorunludur.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.detail" xml:space="preserve"><value>İptal nedeni çok uzun.</value></data>
+  <data name="error.reporting-line-self-manager.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.reporting-line-self-manager.detail" xml:space="preserve"><value>Bir istihdam kendisine bağlanamaz.</value></data>
+  <data name="error.reporting-line-cycle.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.reporting-line-cycle.detail" xml:space="preserve"><value>Bu yönetici değişikliği raporlama döngüsü oluşturur.</value></data>
+  <data name="error.reporting-line-overlap.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.reporting-line-overlap.detail" xml:space="preserve"><value>Doğrudan yönetici aralıkları çakışamaz.</value></data>
+  <data name="error.reporting-line-manager-not-found.title" xml:space="preserve"><value>Kaynak bulunamadı.</value></data>
+  <data name="error.reporting-line-manager-not-found.detail" xml:space="preserve"><value>Yönetici istihdamı bulunamadı.</value></data>
+  <data name="error.reporting-line-organization-mismatch.title" xml:space="preserve"><value>İstek geçersiz.</value></data>
+  <data name="error.reporting-line-organization-mismatch.detail" xml:space="preserve"><value>Yönetici ve ast aynı kuruluşta olmalıdır.</value></data>
 </root>

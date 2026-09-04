@@ -86,8 +86,7 @@ public sealed class EmployeeTenantGuard(IWorkforceStore store, IWorkforceClock c
             ? latest.EndDate ?? latest.StartDate
             : today;
         var assignments = await store.ListAssignmentsAsync(latest.Id, cancellationToken);
-        var assignment = PrimaryAssignments.Covering(assignments, coveringDate)
-            ?? PrimaryAssignments.OrderedPrimaries(assignments).LastOrDefault();
+        var assignment = PrimaryAssignments.Covering(assignments, coveringDate);
         if (assignment is null)
         {
             return false;

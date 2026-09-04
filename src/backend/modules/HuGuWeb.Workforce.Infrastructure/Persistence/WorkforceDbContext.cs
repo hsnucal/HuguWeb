@@ -22,6 +22,14 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         "IX_AttendanceCorrections_OrganizationId_PropertyId_EmploymentId_LocalDate";
     public const string AttendanceCorrectionChangeIndexName =
         "IX_AttendanceCorrectionChanges_EmploymentId_LocalDate_ChangedAtUtc";
+    public const string PersonnelMovementEmploymentIndexName =
+        "IX_PersonnelMovements_OrganizationId_EmploymentId_EffectiveDate";
+    public const string PersonnelMovementListIndexName =
+        "IX_PersonnelMovements_OrganizationId_MovementType_EffectiveDate";
+    public const string ReportingLineSubordinateIndexName =
+        "IX_WorkforceReportingLines_SubordinateEmploymentId_EffectiveFrom_EffectiveTo";
+    public const string ReportingLineManagerIndexName =
+        "IX_WorkforceReportingLines_ManagerEmploymentId_EffectiveFrom";
 
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Property> Properties => Set<Property>();
@@ -63,6 +71,8 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
     public DbSet<EmploymentOnboardingDocumentStatus> EmploymentOnboardingDocumentStatuses =>
         Set<EmploymentOnboardingDocumentStatus>();
     public DbSet<HrDocumentTemplate> HrDocumentTemplates => Set<HrDocumentTemplate>();
+    public DbSet<PersonnelMovement> PersonnelMovements => Set<PersonnelMovement>();
+    public DbSet<WorkforceReportingLine> WorkforceReportingLines => Set<WorkforceReportingLine>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -104,6 +114,8 @@ public sealed class WorkforceDbContext(DbContextOptions<WorkforceDbContext> opti
         modelBuilder.ApplyConfiguration(new OnboardingDocumentRequirementConfiguration());
         modelBuilder.ApplyConfiguration(new EmploymentOnboardingDocumentStatusConfiguration());
         modelBuilder.ApplyConfiguration(new HrDocumentTemplateConfiguration());
+        modelBuilder.ApplyConfiguration(new PersonnelMovementConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkforceReportingLineConfiguration());
     }
 }
 
@@ -1090,5 +1102,85 @@ file sealed class HrDocumentTemplateConfiguration : IEntityTypeConfiguration<HrD
             .IsUnique()
             .HasDatabaseName(WorkforceDbContext.HrDocumentTemplateCodeIndexName);
         builder.HasIndex(entity => new { entity.OrganizationId, entity.Category, entity.IsActive });
+    }
+}
+
+file sealed class PersonnelMovementConfiguration : IEntityTypeConfiguration<PersonnelMovement>
+{
+    public void Configure(EntityTypeBuilder<PersonnelMovement> builder)
+    {
+        builder.ToTable("PersonnelMovements");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.MovementType)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+        builder.Property(entity => entity.EffectiveDate).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.Reason).HasMaxLength(PersonnelMovement.ReasonMaxLength).IsRequired();
+        builder.Property(entity => entity.Note).HasMaxLength(PersonnelMovement.NoteMaxLength);
+        builder.Property(entity => entity.CreatedByUserId).HasMaxLength(PersonnelMovement.UserIdMaxLength).IsRequired();
+        builder.Property(entity => entity.CreatedAtUtc).IsRequired();
+        builder.Property(entity => entity.CancelledByUserId).HasMaxLength(PersonnelMovement.UserIdMaxLength);
+        builder.Property(entity => entity.CancellationReason).HasMaxLength(PersonnelMovement.ReasonMaxLength);
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.EmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Assignment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PreviousAssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Assignment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.NewAssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<WorkforceReportingLine>()
+            .WithMany()
+            .HasForeignKey(entity => entity.PreviousReportingLineId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<WorkforceReportingLine>()
+            .WithMany()
+            .HasForeignKey(entity => entity.NewReportingLineId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.EmploymentId, entity.EffectiveDate })
+            .HasDatabaseName(WorkforceDbContext.PersonnelMovementEmploymentIndexName);
+        builder.HasIndex(entity => new { entity.OrganizationId, entity.MovementType, entity.EffectiveDate })
+            .HasDatabaseName(WorkforceDbContext.PersonnelMovementListIndexName);
+    }
+}
+
+file sealed class WorkforceReportingLineConfiguration : IEntityTypeConfiguration<WorkforceReportingLine>
+{
+    public void Configure(EntityTypeBuilder<WorkforceReportingLine> builder)
+    {
+        builder.ToTable("WorkforceReportingLines", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_WorkforceReportingLines_Period",
+                "\"EffectiveTo\" IS NULL OR \"EffectiveTo\" >= \"EffectiveFrom\"");
+        });
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.EffectiveFrom).HasColumnType("date").IsRequired();
+        builder.Property(entity => entity.EffectiveTo).HasColumnType("date");
+        builder.HasOne<Organization>()
+            .WithMany()
+            .HasForeignKey(entity => entity.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.SubordinateEmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Employment>()
+            .WithMany()
+            .HasForeignKey(entity => entity.ManagerEmploymentId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(entity => new { entity.SubordinateEmploymentId, entity.EffectiveFrom, entity.EffectiveTo })
+            .HasDatabaseName(WorkforceDbContext.ReportingLineSubordinateIndexName);
+        builder.HasIndex(entity => new { entity.ManagerEmploymentId, entity.EffectiveFrom })
+            .HasDatabaseName(WorkforceDbContext.ReportingLineManagerIndexName);
     }
 }

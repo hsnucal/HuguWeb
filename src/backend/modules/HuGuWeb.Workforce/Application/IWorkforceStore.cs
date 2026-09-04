@@ -50,6 +50,27 @@ public interface IWorkforceStore
     Task<IReadOnlyList<Assignment>> ListAssignmentsForEmploymentsAsync(
         IReadOnlyCollection<Guid> employmentIds,
         CancellationToken cancellationToken);
+    void RemoveAssignment(Assignment assignment);
+
+    Task<PersonnelMovement?> GetPersonnelMovementAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PersonnelMovement>> ListPersonnelMovementsAsync(
+        Guid organizationId,
+        DateOnly? dateFrom,
+        DateOnly? dateTo,
+        PersonnelMovementType? type,
+        IReadOnlyCollection<Guid>? employmentIds,
+        CancellationToken cancellationToken);
+    void AddPersonnelMovement(PersonnelMovement movement);
+
+    Task<WorkforceReportingLine?> GetReportingLineAsync(Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentAsync(
+        Guid subordinateEmploymentId,
+        CancellationToken cancellationToken);
+    Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> subordinateEmploymentIds,
+        CancellationToken cancellationToken);
+    void AddReportingLine(WorkforceReportingLine line);
+    void RemoveReportingLine(WorkforceReportingLine line);
 
     void AddDepartment(Department department);
     void AddPosition(Position position);

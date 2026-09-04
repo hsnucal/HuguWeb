@@ -207,6 +207,16 @@ public static class SecurityExtensions
                 policy => policy.RequireClaim(HrAttendancePermissions.ClaimType, HrAttendancePermissions.Manage));
 
             options.AddPolicy(
+                AuthorizationPolicies.HrMovementsRead,
+                policy => policy.RequireAssertion(context =>
+                    context.User.HasClaim(HrMovementPermissions.ClaimType, HrMovementPermissions.Read)
+                    || context.User.HasClaim(HrMovementPermissions.ClaimType, HrMovementPermissions.Manage)));
+
+            options.AddPolicy(
+                AuthorizationPolicies.HrMovementsManage,
+                policy => policy.RequireClaim(HrMovementPermissions.ClaimType, HrMovementPermissions.Manage));
+
+            options.AddPolicy(
                 AuthorizationPolicies.AuthorizationUsersManage,
                 policy => policy.RequireClaim(
                     AuthorizationPermissions.ClaimType,

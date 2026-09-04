@@ -268,11 +268,11 @@ public static class AuthEndpoints
         SignInManager<ApplicationUser> signInManager,
         IWorkforceStore workforceStore)
     {
-        var selected = ActivePropertyCookie.Read(httpContext);
+        var selected = ActivePropertyCookie.ResolveSelection(httpContext);
         var accessible = await propertyAccess.ListAccessiblePropertiesAsync(user.Id, CancellationToken.None);
         if (selected is Guid selectedId && accessible.All(item => item.Id != selectedId))
         {
-            ActivePropertyCookie.Clear(httpContext, CookiePolicy(httpContext));
+            WriteActiveProperty(httpContext, propertyId: null);
             selected = null;
             await signInManager.RefreshSignInAsync(user);
         }
@@ -322,18 +322,8 @@ public static class AuthEndpoints
     private static Guid? ReadClaimProperty(ClaimsPrincipal user) =>
         Guid.TryParse(user.FindFirstValue(AuthorizationClaims.PropertyId), out var value) ? value : null;
 
-    private static void WriteActiveProperty(HttpContext httpContext, Guid? propertyId)
-    {
-        var policy = CookiePolicy(httpContext);
-        if (propertyId is Guid id)
-        {
-            ActivePropertyCookie.Write(httpContext, id, policy);
-        }
-        else
-        {
-            ActivePropertyCookie.Clear(httpContext, policy);
-        }
-    }
+    private static void WriteActiveProperty(HttpContext httpContext, Guid? propertyId) =>
+        ActivePropertyCookie.Bind(httpContext, propertyId, CookiePolicy(httpContext));
 
     private static CookieSecurePolicy CookiePolicy(HttpContext httpContext) =>
         httpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment()

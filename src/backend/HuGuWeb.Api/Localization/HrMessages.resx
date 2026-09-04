@@ -142,4 +142,58 @@
   <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>No primary assignment covers the requested attendance date.</value></data>
   <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Access denied.</value></data>
   <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>The selected department is not available in the current attendance scope.</value></data>
+  <data name="error.movement-invalid-type.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-invalid-type.detail" xml:space="preserve"><value>The movement type is not supported.</value></data>
+  <data name="error.movement-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-reason-required.detail" xml:space="preserve"><value>A business reason is required for a personnel movement.</value></data>
+  <data name="error.movement-reason-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-reason-too-long.detail" xml:space="preserve"><value>The movement reason is too long.</value></data>
+  <data name="error.movement-note-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-note-too-long.detail" xml:space="preserve"><value>The movement note is too long.</value></data>
+  <data name="error.movement-effective-date-invalid.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-effective-date-invalid.detail" xml:space="preserve"><value>The movement effective date is invalid.</value></data>
+  <data name="error.movement-employment-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.movement-employment-not-found.detail" xml:space="preserve"><value>The employment was not found.</value></data>
+  <data name="error.movement-assignment-not-found.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-assignment-not-found.detail" xml:space="preserve"><value>No primary assignment covers the movement effective date.</value></data>
+  <data name="error.movement-same-target.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-same-target.detail" xml:space="preserve"><value>The movement target is the same as the current assignment or manager.</value></data>
+  <data name="error.movement-position-not-applicable.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-position-not-applicable.detail" xml:space="preserve"><value>The selected position cannot be used in the target department.</value></data>
+  <data name="error.movement-property-access-denied.title" xml:space="preserve"><value>Access denied.</value></data>
+  <data name="error.movement-property-access-denied.detail" xml:space="preserve"><value>Movement management does not cover the required property.</value></data>
+  <data name="error.movement-cross-organization-not-supported.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-cross-organization-not-supported.detail" xml:space="preserve"><value>Cross-organization transfer is not a personnel movement.</value></data>
+  <data name="error.movement-pending-leave-conflict.title" xml:space="preserve"><value>Pending leave request conflict.</value></data>
+  <data name="error.movement-pending-leave-conflict.detail" xml:space="preserve"><value>A pending leave request spans the movement effective date.</value></data>
+  <data name="error.movement-schedule-conflict.title" xml:space="preserve"><value>Schedule conflict.</value></data>
+  <data name="error.movement-schedule-conflict.detail" xml:space="preserve"><value>Future schedule entries or attendance corrections reference the current assignment on or after the movement date.</value></data>
+  <data name="error.movement-not-cancellable.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-not-cancellable.detail" xml:space="preserve"><value>This movement cannot be cancelled.</value></data>
+  <data name="error.movement-already-effective.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-already-effective.detail" xml:space="preserve"><value>An effective movement cannot be cancelled. Record a new movement to reverse or correct it.</value></data>
+  <data name="error.movement-already-cancelled.title" xml:space="preserve"><value>Movement is already cancelled.</value></data>
+  <data name="error.movement-already-cancelled.detail" xml:space="preserve"><value>A cancelled movement cannot be cancelled again.</value></data>
+  <data name="error.movement-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.movement-not-found.detail" xml:space="preserve"><value>The personnel movement was not found.</value></data>
+  <data name="error.movement-target-position-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-target-position-required.detail" xml:space="preserve"><value>A target position is required.</value></data>
+  <data name="error.movement-target-department-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-target-department-required.detail" xml:space="preserve"><value>A target department is required.</value></data>
+  <data name="error.movement-target-property-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-target-property-required.detail" xml:space="preserve"><value>A target property is required.</value></data>
+  <data name="error.movement-cancellation-reason-required.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-cancellation-reason-required.detail" xml:space="preserve"><value>A cancellation reason is required.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.detail" xml:space="preserve"><value>The cancellation reason is too long.</value></data>
+  <data name="error.reporting-line-self-manager.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.reporting-line-self-manager.detail" xml:space="preserve"><value>An employment cannot report to itself.</value></data>
+  <data name="error.reporting-line-cycle.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.reporting-line-cycle.detail" xml:space="preserve"><value>This manager change would create a reporting-line cycle.</value></data>
+  <data name="error.reporting-line-overlap.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.reporting-line-overlap.detail" xml:space="preserve"><value>Direct manager ranges cannot overlap.</value></data>
+  <data name="error.reporting-line-manager-not-found.title" xml:space="preserve"><value>The requested resource was not found.</value></data>
+  <data name="error.reporting-line-manager-not-found.detail" xml:space="preserve"><value>The manager employment was not found.</value></data>
+  <data name="error.reporting-line-organization-mismatch.title" xml:space="preserve"><value>The request is invalid.</value></data>
+  <data name="error.reporting-line-organization-mismatch.detail" xml:space="preserve"><value>Manager and subordinate must belong to the same organization.</value></data>
 </root>

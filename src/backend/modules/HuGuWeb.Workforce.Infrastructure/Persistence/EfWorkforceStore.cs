@@ -199,6 +199,86 @@ public sealed class EfWorkforceStore(WorkforceDbContext dbContext) : IWorkforceS
 
     public void AddAssignment(Assignment assignment) => dbContext.Assignments.Add(assignment);
 
+    public void RemoveAssignment(Assignment assignment) => dbContext.Assignments.Remove(assignment);
+
+    public Task<PersonnelMovement?> GetPersonnelMovementAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.PersonnelMovements.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<PersonnelMovement>> ListPersonnelMovementsAsync(
+        Guid organizationId,
+        DateOnly? dateFrom,
+        DateOnly? dateTo,
+        PersonnelMovementType? type,
+        IReadOnlyCollection<Guid>? employmentIds,
+        CancellationToken cancellationToken)
+    {
+        var query = dbContext.PersonnelMovements.Where(entity => entity.OrganizationId == organizationId);
+        if (dateFrom is { } from)
+        {
+            query = query.Where(entity => entity.EffectiveDate >= from);
+        }
+
+        if (dateTo is { } to)
+        {
+            query = query.Where(entity => entity.EffectiveDate <= to);
+        }
+
+        if (type is { } movementType)
+        {
+            query = query.Where(entity => entity.MovementType == movementType);
+        }
+
+        if (employmentIds is not null)
+        {
+            if (employmentIds.Count == 0)
+            {
+                return [];
+            }
+
+            query = query.Where(entity => employmentIds.Contains(entity.EmploymentId));
+        }
+
+        return await query
+            .OrderByDescending(entity => entity.EffectiveDate)
+            .ThenByDescending(entity => entity.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddPersonnelMovement(PersonnelMovement movement) =>
+        dbContext.PersonnelMovements.Add(movement);
+
+    public Task<WorkforceReportingLine?> GetReportingLineAsync(Guid id, CancellationToken cancellationToken) =>
+        dbContext.WorkforceReportingLines.FirstOrDefaultAsync(entity => entity.Id == id, cancellationToken);
+
+    public async Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentAsync(
+        Guid subordinateEmploymentId,
+        CancellationToken cancellationToken) =>
+        await dbContext.WorkforceReportingLines
+            .Where(entity => entity.SubordinateEmploymentId == subordinateEmploymentId)
+            .OrderBy(entity => entity.EffectiveFrom)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> subordinateEmploymentIds,
+        CancellationToken cancellationToken)
+    {
+        if (subordinateEmploymentIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.WorkforceReportingLines
+            .Where(entity => subordinateEmploymentIds.Contains(entity.SubordinateEmploymentId))
+            .OrderBy(entity => entity.EffectiveFrom)
+            .ToListAsync(cancellationToken);
+    }
+
+    public void AddReportingLine(WorkforceReportingLine line) =>
+        dbContext.WorkforceReportingLines.Add(line);
+
+    public void RemoveReportingLine(WorkforceReportingLine line) =>
+        dbContext.WorkforceReportingLines.Remove(line);
+
     public Task<EmployeeHrProfile?> GetHrProfileAsync(Guid employeeId, CancellationToken cancellationToken) =>
         dbContext.EmployeeHrProfiles.FirstOrDefaultAsync(entity => entity.EmployeeId == employeeId, cancellationToken);
 

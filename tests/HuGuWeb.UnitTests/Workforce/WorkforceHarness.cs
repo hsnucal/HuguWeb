@@ -34,6 +34,8 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public List<Employee> Employees { get; } = [];
     public List<Employment> Employments { get; } = [];
     public List<Assignment> Assignments { get; } = [];
+    public List<PersonnelMovement> PersonnelMovements { get; } = [];
+    public List<WorkforceReportingLine> ReportingLines { get; } = [];
     public List<EmployeeHrProfile> HrProfiles { get; } = [];
     public List<EmergencyContact> EmergencyContacts { get; } = [];
     public List<EmployeeCertificate> EmployeeCertificates { get; } = [];
@@ -199,6 +201,74 @@ internal sealed class InMemoryWorkforceStore : IWorkforceStore
     public void AddEmployment(Employment employment) => Employments.Add(employment);
 
     public void AddAssignment(Assignment assignment) => Assignments.Add(assignment);
+
+    public void RemoveAssignment(Assignment assignment) => Assignments.Remove(assignment);
+
+    public Task<PersonnelMovement?> GetPersonnelMovementAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(PersonnelMovements.FirstOrDefault(item => item.Id == id));
+
+    public Task<IReadOnlyList<PersonnelMovement>> ListPersonnelMovementsAsync(
+        Guid organizationId,
+        DateOnly? dateFrom,
+        DateOnly? dateTo,
+        PersonnelMovementType? type,
+        IReadOnlyCollection<Guid>? employmentIds,
+        CancellationToken cancellationToken)
+    {
+        IEnumerable<PersonnelMovement> query = PersonnelMovements.Where(item => item.OrganizationId == organizationId);
+        if (dateFrom is { } from)
+        {
+            query = query.Where(item => item.EffectiveDate >= from);
+        }
+
+        if (dateTo is { } to)
+        {
+            query = query.Where(item => item.EffectiveDate <= to);
+        }
+
+        if (type is { } movementType)
+        {
+            query = query.Where(item => item.MovementType == movementType);
+        }
+
+        if (employmentIds is not null)
+        {
+            query = query.Where(item => employmentIds.Contains(item.EmploymentId));
+        }
+
+        return Task.FromResult<IReadOnlyList<PersonnelMovement>>(
+            query
+                .OrderByDescending(item => item.EffectiveDate)
+                .ThenByDescending(item => item.CreatedAtUtc)
+                .ToArray());
+    }
+
+    public void AddPersonnelMovement(PersonnelMovement movement) => PersonnelMovements.Add(movement);
+
+    public Task<WorkforceReportingLine?> GetReportingLineAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(ReportingLines.FirstOrDefault(item => item.Id == id));
+
+    public Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentAsync(
+        Guid subordinateEmploymentId,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<WorkforceReportingLine>>(
+            ReportingLines
+                .Where(item => item.SubordinateEmploymentId == subordinateEmploymentId)
+                .OrderBy(item => item.EffectiveFrom)
+                .ToArray());
+
+    public Task<IReadOnlyList<WorkforceReportingLine>> ListReportingLinesForEmploymentsAsync(
+        IReadOnlyCollection<Guid> subordinateEmploymentIds,
+        CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<WorkforceReportingLine>>(
+            ReportingLines
+                .Where(item => subordinateEmploymentIds.Contains(item.SubordinateEmploymentId))
+                .OrderBy(item => item.EffectiveFrom)
+                .ToArray());
+
+    public void AddReportingLine(WorkforceReportingLine line) => ReportingLines.Add(line);
+
+    public void RemoveReportingLine(WorkforceReportingLine line) => ReportingLines.Remove(line);
 
     public Task<EmployeeHrProfile?> GetHrProfileAsync(Guid employeeId, CancellationToken cancellationToken) =>
         Task.FromResult(HrProfiles.FirstOrDefault(item => item.EmployeeId == employeeId));
@@ -803,6 +873,11 @@ internal sealed class InMemoryWorkforceSnapshot
     private readonly List<AttendanceCorrection> _attendanceCorrections;
     private readonly List<AttendanceCorrectionChange> _attendanceCorrectionChanges;
     private readonly Dictionary<Guid, PersonnelNumberSequence> _sequences;
+    private readonly List<PersonnelMovement> _personnelMovements = [];
+    private readonly List<WorkforceReportingLine> _reportingLines = [];
+    private readonly List<(Guid Id, DateOnly? EndDate)> _assignmentEndDates = [];
+    private readonly List<(Guid Id, DateOnly? EffectiveTo)> _reportingLineEnds = [];
+    private readonly List<(Guid Id, string? CancelledByUserId, DateTimeOffset? CancelledAtUtc, string? CancellationReason, Guid? NewAssignmentId, Guid? NewReportingLineId)> _movementCancelStates = [];
 
     private InMemoryWorkforceSnapshot(
         List<Organization> organizations,
@@ -878,8 +953,9 @@ internal sealed class InMemoryWorkforceSnapshot
         _sequences = sequences;
     }
 
-    public static InMemoryWorkforceSnapshot Capture(InMemoryWorkforceStore store) =>
-        new(
+    public static InMemoryWorkforceSnapshot Capture(InMemoryWorkforceStore store)
+    {
+        var snapshot = new InMemoryWorkforceSnapshot(
             [.. store.Organizations],
             [.. store.Properties],
             [.. store.Departments],
@@ -919,6 +995,24 @@ internal sealed class InMemoryWorkforceSnapshot
             [.. store.AttendanceCorrections],
             [.. store.AttendanceCorrectionChanges],
             store.Sequences.ToDictionary(item => item.Key, item => item.Value));
+        snapshot.CaptureTemporal(store);
+        return snapshot;
+    }
+
+    private void CaptureTemporal(InMemoryWorkforceStore store)
+    {
+        _personnelMovements.AddRange(store.PersonnelMovements);
+        _reportingLines.AddRange(store.ReportingLines);
+        _assignmentEndDates.AddRange(store.Assignments.Select(item => (item.Id, item.EndDate)));
+        _reportingLineEnds.AddRange(store.ReportingLines.Select(item => (item.Id, item.EffectiveTo)));
+        _movementCancelStates.AddRange(store.PersonnelMovements.Select(item => (
+            item.Id,
+            item.CancelledByUserId,
+            item.CancelledAtUtc,
+            item.CancellationReason,
+            item.NewAssignmentId,
+            item.NewReportingLineId)));
+    }
 
     public void Restore(InMemoryWorkforceStore store)
     {
@@ -930,6 +1024,25 @@ internal sealed class InMemoryWorkforceSnapshot
         Replace(store.Employees, _employees);
         Replace(store.Employments, _employments);
         Replace(store.Assignments, _assignments);
+        foreach (var state in _assignmentEndDates)
+        {
+            store.Assignments.FirstOrDefault(item => item.Id == state.Id)?.RestoreEndDate(state.EndDate);
+        }
+
+        Replace(store.PersonnelMovements, _personnelMovements);
+        foreach (var state in _movementCancelStates)
+        {
+            var movement = store.PersonnelMovements.FirstOrDefault(item => item.Id == state.Id);
+            movement?.RestoreCancellationState(state.CancelledByUserId, state.CancelledAtUtc, state.CancellationReason);
+            movement?.RestoreSuccessorIds(state.NewAssignmentId, state.NewReportingLineId);
+        }
+
+        Replace(store.ReportingLines, _reportingLines);
+        foreach (var state in _reportingLineEnds)
+        {
+            store.ReportingLines.FirstOrDefault(item => item.Id == state.Id)?.RestoreEffectiveTo(state.EffectiveTo);
+        }
+
         Replace(store.HrProfiles, _hrProfiles);
         Replace(store.EmergencyContacts, _emergencyContacts);
         Replace(store.Photos, _photos);
@@ -1030,6 +1143,10 @@ internal sealed class WorkforceHarness
     public HireEmployeeWithProfileUseCase HireWithProfile { get; }
     public UpdateEmployeeHrProfileUseCase UpdateProfile { get; }
     public TransferEmployeeUseCase Transfer { get; }
+    public CreateWorkforceMovementUseCase CreateMovement { get; }
+    public CancelWorkforceMovementUseCase CancelMovement { get; }
+    public ListPersonnelMovementsQuery ListMovements { get; }
+    public GetPersonnelMovementQuery GetMovement { get; }
     public EndEmploymentUseCase EndEmployment { get; }
     public ActiveWorkforceQuery ActiveWorkforce { get; }
     public EmployeeHistoryQuery History { get; }
@@ -1160,6 +1277,10 @@ internal sealed class WorkforceHarness
         HireWithProfile = new HireEmployeeWithProfileUseCase(Store, Clock, Workplace);
         UpdateProfile = new UpdateEmployeeHrProfileUseCase(Store, Clock, Workplace);
         Transfer = new TransferEmployeeUseCase(Store, Clock, Workplace);
+        CreateMovement = new CreateWorkforceMovementUseCase(Store, Clock, Workplace);
+        CancelMovement = new CancelWorkforceMovementUseCase(Store, Clock, Workplace);
+        ListMovements = new ListPersonnelMovementsQuery(Store, Clock, Workplace);
+        GetMovement = new GetPersonnelMovementQuery(Store, Clock, Workplace);
         EndEmployment = new EndEmploymentUseCase(Store, Workplace);
         ActiveWorkforce = new ActiveWorkforceQuery(Store, Clock, Workplace);
         History = new EmployeeHistoryQuery(Store, Clock, Workplace);

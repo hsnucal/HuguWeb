@@ -1,6 +1,4 @@
 using HuGuWeb.Workforce.Application;
-using HuGuWeb.Api.Authorization;
-using HuGuWeb.Api.Context;
 using Microsoft.Extensions.Hosting;
 using System.Security.Claims;
 
@@ -24,27 +22,23 @@ public sealed class RequestWorkplaceContext(
     {
         var http = httpContextAccessor.HttpContext;
         var user = http?.User;
-        if (user?.Identity?.IsAuthenticated == true)
+        if (user?.Identity?.IsAuthenticated != true)
         {
-            if (!TryGuid(user, AuthorizationClaims.OrganizationId, out var organizationId))
+            if (environment.IsDevelopment() && http is null)
             {
                 return (Guid.Empty, Guid.Empty);
             }
 
-            if (TryGuid(user, AuthorizationClaims.PropertyId, out var claimedProperty))
-            {
-                return (organizationId, claimedProperty);
-            }
-
-            return (organizationId, Guid.Empty);
+            return (Guid.Empty, Guid.Empty);
         }
 
-        if (environment.IsDevelopment() && http is null)
+        if (!TryGuid(user, AuthorizationClaims.OrganizationId, out var organizationId))
         {
             return (Guid.Empty, Guid.Empty);
         }
 
-        return (Guid.Empty, Guid.Empty);
+        var propertyId = ActiveWorkplaceResolution.ResolvePropertyId(http) ?? Guid.Empty;
+        return (organizationId, propertyId);
     }
 
     private static bool TryGuid(System.Security.Claims.ClaimsPrincipal user, string type, out Guid value)

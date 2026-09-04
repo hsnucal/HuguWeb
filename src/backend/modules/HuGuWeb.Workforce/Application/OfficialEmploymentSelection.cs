@@ -48,8 +48,9 @@ internal static class EmploymentPropertyContext
         if (!employment.IsEnded)
         {
             relevant = PrimaryAssignments.Covering(assignments, today)
-                ?? primaries.LastOrDefault(item => item.EndDate is null)
-                ?? primaries[^1];
+                ?? (employment.StartDate > today
+                    ? PrimaryAssignments.Covering(assignments, employment.StartDate)
+                    : null);
         }
         else
         {

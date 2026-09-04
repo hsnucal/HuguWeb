@@ -56,4 +56,11 @@ public sealed class Assignment
         error = null;
         return true;
     }
+
+    public void Reopen() => EndDate = null;
+
+    /// <summary>
+    /// Restores <see cref="EndDate"/> for in-memory transaction rollback in tests.
+    /// </summary>
+    internal void RestoreEndDate(DateOnly? endDate) => EndDate = endDate;
 }

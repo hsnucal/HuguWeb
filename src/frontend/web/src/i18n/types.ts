@@ -290,6 +290,9 @@ export type Translations = {
       invalidEmploymentPeriod: string
       sameAssignment: string
       positionNotAvailable: string
+      pendingLeaveConflict: string
+      scheduleConflict: string
+      propertyAccessDenied: string
       generic: string
       invalidSgkWorkplace: string
       terminationReasonRequired: string
@@ -1254,6 +1257,9 @@ export type Translations = {
       'hr.attendance.read': string
       'hr.attendance.manage': string
       'hr.attendance.close': string
+      'hr.movements.read': string
+      'hr.movements.manage': string
+      'hr.movements.approve': string
       'hr.shift-definition.read': string
       'hr.shift-definition.manage': string
       'room-operations.read': string

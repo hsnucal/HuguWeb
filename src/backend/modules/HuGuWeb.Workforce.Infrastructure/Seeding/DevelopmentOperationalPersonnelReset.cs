@@ -45,6 +45,8 @@ public static class DevelopmentOperationalPersonnelReset
         await dbContext.EmployeeHrProfiles.ExecuteDeleteAsync(cancellationToken);
         await dbContext.EmployeePaymentProfiles.ExecuteDeleteAsync(cancellationToken);
         await dbContext.PersonnelProfileChanges.ExecuteDeleteAsync(cancellationToken);
+        await dbContext.PersonnelMovements.ExecuteDeleteAsync(cancellationToken);
+        await dbContext.WorkforceReportingLines.ExecuteDeleteAsync(cancellationToken);
         await dbContext.Assignments.ExecuteDeleteAsync(cancellationToken);
         await dbContext.Employments.ExecuteDeleteAsync(cancellationToken);
         await dbContext.Employees.ExecuteDeleteAsync(cancellationToken);

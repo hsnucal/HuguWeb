@@ -142,4 +142,58 @@
   <data name="error.attendance-assignment-not-found.detail" xml:space="preserve"><value>Нет основного назначения, покрывающего запрошенную дату посещаемости.</value></data>
   <data name="error.attendance-department-filter-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
   <data name="error.attendance-department-filter-denied.detail" xml:space="preserve"><value>Выбранное подразделение недоступно в текущем охвате посещаемости.</value></data>
+  <data name="error.movement-invalid-type.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-invalid-type.detail" xml:space="preserve"><value>Этот тип перемещения не поддерживается.</value></data>
+  <data name="error.movement-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-reason-required.detail" xml:space="preserve"><value>Для кадрового перемещения требуется деловая причина.</value></data>
+  <data name="error.movement-reason-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-reason-too-long.detail" xml:space="preserve"><value>Причина перемещения слишком длинная.</value></data>
+  <data name="error.movement-note-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-note-too-long.detail" xml:space="preserve"><value>Примечание к перемещению слишком длинное.</value></data>
+  <data name="error.movement-effective-date-invalid.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-effective-date-invalid.detail" xml:space="preserve"><value>Дата вступления перемещения в силу недействительна.</value></data>
+  <data name="error.movement-employment-not-found.title" xml:space="preserve"><value>Ресурс не найден.</value></data>
+  <data name="error.movement-employment-not-found.detail" xml:space="preserve"><value>Трудоустройство не найдено.</value></data>
+  <data name="error.movement-assignment-not-found.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-assignment-not-found.detail" xml:space="preserve"><value>Нет основного назначения на дату вступления перемещения в силу.</value></data>
+  <data name="error.movement-same-target.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-same-target.detail" xml:space="preserve"><value>Цель совпадает с текущим назначением или руководителем.</value></data>
+  <data name="error.movement-position-not-applicable.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-position-not-applicable.detail" xml:space="preserve"><value>Выбранная должность неприменима к целевому подразделению.</value></data>
+  <data name="error.movement-property-access-denied.title" xml:space="preserve"><value>Доступ запрещён.</value></data>
+  <data name="error.movement-property-access-denied.detail" xml:space="preserve"><value>Управление перемещениями не охватывает этот объект.</value></data>
+  <data name="error.movement-cross-organization-not-supported.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-cross-organization-not-supported.detail" xml:space="preserve"><value>Межорганизационный перевод не является кадровым перемещением.</value></data>
+  <data name="error.movement-pending-leave-conflict.title" xml:space="preserve"><value>Конфликт ожидающего отпуска.</value></data>
+  <data name="error.movement-pending-leave-conflict.detail" xml:space="preserve"><value>Ожидающая заявка на отпуск пересекает дату перемещения.</value></data>
+  <data name="error.movement-schedule-conflict.title" xml:space="preserve"><value>Конфликт графика.</value></data>
+  <data name="error.movement-schedule-conflict.detail" xml:space="preserve"><value>Будущие записи графика или правки табеля ссылаются на текущее назначение после даты перемещения.</value></data>
+  <data name="error.movement-not-cancellable.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-not-cancellable.detail" xml:space="preserve"><value>Это перемещение нельзя отменить.</value></data>
+  <data name="error.movement-already-effective.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-already-effective.detail" xml:space="preserve"><value>Вступившее в силу перемещение нельзя отменить. Для исправления создайте новое.</value></data>
+  <data name="error.movement-already-cancelled.title" xml:space="preserve"><value>Перемещение уже отменено.</value></data>
+  <data name="error.movement-already-cancelled.detail" xml:space="preserve"><value>Отменённое перемещение нельзя отменить повторно.</value></data>
+  <data name="error.movement-not-found.title" xml:space="preserve"><value>Ресурс не найден.</value></data>
+  <data name="error.movement-not-found.detail" xml:space="preserve"><value>Кадровое перемещение не найдено.</value></data>
+  <data name="error.movement-target-position-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-target-position-required.detail" xml:space="preserve"><value>Требуется целевая должность.</value></data>
+  <data name="error.movement-target-department-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-target-department-required.detail" xml:space="preserve"><value>Требуется целевое подразделение.</value></data>
+  <data name="error.movement-target-property-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-target-property-required.detail" xml:space="preserve"><value>Требуется целевой объект.</value></data>
+  <data name="error.movement-cancellation-reason-required.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-cancellation-reason-required.detail" xml:space="preserve"><value>Требуется причина отмены.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.movement-cancellation-reason-too-long.detail" xml:space="preserve"><value>Причина отмены слишком длинная.</value></data>
+  <data name="error.reporting-line-self-manager.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.reporting-line-self-manager.detail" xml:space="preserve"><value>Трудоустройство не может подчиняться само себе.</value></data>
+  <data name="error.reporting-line-cycle.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.reporting-line-cycle.detail" xml:space="preserve"><value>Эта смена руководителя создаёт цикл подчинённости.</value></data>
+  <data name="error.reporting-line-overlap.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.reporting-line-overlap.detail" xml:space="preserve"><value>Периоды прямого руководителя не могут пересекаться.</value></data>
+  <data name="error.reporting-line-manager-not-found.title" xml:space="preserve"><value>Ресурс не найден.</value></data>
+  <data name="error.reporting-line-manager-not-found.detail" xml:space="preserve"><value>Трудоустройство руководителя не найдено.</value></data>
+  <data name="error.reporting-line-organization-mismatch.title" xml:space="preserve"><value>Некорректный запрос.</value></data>
+  <data name="error.reporting-line-organization-mismatch.detail" xml:space="preserve"><value>Руководитель и подчинённый должны принадлежать одной организации.</value></data>
 </root>

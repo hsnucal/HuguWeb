@@ -65,6 +65,7 @@ See [DOMAIN_MODEL.md](DOMAIN_MODEL.md#localization-strategy).
 | [HR-05A Leave Foundation](../../product/hr/HR-05A-Leave-Foundation.md) | Domain freeze **Accepted**. Does not change HR-04 or HR-DOMAIN-001/002/003 |
 | [HR-05A implementation plan](../../product/hr/HR-05A-Leave-Implementation-Plan.md) | **Accepted / Completed**. Domain freeze remains Accepted |
 | [HR product planning index](../../product/hr/README.md) | Slice-id map. Older Personel Master maps called this work HR-02 and called Documents HR-04; those Accepted texts are not rewritten |
+| [HR-08 Personel Hareketleri](../../product/hr/HR-08-PERSONEL-HAREKETLERI-DISCOVERY.md) | Discovery **Accepted.** **HR-08A Accepted / Completed.** HR-08 **In Progress** (HR-08B UI deferred, not implemented). Companion [ADR-012](../../architecture/adr/ADR-012-Workforce-Movements-And-Reporting-Line.md) **Accepted** |
 
 Related architecture (do not contradict):
 

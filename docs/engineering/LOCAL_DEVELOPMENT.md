@@ -189,6 +189,8 @@ dotnet ef database update --project src/backend/modules/HuGuWeb.TechnicalService
 
 The Identity migrations contain ASP.NET Core Identity tables and nullable `PreferredLanguage` on `AspNetUsers` (`tr` / `en` / `ru`). The Workforce migration adds Organization & Workforce tables only. Room Operations and Technical Service each own their tables. Apply pending migrations with the commands above; do not auto-apply in Production.
 
+Known local-seed gap (not an HR-08A product blocker): `DevelopmentWorkforceSeeder` writes `DepartmentPositionApplicability` mappings only for the Ankara Property. After a fresh Development seed, Antalya has Departments and Positions but **no** applicability rows, so same-Organization PropertyTransfer to Antalya is correctly rejected until applicabilities exist. Do not treat a locally inserted applicability row as source-of-truth seed; do not commit database dumps.
+
 ## Backend (manual fallback)
 
 Prefer F5 (**HuGuWeb Development**) or `.\dev.ps1`. To start the API alone:

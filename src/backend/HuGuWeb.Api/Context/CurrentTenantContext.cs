@@ -11,7 +11,7 @@ public sealed class CurrentTenantContext(IHttpContextAccessor httpContextAccesso
 
     public Guid? MembershipId => TryGuid(AuthorizationClaims.MembershipId);
 
-    public Guid? PropertyId => TryGuid(AuthorizationClaims.PropertyId);
+    public Guid? PropertyId => ActiveWorkplaceResolution.ResolvePropertyId(httpContextAccessor.HttpContext);
 
     public AuthorizationScopeType? ScopeType =>
         Enum.TryParse<AuthorizationScopeType>(User?.FindFirstValue(AuthorizationClaims.ScopeType), out var scope)

@@ -29,6 +29,7 @@ See [TECHNOLOGY_DECISIONS.md](TECHNOLOGY_DECISIONS.md) for the accepted matrix a
 | Provider-neutral cloud strategy | **Accepted** — [ADR-009](adr/ADR-009-Cloud-Strategy.md) |
 | Database-managed membership authorization | **Accepted** — [ADR-010](adr/ADR-010-Database-Managed-Authorization.md) |
 | Puantaj domain (plan ≠ actual; corrections-only persistence) | **Accepted** — [ADR-011](adr/ADR-011-Puantaj-Domain-Model.md) |
+| Workforce movements + reporting line | **Accepted** — [ADR-012](adr/ADR-012-Workforce-Movements-And-Reporting-Line.md) |
 | Organization / Property request context | **Accepted** — [foundation/ARCH-FOUNDATION-001.md](foundation/ARCH-FOUNDATION-001.md) |
 | Microservices | Avoid unless a later ADR justifies — rejected for current stage in ADR-001 |
 | Multi-tenancy as SaaS db-per-customer | Rejected for current stage — shared tables ([TENANCY](foundation/TENANCY.md)) |

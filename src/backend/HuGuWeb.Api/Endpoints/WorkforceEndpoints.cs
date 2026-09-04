@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using HuGuWeb.Api.Authorization;
 using HuGuWeb.Workforce.Application;
 using HuGuWeb.Workforce.Domain;
@@ -191,11 +192,28 @@ public static class WorkforceEndpoints
     private static async Task<IResult> TransferEmployee(
         Guid id,
         [FromBody] TransferEmployeeRequest request,
+        ClaimsPrincipal user,
         TransferEmployeeUseCase useCase,
+        IAuthorizationStore authorizationStore,
+        PropertyAccessService propertyAccess,
+        IWorkplaceContext workplace,
         CancellationToken cancellationToken)
     {
+        var scope = await MovementAccess.AccessiblePropertyIdsAsync(
+            user,
+            authorizationStore,
+            propertyAccess,
+            workplace.OrganizationId,
+            cancellationToken);
         var result = await useCase.ExecuteAsync(
-            new TransferEmployeeCommand(id, request.DepartmentId, request.PositionId, request.EffectiveDate),
+            new TransferEmployeeCommand(
+                id,
+                request.DepartmentId,
+                request.PositionId,
+                request.EffectiveDate,
+                Reason: null,
+                ActorUserId: user.FindFirstValue(ClaimTypes.NameIdentifier),
+                AccessiblePropertyIds: scope),
             cancellationToken);
         return result.ToHttp();
     }

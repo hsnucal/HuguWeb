@@ -31,9 +31,7 @@ public sealed class RequestActorContext(IHttpContextAccessor httpContextAccessor
             Guid? employeeId = TryGuid(user, AuthorizationClaims.EmployeeId, out var linked)
                 ? linked
                 : null;
-            Guid? propertyId = TryGuid(user, AuthorizationClaims.PropertyId, out var property)
-                ? property
-                : null;
+            Guid? propertyId = ActiveWorkplaceResolution.ResolvePropertyId(httpContextAccessor.HttpContext);
             AuthorizationScopeType? scope = Enum.TryParse<AuthorizationScopeType>(
                 user.FindFirstValue(AuthorizationClaims.ScopeType),
                 out var parsed)

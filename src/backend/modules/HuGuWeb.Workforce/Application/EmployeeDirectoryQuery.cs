@@ -50,12 +50,6 @@ public sealed class EmployeeDirectoryQuery(
             var assignment = PrimaryAssignments.Covering(
                 assignmentsByEmployment[latestEmployment.Id].ToArray(),
                 coveringDate);
-            if (assignment is null && status != EmploymentStatus.Ended)
-            {
-                assignment = PrimaryAssignments.OrderedPrimaries(
-                        assignmentsByEmployment[latestEmployment.Id].ToArray())
-                    .LastOrDefault();
-            }
 
             departments.TryGetValue(assignment?.DepartmentId ?? Guid.Empty, out var department);
             positions.TryGetValue(assignment?.PositionId ?? Guid.Empty, out var position);

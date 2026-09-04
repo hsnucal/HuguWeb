@@ -50,7 +50,9 @@ public static class SystemRoleTemplates
         HrAttendancePermissions.Read,
         HrAttendancePermissions.Manage,
         HrShiftDefinitionPermissions.Read,
-        HrShiftDefinitionPermissions.Manage
+        HrShiftDefinitionPermissions.Manage,
+        HrMovementPermissions.Read,
+        HrMovementPermissions.Manage
     ];
 
     /// <summary>

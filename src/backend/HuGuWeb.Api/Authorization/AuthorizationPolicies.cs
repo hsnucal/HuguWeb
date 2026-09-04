@@ -24,6 +24,8 @@ public static class AuthorizationPolicies
     public const string HrShiftDefinitionManage = "HrShiftDefinitionManage";
     public const string HrAttendanceRead = "HrAttendanceRead";
     public const string HrAttendanceManage = "HrAttendanceManage";
+    public const string HrMovementsRead = "HrMovementsRead";
+    public const string HrMovementsManage = "HrMovementsManage";
     public const string AuthorizationUsersManage = "AuthorizationUsersManage";
     public const string AuthorizationRolesManage = "AuthorizationRolesManage";
 }

@@ -55,6 +55,8 @@ public class ProductionAssemblyGuardTests
             "Positions",
             "Employments",
             "Assignments",
+            "PersonnelMovements",
+            "WorkforceReportingLines",
             "Organizations",
             "MaintenanceIssues",
             "MaintenanceIssueCategories"
@@ -643,6 +645,9 @@ public class ProductionAssemblyGuardTests
         Assert.NotNull(typeof(AppIdentityDbContext).GetProperty("AuthorizationRoles"));
         Assert.Null(typeof(Employee).GetProperty("UserId"));
         Assert.Null(typeof(Employee).GetProperty("ApplicationUserId"));
+        Assert.Null(typeof(WorkforceReportingLine).GetProperty("ApplicationUserId"));
+        Assert.Null(typeof(WorkforceReportingLine).GetProperty("UserId"));
+        Assert.Null(typeof(PersonnelMovement).GetProperty("ApplicationUserId"));
         Assert.Null(typeof(Position).GetProperty("Permission"));
         Assert.Null(typeof(Department).GetProperty("Permission"));
 

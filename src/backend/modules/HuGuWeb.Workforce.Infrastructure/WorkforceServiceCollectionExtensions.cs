@@ -32,6 +32,10 @@ public static class WorkforceServiceCollectionExtensions
         services.AddScoped<UpdateEmployeeHrProfileUseCase>();
         services.AddScoped<EmployeePhotoUseCases>();
         services.AddScoped<TransferEmployeeUseCase>();
+        services.AddScoped<CreateWorkforceMovementUseCase>();
+        services.AddScoped<CancelWorkforceMovementUseCase>();
+        services.AddScoped<ListPersonnelMovementsQuery>();
+        services.AddScoped<GetPersonnelMovementQuery>();
         services.AddScoped<EndEmploymentUseCase>();
         services.AddScoped<MaintainDepartmentsUseCase>();
         services.AddScoped<MaintainPositionsUseCase>();

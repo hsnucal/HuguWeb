@@ -4,7 +4,7 @@
 
 This document summarizes accepted architecture and technology decisions. Detailed reasoning lives in the ADRs listed below.
 
-Related: [Architecture README](README.md) · [ADR index](adr/README.md)
+Related: [Architecture README](README.md) · [ADR index](adr/README.md). [ADR-012 Workforce Movements](adr/ADR-012-Workforce-Movements-And-Reporting-Line.md) is **Accepted**.
 
 ---
 
