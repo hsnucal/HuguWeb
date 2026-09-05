@@ -13,6 +13,10 @@
     // and does not load HuGuWeb.Api symbols, bind breakpoints, or start
     // Kestrel on 5116.
     //
+    // After Shift+F5, postDebugTask runs scripts/dev/stop-huguweb.ps1 so
+    // leftover HuGuWeb.Api / netcoredbg hosts release Debug DLLs.
+    // Vite is a background task and is not stopped.
+    //
     // ASPNETCORE_URLS is set here on purpose. netcoredbg does not apply
     // launchSettings.json applicationUrl. Without this env var, F5 starts
     // the current Debug DLL and Kestrel listens on localhost:5000, so Vite
@@ -24,6 +28,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "HuGuWeb: Development Prerequisites",
+            "postDebugTask": "HuGuWeb: Stop Debug Processes",
             "program": "${workspaceFolder}/src/backend/HuGuWeb.Api/bin/Debug/net10.0/HuGuWeb.Api.dll",
             "cwd": "${workspaceFolder}/src/backend/HuGuWeb.Api",
             "args": [],

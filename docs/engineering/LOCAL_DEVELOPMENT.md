@@ -20,6 +20,7 @@ Open the **repository root** in Cursor / VS Code (not `src/frontend/web` alone).
 
 1. Press **F5**.
 2. Select **HuGuWeb Development**.
+3. Press **Shift+F5** to stop. The debugger ends, then `postDebugTask` runs `scripts/dev/stop-huguweb.ps1` so leftover HuGuWeb.Api / associated `dotnet` / `netcoredbg` processes for this repository are terminated and API Debug DLLs are released. Vite and PostgreSQL are left running. Manual fallback (same script): `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\dev\stop-huguweb.ps1`.
 
 Expected sequence:
 
@@ -40,7 +41,7 @@ Opening Chrome before `/health` is 200 causes `/api/auth/csrf` to fail and the l
 
 The first F5 in a window, choose **HuGuWeb Development**. Later F5 presses reuse that selection.
 
-Stopping the debug session stops the API debugger and Chrome. The Vite terminal can be stopped with that terminal's kill control. PostgreSQL is left running. F5 does not run `taskkill /IM node.exe`, `taskkill /IM dotnet.exe`, or equivalent broad process kills.
+Stopping the debug session (**Shift+F5**) stops the API debugger and then runs **HuGuWeb: Stop Debug Processes**. That task stops only processes identified as this repository's HuGuWeb.Api debug host, its `netcoredbg` parent, and those children. It does not stop Vite, PostgreSQL, Cursor, or unrelated `dotnet` processes. It never runs `taskkill /IM node.exe`, `taskkill /IM dotnet.exe`, or `Stop-Process -Name dotnet`. Chrome opened for the SPA may remain; the Vite terminal can be stopped with that terminal's kill control. If Cursor closes before `postDebugTask` runs, leftover API locks can still be cleared with `scripts/dev/stop-huguweb.ps1`.
 
 `.vscode/launch.json` and `.vscode/tasks.json` are repository-owned F5 configuration. They do not contain passwords, connection strings, tokens, or User Secrets.
 
@@ -89,7 +90,7 @@ It does not print passwords, connection strings, User Secrets, cookies, or token
 
 - PostgreSQL is left running.
 - API and frontend run in separate consoles titled `HuGuWeb API` and `HuGuWeb Frontend`. Close those windows to stop them.
-- `.\dev-stop.ps1` stops **only** processes recorded by the launcher, after checking that the command line still looks like HuGuWeb API/frontend. It never runs `taskkill /IM node.exe` or `taskkill /IM dotnet.exe`. F5 sessions are stopped from the IDE; they do not depend on `dev-stop.ps1`.
+- `.\dev-stop.ps1` stops **only** processes recorded by the launcher, after checking that the command line still looks like HuGuWeb API/frontend. It never runs `taskkill /IM node.exe` or `taskkill /IM dotnet.exe`. F5 leftover API/debug processes are stopped by Shift+F5 (`postDebugTask`) or `.\scripts\dev\stop-huguweb.ps1`, not by `dev-stop.ps1`.
 - Closing the launcher window does not kill unrelated processes.
 
 ### Common failures

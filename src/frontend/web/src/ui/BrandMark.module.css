@@ -44,6 +44,6 @@
 }
 
 .inverse .image {
-  /* Authored fill is #023C28; invert only on brand chrome for contrast. */
+  /* Authored fill is #862A51; invert only on brand chrome for contrast. */
   filter: brightness(0) invert(1);
 }
